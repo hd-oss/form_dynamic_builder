@@ -1,0 +1,147 @@
+{
+  "id": "",
+  "title": "Untitled Form",
+  "description": "",
+  "type": "form",
+  "ds_form": {
+    "task": {
+      "lcs": null,
+      "los": null
+    }
+  },
+  "components": [
+    {
+      "id": "comp_1771213233095_tw94ateu8",
+      "type": "textfield",
+      "key": "textfield",
+      "label": "Text Field",
+      "placeholder": "Enter text...",
+      "required": false
+    },
+    {
+      "id": "comp_1771213234575_4m5r1xosb",
+      "type": "textarea",
+      "key": "textarea",
+      "label": "Text Area",
+      "placeholder": "Enter text...",
+      "rows": 4
+    },
+    {
+      "id": "comp_1771213237616_i8fg34qo6",
+      "type": "number",
+      "key": "number",
+      "label": "Number",
+      "placeholder": "Enter number..."
+    },
+    {
+      "id": "comp_1771213243424_vrji1scxy",
+      "type": "password",
+      "key": "password",
+      "label": "Password",
+      "placeholder": "Enter password...",
+      "showToggle": true
+    },
+    {
+      "id": "comp_1771213246646_u4s6yo15u",
+      "type": "checkbox",
+      "key": "checkbox",
+      "label": "Checkbox",
+      "defaultValue": false
+    },
+    {
+      "id": "comp_1771213250062_15rc6b950",
+      "type": "select",
+      "key": "select",
+      "label": "Select",
+      "placeholder": "Select an option...",
+      "options": [
+        {
+          "label": "Option 1",
+          "value": "option1"
+        },
+        {
+          "label": "Option 2",
+          "value": "option2"
+        },
+        {
+          "label": "Option 3",
+          "value": "option3"
+        }
+      ]
+    },
+    {
+      "id": "comp_1771213257807_p7lqkia8w",
+      "type": "radio",
+      "key": "radio",
+      "label": "Radio Group",
+      "options": [
+        {
+          "label": "Pilihan 1",
+          "value": "option1"
+        },
+        {
+          "label": "Option 2",
+          "value": "option2"
+        }
+      ],
+      "placeholder": "",
+      "description": "",
+      "required": false,
+      "disabled": false,
+      "hidden": false,
+      "textTransform": "none",
+      "calculation": "",
+      "customClass": "",
+      "validation": [],
+      "inline": false
+    },
+    {
+      "id": "comp_1771213312367_trkmgm8ll",
+      "type": "datetime",
+      "key": "datetime",
+      "label": "Date",
+      "enableTime": false
+    },
+    {
+      "id": "comp_1771213315713_gg6p2pwvr",
+      "type": "currency",
+      "key": "currency",
+      "label": "Amount",
+      "currency": "IDR",
+      "decimalPlaces": 2
+    },
+    {
+      "id": "comp_1771213318359_vgp39jt4r",
+      "type": "file",
+      "key": "file",
+      "label": "File Upload",
+      "multiple": false
+    },
+    {
+      "id": "comp_1771213321368_jy0nkiy9w",
+      "type": "signature",
+      "key": "signature",
+      "label": "Signature",
+      "width": 400,
+      "height": 150
+    },
+    {
+      "id": "comp_1771213261192_ftl902xqt",
+      "type": "button",
+      "key": "button",
+      "label": "Submit",
+      "action": "submit",
+      "theme": "primary"
+    }
+  ],
+  "steps": [],
+  "settings": {
+    "submitLabel": "Submit",
+    "showReset": false,
+    "resetLabel": "Reset",
+    "confirmBeforeSubmit": false,
+    "successMessage": "Form submitted successfully!"
+  },
+  "createdAt": "2026-02-16T03:05:58.958Z",
+  "updatedAt": "2026-02-16T03:44:05.968Z"
+}
