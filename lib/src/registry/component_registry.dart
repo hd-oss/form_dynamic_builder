@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/form_component.dart';
 import '../models/components/all_components.dart';
 import '../controller/form_controller.dart';
+import '../utils/form_constants.dart';
 import '../widgets/fields/text_field_widget.dart';
 import '../widgets/fields/checkbox_widget.dart';
-import '../widgets/fields/choice_widget.dart';
-import '../widgets/fields/button_widget.dart';
-import '../widgets/fields/misc_widgets.dart';
+import '../widgets/fields/select_widget.dart';
+import '../widgets/fields/radio_widget.dart';
+import '../widgets/fields/date_time_widget.dart';
+import '../widgets/fields/file_widget.dart';
+import '../widgets/fields/signature_widget.dart';
 
 typedef WidgetBuilderFunc = Widget Function(
     FormComponent component, FormController controller);
@@ -22,79 +25,86 @@ class ComponentRegistry {
     _registry[type] = builder;
   }
 
+  void _registerUnknownComponent() {
+    register(FormConstants.typeUnknown, (c, ctrl) => const SizedBox.shrink());
+  }
+
   Widget build(FormComponent component, FormController controller) {
     final builder = _registry[component.type];
     if (builder != null) {
       return builder(component, controller);
     }
-    // Fallback
-    return ListTile(
-      title: Text('Unknown component type: ${component.type}'),
-      subtitle: Text('Key: ${component.key}'),
-    );
+    // Fallback: Return an empty widget ("komponen kosong")
+    return const SizedBox.shrink();
   }
 
   void _registerDefaultComponents() {
+    _registerUnknownComponent();
     register(
-        'textfield',
+        FormConstants.typeTextField,
         (c, ctrl) => DynamicTextField(
-            component: c as TextFieldComponent, controller: ctrl));
+              component: c as TextFieldComponent,
+              controller: ctrl,
+            ));
     register(
-        'textarea',
+        FormConstants.typeTextArea,
         (c, ctrl) => DynamicTextField(
             component: c as TextAreaComponent,
             controller: ctrl,
-            maxLines: (c as TextAreaComponent).rows));
+            maxLines: (c).rows));
     register(
-        'number',
+        FormConstants.typeNumber,
         (c, ctrl) => DynamicTextField(
             component: c as NumberComponent,
             controller: ctrl,
             keyboardType: TextInputType.number));
     register(
-        'password',
+        FormConstants.typePassword,
         (c, ctrl) => DynamicTextField(
             component: c as PasswordComponent,
             controller: ctrl,
-            obscureText: (c as PasswordComponent)
-                .showToggle)); // Logic for showToggle can be added inside widget
+            obscureText: (c).showToggle));
     register(
-        'currency',
+        FormConstants.typeCurrency,
         (c, ctrl) => DynamicTextField(
             component: c as CurrencyComponent,
             controller: ctrl,
-            keyboardType: TextInputType.numberWithOptions(
-                decimal: true))); // Enhanced Currency widget can be used later
-
+            keyboardType: TextInputType.number));
     register(
-        'checkbox',
+        FormConstants.typeCheckbox,
         (c, ctrl) => DynamicCheckbox(
-            component: c as CheckboxComponent, controller: ctrl));
+              component: c as CheckboxComponent,
+              controller: ctrl,
+            ));
     register(
-        'select',
-        (c, ctrl) =>
-            DynamicSelect(component: c as SelectComponent, controller: ctrl));
+        FormConstants.typeSelect,
+        (c, ctrl) => DynamicSelect(
+              component: c as SelectComponent,
+              controller: ctrl,
+            ));
     register(
-        'radio',
-        (c, ctrl) =>
-            DynamicRadio(component: c as RadioComponent, controller: ctrl));
-
+        FormConstants.typeRadio,
+        (c, ctrl) => DynamicRadio(
+              component: c as RadioComponent,
+              controller: ctrl,
+            ));
     register(
-        'datetime',
+        FormConstants.typeDateTime,
         (c, ctrl) => DynamicDateTime(
-            component: c as DateTimeComponent, controller: ctrl));
+              component: c as DateTimeComponent,
+              controller: ctrl,
+            ));
     register(
-        'file',
-        (c, ctrl) =>
-            DynamicFile(component: c as FileComponent, controller: ctrl));
+        FormConstants.typeFile,
+        (c, ctrl) => DynamicFile(
+              component: c as FileComponent,
+              controller: ctrl,
+            ));
     register(
-        'signature',
+        FormConstants.typeSignature,
         (c, ctrl) => DynamicSignature(
-            component: c as SignatureComponent, controller: ctrl));
-
-    register(
-        'button',
-        (c, ctrl) =>
-            DynamicButton(component: c as ButtonComponent, controller: ctrl));
+              component: c as SignatureComponent,
+              controller: ctrl,
+            ));
   }
 }

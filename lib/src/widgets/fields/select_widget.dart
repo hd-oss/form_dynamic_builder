@@ -3,11 +3,11 @@ import '../../models/components/all_components.dart';
 import '../../controller/form_controller.dart';
 import 'field_label.dart';
 
-class DynamicCheckbox extends StatelessWidget {
-  final CheckboxComponent component;
+class DynamicSelect extends StatelessWidget {
+  final SelectComponent component;
   final FormController controller;
 
-  const DynamicCheckbox({
+  const DynamicSelect({
     super.key,
     required this.component,
     required this.controller,
@@ -20,28 +20,28 @@ class DynamicCheckbox extends StatelessWidget {
       child: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
-          final value =
-              controller.getValue(component.key) ?? component.defaultValue;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: component),
-              InputDecorator(
+              DropdownButtonFormField<String>(
+                focusNode: controller.getFocusNode(component.key),
+                value: controller.getValue(component.key),
                 decoration: InputDecoration(
-                  border: InputBorder.none,
+                  border: const OutlineInputBorder(),
                   errorText: controller.errors[component.key],
                 ),
-                child: CheckboxListTile(
-                  title: Text(component.label),
-                  value: value == true,
-                  onChanged: component.disabled
-                      ? null
-                      : (bool? newValue) {
-                          controller.updateValue(component.key, newValue);
-                        },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                ),
+                items: component.options.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option.value,
+                    child: Text(option.label),
+                  );
+                }).toList(),
+                onChanged: component.disabled
+                    ? null
+                    : (String? newValue) {
+                        controller.updateValue(component.key, newValue);
+                      },
               ),
             ],
           );

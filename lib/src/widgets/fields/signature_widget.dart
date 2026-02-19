@@ -3,11 +3,11 @@ import '../../models/components/all_components.dart';
 import '../../controller/form_controller.dart';
 import 'field_label.dart';
 
-class DynamicCheckbox extends StatelessWidget {
-  final CheckboxComponent component;
+class DynamicSignature extends StatelessWidget {
+  final SignatureComponent component;
   final FormController controller;
 
-  const DynamicCheckbox({
+  const DynamicSignature({
     super.key,
     required this.component,
     required this.controller,
@@ -20,27 +20,25 @@ class DynamicCheckbox extends StatelessWidget {
       child: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
-          final value =
-              controller.getValue(component.key) ?? component.defaultValue;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: component),
               InputDecorator(
                 decoration: InputDecoration(
-                  border: InputBorder.none,
+                  border: const OutlineInputBorder(),
                   errorText: controller.errors[component.key],
                 ),
-                child: CheckboxListTile(
-                  title: Text(component.label),
-                  value: value == true,
-                  onChanged: component.disabled
-                      ? null
-                      : (bool? newValue) {
-                          controller.updateValue(component.key, newValue);
-                        },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
+                child: Focus(
+                  focusNode: controller.getFocusNode(component.key),
+                  child: Container(
+                    height: component.height ?? 150,
+                    width: component.width ?? double.infinity,
+                    color: Colors.grey[200],
+                    alignment: Alignment.center,
+                    child: const Text('Signature Pad Placeholder',
+                        style: TextStyle(color: Colors.grey)),
+                  ),
                 ),
               ),
             ],

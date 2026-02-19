@@ -1,4 +1,7 @@
+import 'validation_rule.dart';
+import 'conditional_config.dart';
 import 'components/all_components.dart';
+import '../utils/form_constants.dart';
 
 abstract class FormComponent {
   final String id;
@@ -6,9 +9,15 @@ abstract class FormComponent {
   final String key;
   final String label;
   final String? placeholder;
+  final String description;
   final bool required;
   final bool disabled;
   final bool hidden;
+  final String textTransform;
+  final String inputMask;
+  final List<ValidationRule> validation;
+  final ConditionalConfig? conditional;
+  final dynamic defaultValue;
 
   FormComponent({
     required this.id,
@@ -16,41 +25,45 @@ abstract class FormComponent {
     required this.key,
     required this.label,
     this.placeholder,
+    this.description = '',
     this.required = false,
     this.disabled = false,
     this.hidden = false,
+    this.textTransform = FormConstants.transformNone,
+    this.inputMask = '',
+    this.validation = const [],
+    this.conditional,
+    this.defaultValue,
   });
 
   factory FormComponent.fromJson(Map<String, dynamic> json) {
     final type = json['type'];
+
     switch (type) {
-      case 'textfield':
+      case FormConstants.typeTextField:
         return TextFieldComponent.fromJson(json);
-      case 'textarea':
+      case FormConstants.typeTextArea:
         return TextAreaComponent.fromJson(json);
-      case 'number':
+      case FormConstants.typeNumber:
         return NumberComponent.fromJson(json);
-      case 'password':
+      case FormConstants.typePassword:
         return PasswordComponent.fromJson(json);
-      case 'checkbox':
+      case FormConstants.typeCheckbox:
         return CheckboxComponent.fromJson(json);
-      case 'select':
+      case FormConstants.typeSelect:
         return SelectComponent.fromJson(json);
-      case 'radio':
+      case FormConstants.typeRadio:
         return RadioComponent.fromJson(json);
-      case 'datetime':
+      case FormConstants.typeDateTime:
         return DateTimeComponent.fromJson(json);
-      case 'currency':
+      case FormConstants.typeCurrency:
         return CurrencyComponent.fromJson(json);
-      case 'file':
+      case FormConstants.typeFile:
         return FileComponent.fromJson(json);
-      case 'signature':
+      case FormConstants.typeSignature:
         return SignatureComponent.fromJson(json);
-      case 'button':
-        return ButtonComponent.fromJson(json);
       default:
-        // Fallback or unknown component
-        return TextFieldComponent.fromJson(json);
+        return UnknownComponent.fromJson(json);
     }
   }
 
@@ -61,9 +74,15 @@ abstract class FormComponent {
       'key': key,
       'label': label,
       if (placeholder != null) 'placeholder': placeholder,
+      'description': description,
       'required': required,
       'disabled': disabled,
       'hidden': hidden,
+      'textTransform': textTransform,
+      'inputMask': inputMask,
+      'validation': validation.map((e) => e.toJson()).toList(),
+      if (conditional != null) 'conditional': conditional!.toJson(),
+      if (defaultValue != null) 'defaultValue': defaultValue,
     };
   }
 }

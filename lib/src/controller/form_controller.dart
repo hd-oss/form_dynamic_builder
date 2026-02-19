@@ -1,65 +1,43 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/form_config.dart';
+import 'mixins/form_state_mixin.dart';
+import 'mixins/form_visibility_mixin.dart';
+import 'mixins/form_validation_mixin.dart';
+import 'mixins/form_navigation_mixin.dart';
 
-class FormController extends ChangeNotifier {
+class FormController extends ChangeNotifier
+    with
+        FormStateMixin,
+        FormVisibilityMixin,
+        FormValidationMixin,
+        FormNavigationMixin {
+  @override
   final FormConfig config;
-  final Map<String, dynamic> _values = {};
-  final Map<String, String> _errors = {};
 
   FormController({required this.config}) {
-    _initializeValues();
+    initializeValues();
   }
 
-  Map<String, dynamic> get values => _values;
-  Map<String, String> get errors => _errors;
-
-  void _initializeValues() {
-    for (var component in config.components) {
-      if (component.type == 'button') continue;
-
-      // Initialize with defaults if available, otherwise null
-      // We can extend this logic based on component types if needed
-      // e.g. Checkbox default value
-    }
-  }
-
-  void updateValue(String key, dynamic value) {
-    _values[key] = value;
-    // Clear error when user types
-    if (_errors.containsKey(key)) {
-      _errors.remove(key);
-    }
-    notifyListeners();
-  }
-
-  dynamic getValue(String key) {
-    return _values[key];
-  }
-
-  bool validate() {
-    _errors.clear();
-    bool isValid = true;
-
-    for (var component in config.components) {
-      if (component.type == 'button') continue;
-
-      if (component.required) {
-        final value = _values[component.key];
-        if (value == null || (value is String && value.isEmpty)) {
-          _errors[component.key] = '${component.label} is required';
-          isValid = false;
-        }
-      }
-    }
-
-    notifyListeners();
-    return isValid;
-  }
-
+  /// Clears all values, errors, and resets navigation.
   void reset() {
-    _values.clear();
-    _errors.clear();
-    _initializeValues();
+    // _values is in StateMixin (private there, but we have initializeValues)
+    // _currentStep is in NavigationMixin
+    // _errors is in ValidationMixin
+
+    // Usage of mixin methods:
+    initializeValues(); // StateMixin (clears and reinits)
+    // Actually StateMixin.initializeValues clears _values.
+
+    // We need to clear errors.
+    errors.clear(); // ValidationMixin exposes errors map.
+
+    resetNavigation(); // NavigationMixin
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    disposeValidationResources(); // ValidationMixin
+    super.dispose();
   }
 }
