@@ -31,7 +31,7 @@ class DynamicCheckbox extends StatelessWidget {
                   border: InputBorder.none,
                   errorText: controller.errors[component.key],
                 ),
-                child: CheckboxListTile(
+                child: CheckboxListTile.adaptive(
                   title: Text(component.label),
                   value: value == true,
                   onChanged: component.disabled

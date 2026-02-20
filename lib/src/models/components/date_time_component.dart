@@ -4,6 +4,13 @@ import 'component_utils.dart';
 
 class DateTimeComponent extends FormComponent {
   final bool enableTime;
+  final bool timeOnly;
+  final int? timeHourStep;
+  final int? timeMinuteStep;
+  final bool timeUse24Hour;
+  final Map<String, dynamic>? setBefore;
+  final Map<String, dynamic>? setAfter;
+  final String? format;
 
   DateTimeComponent({
     required super.id,
@@ -21,6 +28,13 @@ class DateTimeComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     this.enableTime = false,
+    this.timeOnly = false,
+    this.timeHourStep,
+    this.timeMinuteStep,
+    this.timeUse24Hour = false,
+    this.setBefore,
+    this.setAfter,
+    this.format,
   });
 
   factory DateTimeComponent.fromJson(Map<String, dynamic> json) {
@@ -43,6 +57,13 @@ class DateTimeComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       enableTime: json['enableTime'] ?? false,
+      timeOnly: json['timeOnly'] ?? false,
+      timeHourStep: json['timeHourStep'],
+      timeMinuteStep: json['timeMinuteStep'],
+      timeUse24Hour: json['timeUse24Hour'] ?? false,
+      setBefore: json['setBefore'],
+      setAfter: json['setAfter'],
+      format: json['format'],
     );
   }
 
@@ -50,6 +71,13 @@ class DateTimeComponent extends FormComponent {
   Map<String, dynamic> toJson() {
     final json = super.toJson();
     json['enableTime'] = enableTime;
+    json['timeOnly'] = timeOnly;
+    if (timeHourStep != null) json['timeHourStep'] = timeHourStep;
+    if (timeMinuteStep != null) json['timeMinuteStep'] = timeMinuteStep;
+    json['timeUse24Hour'] = timeUse24Hour;
+    if (setBefore != null) json['setBefore'] = setBefore;
+    if (setAfter != null) json['setAfter'] = setAfter;
+    if (format != null) json['format'] = format;
     return json;
   }
 }

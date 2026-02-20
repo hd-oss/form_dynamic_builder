@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/form_config.dart';
 import '../../models/form_component.dart';
+import '../../models/components/all_components.dart';
 import '../../models/validation_rule.dart';
 import '../../utils/form_constants.dart';
 
@@ -93,7 +94,9 @@ mixin FormValidationMixin on ChangeNotifier {
     // Logic duplicated from StateMixin or Config helper.
     // Ideally FormConfig has this helper.
     final comps = [...config.components];
-    for (var s in config.steps) comps.addAll(s.components);
+    for (var s in config.steps) {
+      comps.addAll(s.components);
+    }
     return comps;
   }
 
@@ -159,6 +162,22 @@ mixin FormValidationMixin on ChangeNotifier {
           break;
       }
       if (!isValid) break;
+    }
+
+    if (isValid && component is NumberComponent) {
+      if (stringValue.isNotEmpty) {
+        final numVal = num.tryParse(stringValue);
+        if (numVal != null) {
+          if (component.min != null && numVal < component.min!) {
+            _errors[component.key] = 'Minimum value is ${component.min}';
+            isValid = false;
+          }
+          if (isValid && component.max != null && numVal > component.max!) {
+            _errors[component.key] = 'Maximum value is ${component.max}';
+            isValid = false;
+          }
+        }
+      }
     }
 
     return isValid;

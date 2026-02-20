@@ -11,6 +11,7 @@ class FormConstants {
   static const String typeCurrency = 'currency';
   static const String typeCheckbox = 'checkbox';
   static const String typeSelect = 'select';
+  static const String typeSelectBoxes = 'selectboxes';
   static const String typeRadio = 'radio';
   static const String typeDateTime = 'datetime';
   static const String typeFile = 'file';
@@ -60,4 +61,16 @@ class FormConstants {
   // ── UI Constants ─────────────────────────────────────────────────────
   static const String requiredSuffix = ' *';
   static const String numericFilterPattern = r'[0-9.]';
+
+  // ── Currency Prefixes ────────────────────────────────────────────────
+  static const Map<String, String> currencyPrefixes = {
+    'IDR': 'Rp',
+    'USD': r'$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'SGD': r'S$',
+    'MYR': 'RM',
+    'AUD': r'A$',
+  };
 }

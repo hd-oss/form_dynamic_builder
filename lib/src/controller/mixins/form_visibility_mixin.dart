@@ -67,8 +67,14 @@ mixin FormVisibilityMixin {
 
     switch (condition.operator) {
       case FormConstants.opEquals:
+        if (fieldValue is List) {
+          return fieldValue.contains(condition.value);
+        }
         return fieldValue == condition.value;
       case FormConstants.opNotEquals:
+        if (fieldValue is List) {
+          return !fieldValue.contains(condition.value);
+        }
         return fieldValue != condition.value;
       case FormConstants.opGreaterThan:
         return _compare(fieldValue, condition.value) > 0;

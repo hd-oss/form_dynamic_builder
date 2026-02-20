@@ -52,6 +52,8 @@ abstract class FormComponent {
         return CheckboxComponent.fromJson(json);
       case FormConstants.typeSelect:
         return SelectComponent.fromJson(json);
+      case FormConstants.typeSelectBoxes:
+        return SelectBoxesComponent.fromJson(json);
       case FormConstants.typeRadio:
         return RadioComponent.fromJson(json);
       case FormConstants.typeDateTime:

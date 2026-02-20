@@ -57,9 +57,6 @@ class _FormDynamicBuilderState extends State<FormDynamicBuilder> {
 
   FormConfig get _config => _controller.config;
 
-  bool get _isWizard =>
-      _config.type == FormConstants.formTypeWizard && _config.steps.isNotEmpty;
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -73,7 +70,9 @@ class _FormDynamicBuilderState extends State<FormDynamicBuilder> {
               description: _config.description,
             ),
             const SizedBox(height: 8),
-            ...(_isWizard ? _buildWizard(context) : _buildFlat(context)),
+            ...(_config.type == FormConstants.formTypeWizard
+                ? _buildWizard(context)
+                : _buildFlat(context)),
           ],
         ),
       ),

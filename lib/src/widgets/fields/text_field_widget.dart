@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../controller/form_controller.dart';
 import '../../models/form_component.dart';
+import '../../models/components/all_components.dart';
 import '../../utils/form_constants.dart';
 import 'field_label.dart';
+import 'package:intl/intl.dart';
 
 class DynamicTextField extends StatefulWidget {
   final FormComponent component;
@@ -87,6 +89,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   hintText: widget.component.placeholder,
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
+                  prefixText: _getPrefixText(),
                   suffixIcon: _buildSuffixIcon(),
                 ),
                 obscureText: _obscureText,
@@ -135,6 +138,35 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
       icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off),
       onPressed: () => setState(() => _obscureText = !_obscureText),
     );
+  }
+
+  String? _getPrefixText() {
+    String? currencyCode;
+
+    if (widget.component is NumberComponent) {
+      final numberComponent = widget.component as NumberComponent;
+      if (numberComponent.enableCurrency &&
+          numberComponent.currency != null &&
+          numberComponent.currency!.isNotEmpty) {
+        currencyCode = numberComponent.currency;
+      }
+    } else if (widget.component is CurrencyComponent) {
+      final currencyComponent = widget.component as CurrencyComponent;
+      if (currencyComponent.currency.isNotEmpty) {
+        currencyCode = currencyComponent.currency;
+      }
+    }
+
+    if (currencyCode != null) {
+      try {
+        // Use NumberFormat to get the currency symbol
+        return NumberFormat.simpleCurrency(name: currencyCode).currencySymbol;
+      } catch (e) {
+        // Fallback to the code itself if intl cannot format it
+        return currencyCode;
+      }
+    }
+    return null;
   }
 }
 

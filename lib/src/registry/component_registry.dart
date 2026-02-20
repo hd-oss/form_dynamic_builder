@@ -6,6 +6,7 @@ import '../utils/form_constants.dart';
 import '../widgets/fields/text_field_widget.dart';
 import '../widgets/fields/checkbox_widget.dart';
 import '../widgets/fields/select_widget.dart';
+import '../widgets/fields/select_boxes_widget.dart';
 import '../widgets/fields/radio_widget.dart';
 import '../widgets/fields/date_time_widget.dart';
 import '../widgets/fields/file_widget.dart';
@@ -80,6 +81,12 @@ class ComponentRegistry {
         FormConstants.typeSelect,
         (c, ctrl) => DynamicSelect(
               component: c as SelectComponent,
+              controller: ctrl,
+            ));
+    register(
+        FormConstants.typeSelectBoxes,
+        (c, ctrl) => SelectBoxesWidget(
+              component: c as SelectBoxesComponent,
               controller: ctrl,
             ));
     register(

@@ -1,15 +1,13 @@
 import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
+import 'select_option.dart';
 
-class NumberComponent extends FormComponent {
-  final num? min;
-  final num? max;
-  final bool enableCurrency;
-  final String? currency;
-  final int? decimalPlaces;
+class SelectBoxesComponent extends FormComponent {
+  final List<SelectOption> options;
+  final bool inline;
 
-  NumberComponent({
+  SelectBoxesComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -24,15 +22,12 @@ class NumberComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    this.min,
-    this.max,
-    this.enableCurrency = false,
-    this.currency,
-    this.decimalPlaces,
+    this.options = const [],
+    this.inline = false,
   });
 
-  factory NumberComponent.fromJson(Map<String, dynamic> json) {
-    return NumberComponent(
+  factory SelectBoxesComponent.fromJson(Map<String, dynamic> json) {
+    return SelectBoxesComponent(
       id: json['id'],
       type: json['type'],
       key: json['key'],
@@ -49,23 +44,21 @@ class NumberComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      defaultValue: json['defaultValue'],
-      min: json['min'],
-      max: json['max'],
-      enableCurrency: json['enableCurrency'] ?? false,
-      currency: json['currency'],
-      decimalPlaces: json['decimalPlaces'],
+      defaultValue: json['defaultValue'], // Might be null or list
+      options: (json['options'] as List?)
+              ?.map((e) => SelectOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      inline: json['inline'] ?? false,
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    if (min != null) json['min'] = min;
-    if (max != null) json['max'] = max;
-    json['enableCurrency'] = enableCurrency;
-    if (currency != null) json['currency'] = currency;
-    if (decimalPlaces != null) json['decimalPlaces'] = decimalPlaces;
+    json['options'] = options.map((e) => e.toJson()).toList();
+    json['inline'] = inline;
+    if (defaultValue != null) json['defaultValue'] = defaultValue;
     return json;
   }
 }

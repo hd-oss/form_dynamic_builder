@@ -6,6 +6,7 @@ export 'number_component.dart';
 export 'password_component.dart';
 export 'checkbox_component.dart';
 export 'select_component.dart';
+export 'select_boxes_component.dart';
 export 'radio_component.dart';
 export 'date_time_component.dart';
 export 'currency_component.dart';
