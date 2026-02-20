@@ -1,7 +1,7 @@
+import '../utils/form_constants.dart';
 import 'form_component.dart';
 import 'form_settings.dart';
 import 'form_step.dart';
-import '../utils/form_constants.dart';
 
 class FormConfig {
   final String id;

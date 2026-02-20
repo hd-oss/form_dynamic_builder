@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../models/form_config.dart';
-import 'mixins/form_state_mixin.dart';
-import 'mixins/form_visibility_mixin.dart';
-import 'mixins/form_validation_mixin.dart';
 import 'mixins/form_navigation_mixin.dart';
+import 'mixins/form_state_mixin.dart';
+import 'mixins/form_validation_mixin.dart';
+import 'mixins/form_visibility_mixin.dart';
 
 class FormController extends ChangeNotifier
     with

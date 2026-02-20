@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+
 import '../../controller/form_controller.dart';
-import '../../models/form_component.dart';
 import '../../models/components/all_components.dart';
+import '../../models/form_component.dart';
 import '../../utils/form_constants.dart';
 import 'field_label.dart';
-import 'package:intl/intl.dart';
 
 class DynamicTextField extends StatefulWidget {
   final FormComponent component;

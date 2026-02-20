@@ -1,5 +1,6 @@
-import '../conditional_config.dart';
 import 'package:intl/intl.dart';
+
+import '../conditional_config.dart';
 
 ConditionalConfig? parseConditional(Map<String, dynamic> json) {
   if (json['conditional'] != null) {

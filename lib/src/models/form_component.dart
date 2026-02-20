@@ -1,7 +1,7 @@
-import 'validation_rule.dart';
-import 'conditional_config.dart';
-import 'components/all_components.dart';
 import '../utils/form_constants.dart';
+import 'components/all_components.dart';
+import 'conditional_config.dart';
+import 'validation_rule.dart';
 
 abstract class FormComponent {
   final String id;

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import '../models/form_component.dart';
-import '../models/components/all_components.dart';
+
 import '../controller/form_controller.dart';
+import '../models/components/all_components.dart';
+import '../models/form_component.dart';
 import '../utils/form_constants.dart';
-import '../widgets/fields/text_field_widget.dart';
 import '../widgets/fields/checkbox_widget.dart';
-import '../widgets/fields/select_widget.dart';
-import '../widgets/fields/select_boxes_widget.dart';
-import '../widgets/fields/radio_widget.dart';
 import '../widgets/fields/date_time_widget.dart';
 import '../widgets/fields/file_widget.dart';
+import '../widgets/fields/radio_widget.dart';
+import '../widgets/fields/select_boxes_widget.dart';
+import '../widgets/fields/select_widget.dart';
 import '../widgets/fields/signature_widget.dart';
+import '../widgets/fields/text_field_widget.dart';
 
 typedef WidgetBuilderFunc = Widget Function(
     FormComponent component, FormController controller);

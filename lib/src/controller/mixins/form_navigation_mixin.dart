@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/form_config.dart';
 
 mixin FormNavigationMixin on ChangeNotifier {

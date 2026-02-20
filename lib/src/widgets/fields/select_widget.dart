@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import '../../models/components/all_components.dart';
+import 'package:flutter/material.dart';
+
 import '../../controller/form_controller.dart';
+import '../../models/components/all_components.dart';
 import 'field_label.dart';
 
 class DynamicSelect extends StatelessWidget {

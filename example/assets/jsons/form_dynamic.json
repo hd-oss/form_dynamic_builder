@@ -1,5 +1,5 @@
 {
-  "id": "comp_1771384591912_91da61yae",
+  "id": "comp_1771481690499_r0n590e1x",
   "title": "Untitled Form",
   "description": "",
   "type": "form",
@@ -11,48 +11,15 @@
   },
   "components": [
     {
-      "id": "comp_1771385406835_8ikvdpv30",
-      "type": "textfield",
-      "key": "fullname",
-      "label": "full name",
-      "placeholder": "Enter full name...",
-      "required": true,
-      "description": "toltip",
-      "disabled": false,
-      "hidden": false,
-      "textTransform": "uppercase",
-      "calculation": "",
-      "customClass": "",
-      "validation": [
-        {
-          "type": "required",
-          "message": "This field is required"
-        }
-      ],
-      "inputMask": ""
-    },
-    {
-      "id": "comp_1771385770951_z63ezs2yd",
-      "type": "textfield",
-      "key": "username",
-      "label": "username",
-      "placeholder": "Enter text...",
-      "required": false,
-      "description": "",
-      "disabled": false,
-      "hidden": false,
-      "textTransform": "lowercase",
-      "calculation": "",
-      "customClass": "",
-      "validation": [],
-      "inputMask": ""
-    },
-    {
-      "id": "comp_1771402729155_ad4wxn083",
-      "type": "checkbox",
-      "key": "use_phone_number",
-      "label": "use phone number",
-      "defaultValue": false,
+      "id": "comp_1771484261128_210krbwax",
+      "type": "datetime",
+      "key": "datetime",
+      "label": "Date",
+      "enableTime": false,
+      "timeOnly": false,
+      "timeHourStep": 1,
+      "timeMinuteStep": 5,
+      "timeUse24Hour": true,
       "placeholder": "",
       "description": "",
       "required": false,
@@ -61,139 +28,62 @@
       "textTransform": "none",
       "calculation": "",
       "customClass": "",
-      "validation": []
-    },
-    {
-      "id": "comp_1771384624596_0ikdat72x",
-      "type": "textfield",
-      "key": "email",
-      "label": "email",
-      "placeholder": "Enter email...",
-      "required": true,
-      "description": "",
-      "disabled": false,
-      "hidden": false,
-      "textTransform": "none",
-      "calculation": "",
-      "customClass": "",
-      "validation": [
-        {
-          "type": "required",
-          "message": "This field is required"
-        },
-        {
-          "type": "pattern",
-          "value": "^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$",
-          "message": "Invalid format"
-        }
-      ],
-      "inputMask": "",
-      "conditional": {
-        "show": true,
-        "conditions": [
-          {
-            "when": "use_phone_number",
-            "whenSource": "field",
-            "operator": "eq",
-            "value": false,
-            "valueSource": "manual",
-            "logicWithPrevious": "and"
-          }
-        ]
+      "validation": [],
+      "setBefore": {
+        "type": "static",
+        "value": 7
       }
     },
     {
-      "id": "comp_1771385009343_agyg5tswq",
-      "type": "textfield",
-      "key": "phone_number",
-      "label": "phone number",
-      "placeholder": "Enter phone number...",
-      "required": true,
+      "id": "comp_1771484342127_5birdxq5c",
+      "type": "datetime",
+      "key": "datetime1",
+      "label": "Time",
+      "enableTime": true,
+      "timeOnly": true,
+      "timeHourStep": 1,
+      "timeMinuteStep": 5,
+      "timeUse24Hour": true,
+      "placeholder": "",
       "description": "",
-      "disabled": false,
-      "hidden": false,
-      "textTransform": "none",
-      "calculation": "",
-      "customClass": "",
-      "validation": [
-        {
-          "type": "required",
-          "message": "This field is required"
-        },
-        {
-          "type": "minLength",
-          "value": 13,
-          "message": "Minimum length is 13"
-        },
-        {
-          "type": "maxLength",
-          "value": 14,
-          "message": "Maximum length is 14"
-        }
-      ],
-      "inputMask": "+(99)999 9999 9999",
-      "conditional": {
-        "show": true,
-        "conditions": [
-          {
-            "when": "use_phone_number",
-            "whenSource": "field",
-            "operator": "eq",
-            "value": true,
-            "valueSource": "manual",
-            "logicWithPrevious": "and"
-          }
-        ]
-      }
-    },
-    {
-      "id": "comp_1771385649957_d78l9iedt",
-      "type": "textfield",
-      "key": "npwp",
-      "label": "npwp",
-      "placeholder": "Enter npwp no...",
       "required": false,
-      "description": "",
       "disabled": false,
       "hidden": false,
       "textTransform": "none",
       "calculation": "",
       "customClass": "",
-      "validation": [
-        {
-          "type": "minLength",
-          "value": 15,
-          "message": "Minimum length is 15"
-        },
-        {
-          "type": "maxLength",
-          "value": 15,
-          "message": "Maximum length is 15"
-        }
-      ],
-      "inputMask": "99.99.99.99-999.9999",
-      "conditional": {
-        "show": true,
-        "conditions": [
-          {
-            "when": "email",
-            "whenSource": "field",
-            "operator": "notEmpty",
-            "valueSource": "manual",
-            "logicWithPrevious": "and"
-          },
-          {
-            "when": "phone_number",
-            "whenSource": "field",
-            "operator": "notEmpty",
-            "valueSource": "manual",
-            "logicWithPrevious": "or"
-          }
-        ]
-      },
-      "defaultValue": false
+      "validation": [],
+      "setAfter": {
+        "type": "static",
+        "value": 30
+      }
+    },
+    {
+      "id": "comp_1771484482495_hqnydqoj0",
+      "type": "datetime",
+      "key": "datetime2",
+      "label": "Date Time",
+      "enableTime": true,
+      "timeOnly": false,
+      "timeHourStep": 1,
+      "timeMinuteStep": 5,
+      "timeUse24Hour": true,
+      "placeholder": "",
+      "description": "",
+      "required": false,
+      "disabled": false,
+      "hidden": false,
+      "textTransform": "none",
+      "calculation": "",
+      "customClass": "",
+      "validation": [],
+      "setAfter": {
+        "type": "static",
+        "value": 30
+      }
     }
   ],
+  "steps": [],
   "settings": {
     "submitLabel": "Submit",
     "showReset": false,
@@ -201,6 +91,6 @@
     "confirmBeforeSubmit": false,
     "successMessage": "Form submitted successfully!"
   },
-  "createdAt": "2026-02-18T03:16:31.912Z",
-  "updatedAt": "2026-02-18T09:17:39.639Z"
+  "createdAt": "2026-02-19T06:14:50.499Z",
+  "updatedAt": "2026-02-19T06:36:15.233Z"
 }
