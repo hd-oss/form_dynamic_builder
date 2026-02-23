@@ -1,0 +1,144 @@
+{
+  "info": "This is a generated file; do not edit or check into version control.",
+  "plugins": {
+    "ios": [
+      {
+        "name": "camera_avfoundation",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/camera_avfoundation-0.9.19/",
+        "native_build": true,
+        "dependencies": []
+      },
+      {
+        "name": "file_selector_ios",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_ios-0.5.3+1/",
+        "native_build": true,
+        "dependencies": []
+      }
+    ],
+    "android": [
+      {
+        "name": "camera_android",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/camera_android-0.10.10/",
+        "native_build": true,
+        "dependencies": [
+          "flutter_plugin_android_lifecycle"
+        ]
+      },
+      {
+        "name": "file_selector_android",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_android-0.5.1+12/",
+        "native_build": true,
+        "dependencies": []
+      },
+      {
+        "name": "flutter_plugin_android_lifecycle",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.26/",
+        "native_build": true,
+        "dependencies": []
+      }
+    ],
+    "macos": [
+      {
+        "name": "file_selector_macos",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+2/",
+        "native_build": true,
+        "dependencies": []
+      }
+    ],
+    "linux": [
+      {
+        "name": "file_selector_linux",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_linux-0.9.3+2/",
+        "native_build": true,
+        "dependencies": []
+      }
+    ],
+    "windows": [
+      {
+        "name": "file_selector_windows",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_windows-0.9.3+4/",
+        "native_build": true,
+        "dependencies": []
+      }
+    ],
+    "web": [
+      {
+        "name": "camera_web",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/camera_web-0.3.5/",
+        "dependencies": []
+      },
+      {
+        "name": "file_selector_web",
+        "path": "/Users/hafizh/.pub-cache/hosted/pub.dev/file_selector_web-0.9.4+2/",
+        "dependencies": []
+      }
+    ]
+  },
+  "dependencyGraph": [
+    {
+      "name": "camera",
+      "dependencies": [
+        "camera_android",
+        "camera_avfoundation",
+        "camera_web",
+        "flutter_plugin_android_lifecycle"
+      ]
+    },
+    {
+      "name": "camera_android",
+      "dependencies": [
+        "flutter_plugin_android_lifecycle"
+      ]
+    },
+    {
+      "name": "camera_avfoundation",
+      "dependencies": []
+    },
+    {
+      "name": "camera_web",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector",
+      "dependencies": [
+        "file_selector_android",
+        "file_selector_ios",
+        "file_selector_linux",
+        "file_selector_macos",
+        "file_selector_web",
+        "file_selector_windows"
+      ]
+    },
+    {
+      "name": "file_selector_android",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector_ios",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector_linux",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector_macos",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector_web",
+      "dependencies": []
+    },
+    {
+      "name": "file_selector_windows",
+      "dependencies": []
+    },
+    {
+      "name": "flutter_plugin_android_lifecycle",
+      "dependencies": []
+    }
+  ],
+  "date_created": "2026-02-23 14:09:28.710741",
+  "version": "3.24.5",
+  "swift_package_manager_enabled": false
+}

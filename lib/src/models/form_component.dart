@@ -64,6 +64,10 @@ abstract class FormComponent {
         return FileComponent.fromJson(json);
       case FormConstants.typeSignature:
         return SignatureComponent.fromJson(json);
+      case FormConstants.typeTags:
+        return TagsComponent.fromJson(json);
+      case FormConstants.typeCamera:
+        return CameraComponent.fromJson(json);
       default:
         return UnknownComponent.fromJson(json);
     }

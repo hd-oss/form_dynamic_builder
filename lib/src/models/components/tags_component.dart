@@ -2,13 +2,10 @@ import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
-class FileComponent extends FormComponent {
-  final bool multiple;
-  final String accept;
-  final int maxSize;
-  final String uploadUrl;
+class TagsComponent extends FormComponent {
+  final String storeAs;
 
-  FileComponent({
+  TagsComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -23,14 +20,11 @@ class FileComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    this.multiple = false,
-    this.accept = '',
-    this.maxSize = 0,
-    this.uploadUrl = '',
+    this.storeAs = 'string',
   });
 
-  factory FileComponent.fromJson(Map<String, dynamic> json) {
-    return FileComponent(
+  factory TagsComponent.fromJson(Map<String, dynamic> json) {
+    return TagsComponent(
       id: json['id'],
       type: json['type'],
       key: json['key'],
@@ -48,20 +42,14 @@ class FileComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      multiple: json['multiple'] ?? false,
-      accept: json['accept'] ?? '',
-      maxSize: json['maxSize'] ?? 0,
-      uploadUrl: json['uploadUrl'] ?? '',
+      storeAs: json['storeAs'] ?? 'string',
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    json['multiple'] = multiple;
-    json['accept'] = accept;
-    json['maxSize'] = maxSize;
-    json['uploadUrl'] = uploadUrl;
+    json['storeAs'] = storeAs;
     return json;
   }
 }

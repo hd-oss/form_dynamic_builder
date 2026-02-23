@@ -4,6 +4,7 @@ import '../controller/form_controller.dart';
 import '../models/components/all_components.dart';
 import '../models/form_component.dart';
 import '../utils/form_constants.dart';
+import '../widgets/fields/camera_widget.dart';
 import '../widgets/fields/checkbox_widget.dart';
 import '../widgets/fields/date_time_widget.dart';
 import '../widgets/fields/file_widget.dart';
@@ -11,6 +12,7 @@ import '../widgets/fields/radio_widget.dart';
 import '../widgets/fields/select_boxes_widget.dart';
 import '../widgets/fields/select_widget.dart';
 import '../widgets/fields/signature_widget.dart';
+import '../widgets/fields/tags_field_widget.dart';
 import '../widgets/fields/text_field_widget.dart';
 
 typedef WidgetBuilderFunc = Widget Function(
@@ -112,6 +114,18 @@ class ComponentRegistry {
         FormConstants.typeSignature,
         (c, ctrl) => DynamicSignature(
               component: c as SignatureComponent,
+              controller: ctrl,
+            ));
+    register(
+        FormConstants.typeTags,
+        (c, ctrl) => TagsFieldWidget(
+              component: c as TagsComponent,
+              controller: ctrl,
+            ));
+    register(
+        FormConstants.typeCamera,
+        (c, ctrl) => DynamicCamera(
+              component: c as CameraComponent,
               controller: ctrl,
             ));
   }

@@ -17,6 +17,8 @@ class FormConstants {
   static const String typeFile = 'file';
   static const String typeSignature = 'signature';
   static const String typeButton = 'button';
+  static const String typeTags = 'tags';
+  static const String typeCamera = 'camera';
   static const String typeUnknown = 'unknown';
 
   // ── Form Types ───────────────────────────────────────────────────────

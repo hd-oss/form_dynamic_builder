@@ -2,13 +2,8 @@ import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
-class FileComponent extends FormComponent {
-  final bool multiple;
-  final String accept;
-  final int maxSize;
-  final String uploadUrl;
-
-  FileComponent({
+class CameraComponent extends FormComponent {
+  CameraComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -23,14 +18,10 @@ class FileComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    this.multiple = false,
-    this.accept = '',
-    this.maxSize = 0,
-    this.uploadUrl = '',
   });
 
-  factory FileComponent.fromJson(Map<String, dynamic> json) {
-    return FileComponent(
+  factory CameraComponent.fromJson(Map<String, dynamic> json) {
+    return CameraComponent(
       id: json['id'],
       type: json['type'],
       key: json['key'],
@@ -48,20 +39,6 @@ class FileComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      multiple: json['multiple'] ?? false,
-      accept: json['accept'] ?? '',
-      maxSize: json['maxSize'] ?? 0,
-      uploadUrl: json['uploadUrl'] ?? '',
     );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final json = super.toJson();
-    json['multiple'] = multiple;
-    json['accept'] = accept;
-    json['maxSize'] = maxSize;
-    json['uploadUrl'] = uploadUrl;
-    return json;
   }
 }
