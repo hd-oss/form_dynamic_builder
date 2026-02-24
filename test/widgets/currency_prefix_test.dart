@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
-import 'package:form_dynamic_builder/src/widgets/fields/text_field_widget.dart';
+import 'package:form_dynamic_builder/src/widgets/text_field/text_field_widget.dart';
 
 void main() {
   testWidgets('NumberComponent displays currency symbol from intl (IDR)',

@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
+import '../field_label.dart';
+import 'signature_logic.dart';
 
 class DynamicSignature extends StatefulWidget {
   final SignatureComponent component;
@@ -21,42 +21,18 @@ class DynamicSignature extends StatefulWidget {
 }
 
 class _DynamicSignatureState extends State<DynamicSignature> {
-  late SignatureController _signatureController;
+  late final SignatureLogic logic;
 
   @override
   void initState() {
     super.initState();
-    _signatureController = SignatureController(
-      penColor: Colors.black,
-      penStrokeWidth: 3.0,
-      exportBackgroundColor: Colors.white,
-    );
-
-    _signatureController.onDrawEnd = _saveSignature;
+    logic = SignatureLogic(widget.component, widget.controller);
   }
 
   @override
   void dispose() {
-    _signatureController.dispose();
+    logic.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveSignature() async {
-    if (_signatureController.isEmpty) {
-      widget.controller.updateValue(widget.component.key, null);
-      return;
-    }
-
-    final data = await _signatureController.toPngBytes();
-    if (data != null) {
-      final base64String = base64Encode(data);
-      widget.controller.updateValue(widget.component.key, base64String);
-    }
-  }
-
-  void _clearSignature() {
-    _signatureController.clear();
-    widget.controller.updateValue(widget.component.key, null);
   }
 
   @override
@@ -64,7 +40,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: widget.controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +53,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed:
-                        widget.component.disabled ? null : _clearSignature,
+                        widget.component.disabled ? null : logic.clearSignature,
                     tooltip: 'Clear Signature',
                   ),
                 ),
@@ -90,7 +66,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                   height: widget.component.height ?? 150,
                   width: widget.component.width ?? double.infinity,
                   child: Signature(
-                    controller: _signatureController,
+                    controller: logic.signatureController,
                     height: widget.component.height ?? 150,
                     width: widget.component.width ?? double.infinity,
                     backgroundColor: Colors.white,

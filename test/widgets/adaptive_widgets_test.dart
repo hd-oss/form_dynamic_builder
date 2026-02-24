@@ -5,8 +5,8 @@ import 'package:form_dynamic_builder/src/controller/form_controller.dart';
 import 'package:form_dynamic_builder/src/models/components/all_components.dart';
 import 'package:form_dynamic_builder/src/models/form_config.dart';
 import 'package:form_dynamic_builder/src/models/form_settings.dart';
-import 'package:form_dynamic_builder/src/widgets/fields/date_time_widget.dart';
-import 'package:form_dynamic_builder/src/widgets/fields/select_widget.dart';
+import 'package:form_dynamic_builder/src/widgets/date_time/date_time_widget.dart';
+import 'package:form_dynamic_builder/src/widgets/select/select_widget.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {

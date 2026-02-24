@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
+import '../field_label.dart';
+import 'select_logic.dart';
 
-class DynamicSelect extends StatelessWidget {
+class DynamicSelect extends StatefulWidget {
   final SelectComponent component;
   final FormController controller;
 
@@ -16,16 +17,35 @@ class DynamicSelect extends StatelessWidget {
   });
 
   @override
+  State<DynamicSelect> createState() => _DynamicSelectState();
+}
+
+class _DynamicSelectState extends State<DynamicSelect> {
+  late final SelectLogic logic;
+
+  @override
+  void initState() {
+    super.initState();
+    logic = SelectLogic(widget.component, widget.controller);
+  }
+
+  @override
+  void dispose() {
+    logic.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FieldLabel(component: component),
+              FieldLabel(component: widget.component),
               if (Theme.of(context).platform == TargetPlatform.iOS ||
                   Theme.of(context).platform == TargetPlatform.macOS)
                 _buildCupertinoSelect(context)
@@ -40,42 +60,34 @@ class DynamicSelect extends StatelessWidget {
 
   Widget _buildMaterialSelect(BuildContext context) {
     return DropdownButtonFormField<String>(
-      focusNode: controller.getFocusNode(component.key),
-      value: controller.getValue(component.key),
+      focusNode: widget.controller.getFocusNode(widget.component.key),
+      value: logic.value,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
-        errorText: controller.errors[component.key],
+        errorText: widget.controller.errors[widget.component.key],
       ),
-      items: component.options.map((option) {
+      items: widget.component.options.map((option) {
         return DropdownMenuItem<String>(
           value: option.value,
           child: Text(option.label),
         );
       }).toList(),
-      onChanged: component.disabled
-          ? null
-          : (String? newValue) {
-              controller.updateValue(component.key, newValue);
-            },
+      onChanged: logic.updateValue,
     );
   }
 
   Widget _buildCupertinoSelect(BuildContext context) {
-    final value = controller.getValue(component.key);
-    final selectedOption = component.options.firstWhere(
-      (element) => element.value == value,
-      orElse: () => SelectOption(label: '', value: ''),
-    );
-
     return GestureDetector(
-      onTap: component.disabled ? null : () => _showCupertinoPicker(context),
+      onTap: widget.component.disabled
+          ? null
+          : () => _showCupertinoPicker(context),
       child: AbsorbPointer(
         child: TextFormField(
           readOnly: true,
-          controller: TextEditingController(text: selectedOption.label),
+          controller: TextEditingController(text: logic.selectedOption.label),
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
-            errorText: controller.errors[component.key],
+            errorText: widget.controller.errors[widget.component.key],
             suffixIcon: const Icon(CupertinoIcons.chevron_down, size: 16),
           ),
         ),
@@ -84,12 +96,7 @@ class DynamicSelect extends StatelessWidget {
   }
 
   Future<void> _showCupertinoPicker(BuildContext context) async {
-    final value = controller.getValue(component.key);
-    int initialIndex = component.options.indexWhere((e) => e.value == value);
-    if (initialIndex == -1) initialIndex = 0;
-
-    // We need to track selection in the picker
-    int tempIndex = initialIndex;
+    int tempIndex = logic.initialIndex;
 
     await showCupertinoModalPopup<void>(
       context: context,
@@ -109,9 +116,9 @@ class DynamicSelect extends StatelessWidget {
                   CupertinoButton(
                     child: const Text('Done'),
                     onPressed: () {
-                      if (component.options.isNotEmpty) {
-                        controller.updateValue(
-                            component.key, component.options[tempIndex].value);
+                      if (widget.component.options.isNotEmpty) {
+                        logic.updateValue(
+                            widget.component.options[tempIndex].value);
                       }
                       Navigator.of(context).pop();
                     },
@@ -121,12 +128,12 @@ class DynamicSelect extends StatelessWidget {
               Expanded(
                 child: CupertinoPicker(
                   itemExtent: 32.0,
-                  scrollController:
-                      FixedExtentScrollController(initialItem: initialIndex),
+                  scrollController: FixedExtentScrollController(
+                      initialItem: logic.initialIndex),
                   onSelectedItemChanged: (int index) {
                     tempIndex = index;
                   },
-                  children: component.options.map((option) {
+                  children: widget.component.options.map((option) {
                     return Center(child: Text(option.label));
                   }).toList(),
                 ),

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
+import '../field_label.dart';
+import 'radio_logic.dart';
 
-class DynamicRadio extends StatelessWidget {
+class DynamicRadio extends StatefulWidget {
   final RadioComponent component;
   final FormController controller;
 
@@ -15,37 +16,51 @@ class DynamicRadio extends StatelessWidget {
   });
 
   @override
+  State<DynamicRadio> createState() => _DynamicRadioState();
+}
+
+class _DynamicRadioState extends State<DynamicRadio> {
+  late final RadioLogic logic;
+
+  @override
+  void initState() {
+    super.initState();
+    logic = RadioLogic(widget.component, widget.controller);
+  }
+
+  @override
+  void dispose() {
+    logic.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          final groupValue = controller.getValue(component.key);
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FieldLabel(component: component),
+              FieldLabel(component: widget.component),
               InputDecorator(
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  errorText: controller.errors[component.key],
+                  errorText: widget.controller.errors[widget.component.key],
                 ),
                 child: Focus(
-                  focusNode: controller.getFocusNode(component.key),
+                  focusNode:
+                      widget.controller.getFocusNode(widget.component.key),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: component.options.map((option) {
+                    children: widget.component.options.map((option) {
                       return RadioListTile<String>(
                         title: Text(option.label),
                         value: option.value,
-                        groupValue: groupValue,
-                        onChanged: component.disabled
-                            ? null
-                            : (String? newValue) {
-                                controller.updateValue(component.key, newValue);
-                              },
+                        groupValue: logic.groupValue,
+                        onChanged: logic.onChanged,
                         contentPadding: EdgeInsets.zero,
                       );
                     }).toList(),

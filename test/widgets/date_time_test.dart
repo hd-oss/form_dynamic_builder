@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
-import 'package:form_dynamic_builder/src/widgets/fields/date_time_widget.dart';
+import 'package:form_dynamic_builder/src/widgets/date_time/date_time_widget.dart';
 
 void main() {
   testWidgets('DateTimeWidget renders calendar icon by default',

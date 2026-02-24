@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'paste_json_dialog.dart';
 
@@ -35,55 +36,77 @@ class FormPage extends StatefulWidget {
 class _FormPageState extends State<FormPage> {
   FormConfig? _formConfig;
   FormController? _formController;
-  final Map<String, String> _forms = {
-    'Single Page Form': 'assets/jsons/form_dynamic.json',
-    'Wizard Form': 'assets/jsons/form_wizard.json',
-  };
-  String _selectedForm = 'assets/jsons/form_dynamic.json';
-  bool _initialized = false;
+  bool _isLoading = true;
+
+  static const String _storageKey = 'saved_form_json';
 
   @override
   void initState() {
     super.initState();
+    _loadSavedForm();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      _loadFormConfig();
+  Future<void> _loadSavedForm() async {
+    setState(() => _isLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString(_storageKey);
+
+      if (savedJson != null) {
+        final jsonMap = json.decode(savedJson);
+        _updateForm(jsonMap, save: false);
+      } else {
+        // Fallback to a very basic default form if nothing is saved
+        _updateForm({
+          "type": "single",
+          "title": "Welcome",
+          "components": [
+            {
+              "type": "textfield",
+              "key": "welcome",
+              "label": "Welcome to Dynamic Builder",
+              "placeholder": "Paste your custom JSON to begin!",
+              "disabled": true
+            }
+          ]
+        }, save: false);
+      }
+    } catch (e) {
+      debugPrint('Error loading saved form: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _loadFormConfig() async {
+  Future<void> _updateForm(Map<String, dynamic> jsonMap,
+      {bool save = true}) async {
     try {
-      final jsonString =
-          await DefaultAssetBundle.of(context).loadString(_selectedForm);
-      final jsonMap = json.decode(jsonString);
-
+      final config = FormConfig.fromJson(jsonMap);
       setState(() {
-        _formConfig = FormConfig.fromJson(jsonMap);
+        _formConfig = config;
         _formController = FormController(config: _formConfig!);
       });
-    } catch (e) {
-      debugPrint('Error parsing JSON from assets: $e');
-    }
-  }
 
-  void _loadForm(String formName) {
-    _selectedForm = 'assets/jsons/$formName.json';
-    _loadFormConfig();
+      if (save) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_storageKey, json.encode(jsonMap));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error parsing form: $e')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine if current form is wizard
     final isWizard = _formConfig?.type == 'wizard';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Form Dynamic Builder'),
+        title: const Text('Dynamic Form Builder'),
         actions: [
           IconButton(
             icon: const Icon(Icons.paste),
@@ -94,115 +117,141 @@ class _FormPageState extends State<FormPage> {
                 builder: (context) => const PasteJsonDialog(),
               );
               if (result != null) {
-                try {
-                  setState(() {
-                    _formConfig = FormConfig.fromJson(result);
-                    _formController = FormController(config: _formConfig!);
-                  });
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error parsing form: $e')),
-                    );
-                  }
-                }
+                _updateForm(result);
               }
             },
           ),
-          // Switcher between Single Page and Wizard
-          PopupMenuButton<String>(
-            onSelected: _loadForm,
-            itemBuilder: (BuildContext context) {
-              return _forms.entries.map((entry) {
-                return PopupMenuItem<String>(
-                  value: entry.value
-                      .replaceAll('assets/jsons/', '')
-                      .replaceAll('.json', ''),
-                  child: Text(entry.key),
-                );
-              }).toList();
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Reset Form',
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove(_storageKey);
+              _loadSavedForm();
             },
           ),
         ],
       ),
-      body: _formConfig == null
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: ListenableBuilder(
-                    listenable: _formController!,
-                    builder: (context, child) {
-                      return FormDynamicBuilder(
-                        controller: _formController!,
-                      );
-                    },
+          : _formConfig == null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.note_add_outlined,
+                          size: 64, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text('No form loaded'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final result = await showDialog<Map<String, dynamic>>(
+                            context: context,
+                            builder: (context) => const PasteJsonDialog(),
+                          );
+                          if (result != null) {
+                            _updateForm(result);
+                          }
+                        },
+                        child: const Text('Paste JSON'),
+                      ),
+                    ],
                   ),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: ListenableBuilder(
-                      listenable: _formController!,
-                      builder: (context, child) {
-                        return Row(
-                          children: [
-                            if (isWizard && _formController!.currentStep > 0)
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      _formController!.previousStep();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.grey,
-                                    ),
-                                    child: const Text('Back'),
-                                  ),
-                                ),
-                              ),
-                            if (isWizard &&
-                                _formController!.currentStep <
-                                    (_formConfig?.steps.length ?? 0) - 1)
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _formController!.nextStep();
-                                  },
-                                  child: const Text('Next'),
-                                ),
-                              ),
-                            if (!isWizard ||
-                                (isWizard &&
-                                    _formController!.currentStep ==
-                                        (_formConfig?.steps.length ?? 0) - 1))
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    if (_formController!.validate()) {
-                                      debugPrint(
-                                          "Form Submitted: ${_formController!.visibleValues}");
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              "Form Submitted: ${_formController!.visibleValues}"),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: const Text('Submit'),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListenableBuilder(
+                        listenable: _formController!,
+                        builder: (context, child) {
+                          return FormDynamicBuilder(
+                            controller: _formController!,
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                    SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ListenableBuilder(
+                          listenable: _formController!,
+                          builder: (context, child) {
+                            return Row(
+                              children: [
+                                if (isWizard &&
+                                    _formController!.currentStep > 0)
+                                  Expanded(
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          _formController!.previousStep();
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[200],
+                                          foregroundColor: Colors.black,
+                                        ),
+                                        child: const Text('Back'),
+                                      ),
+                                    ),
+                                  ),
+                                if (isWizard &&
+                                    _formController!.currentStep <
+                                        (_formConfig?.steps.length ?? 0) - 1)
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _formController!.nextStep();
+                                      },
+                                      child: const Text('Next'),
+                                    ),
+                                  ),
+                                if (!isWizard ||
+                                    (isWizard &&
+                                        _formController!.currentStep ==
+                                            (_formConfig?.steps.length ?? 0) -
+                                                1))
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        if (_formController!.validate()) {
+                                          debugPrint(
+                                              "Form Values: ${_formController!.visibleValues}");
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text(
+                                                  'Submitted Values'),
+                                              content: SingleChildScrollView(
+                                                child: Text(const JsonEncoder
+                                                        .withIndent('  ')
+                                                    .convert(_formController!
+                                                        .visibleValues)),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: const Text('Close'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: const Text('Submit'),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 }

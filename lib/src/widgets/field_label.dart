@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/form_component.dart';
-import '../../utils/form_constants.dart';
+import '../models/form_component.dart';
+import '../utils/form_constants.dart';
 
 /// A reusable label widget for all form field components.
 /// Displays the label text with a required indicator and

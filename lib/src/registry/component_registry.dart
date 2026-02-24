@@ -4,17 +4,17 @@ import '../controller/form_controller.dart';
 import '../models/components/all_components.dart';
 import '../models/form_component.dart';
 import '../utils/form_constants.dart';
-import '../widgets/fields/camera_widget.dart';
-import '../widgets/fields/checkbox_widget.dart';
-import '../widgets/fields/date_time_widget.dart';
-import '../widgets/fields/file_widget.dart';
-import '../widgets/fields/radio_widget.dart';
-import '../widgets/fields/select_boxes_widget.dart';
-import '../widgets/fields/select_widget.dart';
-import '../widgets/fields/location_widget.dart';
-import '../widgets/fields/signature_widget.dart';
-import '../widgets/fields/tags_field_widget.dart';
-import '../widgets/fields/text_field_widget.dart';
+import '../widgets/camera/camera_widget.dart';
+import '../widgets/date_time/date_time_widget.dart';
+import '../widgets/checkbox/checkbox_widget.dart';
+import '../widgets/file/file_widget.dart';
+import '../widgets/radio/radio_widget.dart';
+import '../widgets/select_boxes/select_boxes_widget.dart';
+import '../widgets/select/select_widget.dart';
+import '../widgets/location/location_widget.dart';
+import '../widgets/signature/signature_widget.dart';
+import '../widgets/tags_field/tags_field_widget.dart';
+import '../widgets/text_field/text_field_widget.dart';
 
 typedef WidgetBuilderFunc = Widget Function(
     FormComponent component, FormController controller);

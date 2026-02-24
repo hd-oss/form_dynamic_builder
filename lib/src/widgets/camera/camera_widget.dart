@@ -1,169 +1,18 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
-
-// ---------------------------------------------------------------------------
-// Helper: burn metadata text onto the captured photo using dart:ui Canvas
-// ---------------------------------------------------------------------------
-
-Future<String> _burnMetadataOntoPhoto({
-  required String imagePath,
-  required bool showTimestamp,
-  required String timestampFormat,
-  required bool showCoordinates,
-  required bool showDeviceInfo,
-}) async {
-  // ---- Build the annotation lines ----------------------------------------
-  final lines = <String>[];
-  if (showTimestamp) {
-    lines.add(_formatDateTime(DateTime.now(), timestampFormat));
-  }
-  if (showCoordinates) {
-    lines.add(await _getGpsCoordinates());
-  }
-  if (showDeviceInfo) {
-    lines.add('Device: ${Platform.operatingSystem}');
-  }
-
-  if (lines.isEmpty) return imagePath; // nothing to draw
-
-  // ---- Decode the original image ------------------------------------------
-  final bytes = await File(imagePath).readAsBytes();
-  final codec = await ui.instantiateImageCodec(bytes);
-  final frame = await codec.getNextFrame();
-  final original = frame.image;
-
-  final imgW = original.width.toDouble();
-  final imgH = original.height.toDouble();
-
-  // ---- Draw onto a Canvas -------------------------------------------------
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, imgW, imgH));
-
-  // Draw the original photo
-  canvas.drawImage(original, Offset.zero, Paint());
-
-  // We'll place the text block in the bottom-left corner.
-  const double fontSize = 32.0;
-  const double padding = 16.0;
-  const double lineSpacing = 8.0;
-
-  final textStyle = ui.ParagraphStyle(
-    textDirection: TextDirection.ltr,
-  );
-  final textDecoration = ui.TextStyle(
-    color: const Color(0xFFFFFFFF),
-    fontSize: fontSize,
-    fontWeight: FontWeight.bold,
-    shadows: [
-      const ui.Shadow(
-        offset: Offset(1.5, 1.5),
-        blurRadius: 4,
-        color: Color(0xFF000000),
-      ),
-    ],
-  );
-
-  // Measure each line and compute block height
-  final painters = <ui.Paragraph>[];
-  double blockH = padding;
-  double blockW = 0;
-  for (final line in lines) {
-    final pb = ui.ParagraphBuilder(textStyle)
-      ..pushStyle(textDecoration)
-      ..addText(line);
-    final paragraph = pb.build()
-      ..layout(ui.ParagraphConstraints(width: imgW - padding * 2));
-    painters.add(paragraph);
-    blockH += paragraph.height + lineSpacing;
-    if (paragraph.longestLine > blockW) blockW = paragraph.longestLine;
-  }
-  blockH += padding;
-  blockW += padding * 2;
-
-  // Semi-transparent background rectangle
-  final bgPaint = Paint()..color = const Color(0x99000000);
-  final bgRect = Rect.fromLTWH(
-    padding,
-    imgH - blockH - padding,
-    blockW,
-    blockH,
-  );
-  final rrect = RRect.fromRectAndRadius(bgRect, const Radius.circular(8));
-  canvas.drawRRect(rrect, bgPaint);
-
-  // Paint each text line
-  double yOffset = bgRect.top + padding;
-  for (final paragraph in painters) {
-    canvas.drawParagraph(paragraph, Offset(padding * 2, yOffset));
-    yOffset += paragraph.height + lineSpacing;
-  }
-
-  // ---- Encode and save ----------------------------------------------------
-  final picture = recorder.endRecording();
-  final annotated = await picture.toImage(original.width, original.height);
-  final byteData = await annotated.toByteData(format: ui.ImageByteFormat.png);
-
-  final outPath =
-      '${Directory.systemTemp.path}/photo_annotated_${DateTime.now().millisecondsSinceEpoch}.png';
-  await File(outPath).writeAsBytes(byteData!.buffer.asUint8List());
-
-  return outPath;
-}
-
-String _formatDateTime(DateTime dt, String format) {
-  return format
-      .replaceAll('yyyy', dt.year.toString().padLeft(4, '0'))
-      .replaceAll('MM', dt.month.toString().padLeft(2, '0'))
-      .replaceAll('dd', dt.day.toString().padLeft(2, '0'))
-      .replaceAll('HH', dt.hour.toString().padLeft(2, '0'))
-      .replaceAll('mm', dt.minute.toString().padLeft(2, '0'))
-      .replaceAll('ss', dt.second.toString().padLeft(2, '0'))
-      .replaceAll('s', dt.second.toString());
-}
-
-Future<String> _getGpsCoordinates() async {
-  // Check if location service is enabled
-  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) return 'GPS: Service Off';
-
-  // Check / request permission
-  LocationPermission permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) return 'GPS: Denied';
-  }
-  if (permission == LocationPermission.deniedForever) {
-    return 'GPS: Denied Forever';
-  }
-
-  try {
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
-    final lat = position.latitude.toStringAsFixed(6);
-    final lng = position.longitude.toStringAsFixed(6);
-    return 'GPS: $lat, $lng';
-  } catch (e) {
-    return 'GPS: N/A';
-  }
-}
+import '../field_label.dart';
+import 'camera_logic.dart';
 
 // ---------------------------------------------------------------------------
 // DynamicCamera — form field widget
 // ---------------------------------------------------------------------------
 
-class DynamicCamera extends StatelessWidget {
+class DynamicCamera extends StatefulWidget {
   final CameraComponent component;
   final FormController controller;
 
@@ -172,6 +21,25 @@ class DynamicCamera extends StatelessWidget {
     required this.component,
     required this.controller,
   });
+
+  @override
+  State<DynamicCamera> createState() => _DynamicCameraState();
+}
+
+class _DynamicCameraState extends State<DynamicCamera> {
+  late final CameraLogic logic;
+
+  @override
+  void initState() {
+    super.initState();
+    logic = CameraLogic(widget.component, widget.controller);
+  }
+
+  @override
+  void dispose() {
+    logic.dispose();
+    super.dispose();
+  }
 
   Future<void> _openCamera(BuildContext context) async {
     final cameras = await availableCameras();
@@ -186,12 +54,12 @@ class DynamicCamera extends StatelessWidget {
 
     // Select initial camera based on cameraFacing setting
     CameraDescription initialCamera;
-    if (component.cameraFacing == 'front') {
+    if (widget.component.cameraFacing == 'front') {
       initialCamera = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
       );
-    } else if (component.cameraFacing == 'rear') {
+    } else if (widget.component.cameraFacing == 'rear') {
       initialCamera = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
@@ -211,39 +79,25 @@ class DynamicCamera extends StatelessWidget {
         builder: (context) => _CameraScreen(
           cameras: cameras,
           initialCamera: initialCamera,
-          allowSwitch: component.cameraFacing == 'both',
+          allowSwitch: widget.component.cameraFacing == 'both',
         ),
       ),
     );
 
     if (rawPath == null || !context.mounted) return;
 
-    // Burn metadata onto the photo after capture
-    final finalPath = await _burnMetadataOntoPhoto(
-      imagePath: rawPath,
-      showTimestamp: component.showTimestamp,
-      timestampFormat: component.timestampFormat,
-      showCoordinates: component.showCoordinates,
-      showDeviceInfo: component.showDeviceInfo,
-    );
-
-    if (context.mounted) {
-      controller.updateValue(component.key, finalPath);
-    }
-  }
-
-  void _clearPhoto() {
-    controller.updateValue(component.key, null);
+    // Burn metadata onto the photo after capture using logic
+    await logic.processAndSavePhoto(rawPath);
   }
 
   Widget _buildInfoBadge(BuildContext context) {
     final parts = <String>[];
-    if (component.showTimestamp) parts.add('Timestamp');
-    if (component.showCoordinates) parts.add('Coordinates');
-    if (component.showDeviceInfo) parts.add('Device Info');
-    if (component.compressFile) parts.add('Compressed');
+    if (widget.component.showTimestamp) parts.add('Timestamp');
+    if (widget.component.showCoordinates) parts.add('Coordinates');
+    if (widget.component.showDeviceInfo) parts.add('Device Info');
+    if (widget.component.compressFile) parts.add('Compressed');
 
-    final isImmediate = component.uploadTiming == 'immediate';
+    final isImmediate = widget.component.uploadTiming == 'immediate';
 
     return Padding(
       padding: const EdgeInsets.only(top: 6.0),
@@ -293,25 +147,39 @@ class DynamicCamera extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          final value = controller.getValue(component.key) as String?;
+          final value =
+              widget.controller.getValue(widget.component.key) as String?;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FieldLabel(component: component),
+              FieldLabel(component: widget.component),
               InputDecorator(
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  errorText: controller.errors[component.key],
+                  errorText: widget.controller.errors[widget.component.key],
                 ),
                 child: Focus(
-                  focusNode: controller.getFocusNode(component.key),
+                  focusNode:
+                      widget.controller.getFocusNode(widget.component.key),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (value != null && value.isNotEmpty) ...[
+                      if (logic.isProcessing) ...[
+                        Container(
+                          height: 150,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ] else if (value != null && value.isNotEmpty) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: Image.file(
@@ -322,9 +190,9 @@ class DynamicCamera extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        if (!component.disabled)
+                        if (!widget.component.disabled)
                           OutlinedButton.icon(
-                            onPressed: _clearPhoto,
+                            onPressed: logic.clearPhoto,
                             icon: const Icon(Icons.delete),
                             label: const Text('Remove Photo'),
                             style: OutlinedButton.styleFrom(
@@ -343,7 +211,7 @@ class DynamicCamera extends StatelessWidget {
                             child: IconButton(
                               iconSize: 48,
                               icon: const Icon(Icons.camera_alt),
-                              onPressed: component.disabled
+                              onPressed: widget.component.disabled
                                   ? null
                                   : () => _openCamera(context),
                               tooltip: 'Take Photo',

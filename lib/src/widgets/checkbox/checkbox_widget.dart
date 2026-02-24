@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
+import '../field_label.dart';
+import 'checkbox_logic.dart';
 
-class DynamicCheckbox extends StatelessWidget {
+class DynamicCheckbox extends StatefulWidget {
   final CheckboxComponent component;
   final FormController controller;
 
@@ -15,31 +16,44 @@ class DynamicCheckbox extends StatelessWidget {
   });
 
   @override
+  State<DynamicCheckbox> createState() => _DynamicCheckboxState();
+}
+
+class _DynamicCheckboxState extends State<DynamicCheckbox> {
+  late final CheckboxLogic logic;
+
+  @override
+  void initState() {
+    super.initState();
+    logic = CheckboxLogic(widget.component, widget.controller);
+  }
+
+  @override
+  void dispose() {
+    logic.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          final value =
-              controller.getValue(component.key) ?? component.defaultValue;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FieldLabel(component: component),
+              FieldLabel(component: widget.component),
               InputDecorator(
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  errorText: controller.errors[component.key],
+                  errorText: widget.controller.errors[widget.component.key],
                 ),
                 child: CheckboxListTile.adaptive(
-                  title: Text(component.label),
-                  value: value == true,
-                  onChanged: component.disabled
-                      ? null
-                      : (bool? newValue) {
-                          controller.updateValue(component.key, newValue);
-                        },
+                  title: Text(widget.component.label),
+                  value: logic.value,
+                  onChanged: logic.onChanged,
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                 ),

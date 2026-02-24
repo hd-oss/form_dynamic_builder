@@ -1,56 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import 'field_label.dart';
-
-// ---------------------------------------------------------------------------
-// Value helpers
-// ---------------------------------------------------------------------------
-
-Map<String, double>? _parseLocation(dynamic value) {
-  if (value is Map) {
-    final lat = (value['lat'] as num?)?.toDouble();
-    final lng = (value['lng'] as num?)?.toDouble();
-    if (lat != null && lng != null) return {'lat': lat, 'lng': lng};
-  }
-  return null;
-}
-
-String _formatLocation(Map<String, double> loc) {
-  return '${loc['lat']!.toStringAsFixed(6)}, ${loc['lng']!.toStringAsFixed(6)}';
-}
-
-// ---------------------------------------------------------------------------
-// GPS helper (reuses geolocator already in project)
-// ---------------------------------------------------------------------------
-
-Future<Map<String, double>?> _detectCurrentLocation() async {
-  final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) return null;
-
-  LocationPermission permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) return null;
-  }
-  if (permission == LocationPermission.deniedForever) return null;
-
-  try {
-    final pos = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
-    return {'lat': pos.latitude, 'lng': pos.longitude};
-  } catch (_) {
-    return null;
-  }
-}
+import '../field_label.dart';
+import 'location_logic.dart';
 
 // ---------------------------------------------------------------------------
 // DynamicLocation — form field widget
@@ -71,97 +26,35 @@ class DynamicLocation extends StatefulWidget {
 }
 
 class _DynamicLocationState extends State<DynamicLocation> {
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
-
-  Map<String, double>? _lastKnownControllerValue;
-  bool _isLoading = false;
+  late final LocationLogic logic;
 
   @override
   void initState() {
     super.initState();
-    _syncTextFieldsFromController();
-    widget.controller.addListener(_syncTextFieldsFromController);
+    logic = LocationLogic(widget.component, widget.controller);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_syncTextFieldsFromController);
-    _latController.dispose();
-    _lngController.dispose();
+    logic.dispose();
     super.dispose();
   }
 
-  // -------------------------------------------------------------------------
-  // Bi-directional sync
-  // -------------------------------------------------------------------------
-
-  void _syncTextFieldsFromController() {
-    final loc =
-        _parseLocation(widget.controller.getValue(widget.component.key));
-
-    bool changed = false;
-    if (loc == null && _lastKnownControllerValue != null) {
-      changed = true;
-    } else if (loc != null && _lastKnownControllerValue == null) {
-      changed = true;
-    } else if (loc != null && _lastKnownControllerValue != null) {
-      if (loc['lat'] != _lastKnownControllerValue!['lat'] ||
-          loc['lng'] != _lastKnownControllerValue!['lng']) {
-        changed = true;
-      }
-    }
-
-    if (changed ||
-        (_lastKnownControllerValue == null &&
-            loc == null &&
-            (_latController.text.isNotEmpty ||
-                _lngController.text.isNotEmpty))) {
-      _lastKnownControllerValue = loc;
-      if (loc != null) {
-        _latController.text = loc['lat']!.toStringAsFixed(6);
-        _lngController.text = loc['lng']!.toStringAsFixed(6);
-      } else {
-        _latController.text = '';
-        _lngController.text = '';
-      }
-    }
-  }
-
-  void _syncControllerFromTextFields() {
-    final lat = double.tryParse(_latController.text);
-    final lng = double.tryParse(_lngController.text);
-    if (lat != null && lng != null) {
-      final newLoc = {'lat': lat, 'lng': lng};
-      _lastKnownControllerValue = newLoc;
-      widget.controller.updateValue(widget.component.key, newLoc);
-    } else if (_latController.text.isEmpty && _lngController.text.isEmpty) {
-      _lastKnownControllerValue = null;
-      widget.controller.updateValue(widget.component.key, null);
-    }
-  }
-
-  Future<void> _detectLocation(BuildContext context) async {
-    setState(() => _isLoading = true);
-    final loc = await _detectCurrentLocation();
-    if (!context.mounted) return;
-    setState(() => _isLoading = false);
-
-    if (loc == null) {
+  Future<void> _handleDetectLocation(BuildContext context) async {
+    final success = await logic.detectLocation();
+    if (!success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unable to get location. Check permissions.'),
           backgroundColor: Colors.orange,
         ),
       );
-      return;
     }
-    widget.controller.updateValue(widget.component.key, loc);
   }
 
   Future<void> _openMapPicker(BuildContext context) async {
     final current =
-        _parseLocation(widget.controller.getValue(widget.component.key));
+        logic.parseLocation(widget.controller.getValue(widget.component.key));
     final result = await Navigator.push<Map<String, double>?>(
       context,
       MaterialPageRoute(
@@ -169,12 +62,8 @@ class _DynamicLocationState extends State<DynamicLocation> {
       ),
     );
     if (result != null && context.mounted) {
-      widget.controller.updateValue(widget.component.key, result);
+      logic.updateLocation(result);
     }
-  }
-
-  void _clearLocation() {
-    widget.controller.updateValue(widget.component.key, null);
   }
 
   @override
@@ -182,10 +71,10 @@ class _DynamicLocationState extends State<DynamicLocation> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
-        listenable: widget.controller,
+        listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          final loc =
-              _parseLocation(widget.controller.getValue(widget.component.key));
+          final loc = logic
+              .parseLocation(widget.controller.getValue(widget.component.key));
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +97,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                controller: _latController,
+                                controller: logic.latController,
                                 decoration: const InputDecoration(
                                   labelText: 'Latitude',
                                   border: OutlineInputBorder(),
@@ -219,13 +108,13 @@ class _DynamicLocationState extends State<DynamicLocation> {
                                         decimal: true, signed: true),
                                 enabled: !widget.component.disabled,
                                 onChanged: (_) =>
-                                    _syncControllerFromTextFields(),
+                                    logic.syncControllerFromTextFields(),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextFormField(
-                                controller: _lngController,
+                                controller: logic.lngController,
                                 decoration: const InputDecoration(
                                   labelText: 'Longitude',
                                   border: OutlineInputBorder(),
@@ -236,7 +125,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                                         decimal: true, signed: true),
                                 enabled: !widget.component.disabled,
                                 onChanged: (_) =>
-                                    _syncControllerFromTextFields(),
+                                    logic.syncControllerFromTextFields(),
                               ),
                             ),
                           ],
@@ -250,7 +139,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                _formatLocation(loc),
+                                logic.formatLocation(loc),
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
@@ -260,7 +149,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                                 tooltip: 'Clear location',
-                                onPressed: _clearLocation,
+                                onPressed: logic.clearLocation,
                               ),
                           ],
                         ),
@@ -312,10 +201,10 @@ class _DynamicLocationState extends State<DynamicLocation> {
                           spacing: 8,
                           children: [
                             ElevatedButton.icon(
-                              onPressed: _isLoading
+                              onPressed: logic.isLoading
                                   ? null
-                                  : () => _detectLocation(context),
-                              icon: _isLoading
+                                  : () => _handleDetectLocation(context),
+                              icon: logic.isLoading
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
@@ -323,7 +212,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                                           strokeWidth: 2),
                                     )
                                   : const Icon(Icons.my_location, size: 16),
-                              label: Text(_isLoading
+                              label: Text(logic.isLoading
                                   ? 'Detecting...'
                                   : 'Detect Location'),
                             ),
