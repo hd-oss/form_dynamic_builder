@@ -38,6 +38,9 @@ class DynamicFile extends StatelessWidget {
     if (component.multiple) {
       parts.add('Multiple files allowed');
     }
+    if (component.compressFile) {
+      parts.add('Compress: ${component.compressPercentage}%');
+    }
     return parts.join(' · ');
   }
 
@@ -108,6 +111,29 @@ class DynamicFile extends StatelessWidget {
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Widget _buildUploadTimingBadge(BuildContext context) {
+    final isImmediate = component.uploadTiming == 'immediate';
+    return Padding(
+      padding: const EdgeInsets.only(top: 6.0),
+      child: Row(
+        children: [
+          Icon(
+            isImmediate ? Icons.bolt : Icons.send,
+            size: 14,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isImmediate ? 'Uploaded immediately' : 'Uploaded on submit',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -208,6 +234,7 @@ class DynamicFile extends StatelessWidget {
                         ),
                   ),
                 ),
+              _buildUploadTimingBadge(context),
             ],
           );
         },

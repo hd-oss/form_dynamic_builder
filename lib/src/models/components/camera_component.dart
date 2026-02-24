@@ -3,6 +3,27 @@ import '../validation_rule.dart';
 import 'component_utils.dart';
 
 class CameraComponent extends FormComponent {
+  /// Which camera to open: 'front', 'rear', or 'both' (user can switch).
+  final String cameraFacing;
+
+  /// Whether to overlay a timestamp on the captured photo.
+  final bool showTimestamp;
+
+  /// Date/time format string for the timestamp overlay, e.g. 'yyyy-MM-dd HH:mm:s'.
+  final String timestampFormat;
+
+  /// Whether to overlay GPS coordinates on the captured photo.
+  final bool showCoordinates;
+
+  /// Whether to overlay device info (model, OS) on the captured photo.
+  final bool showDeviceInfo;
+
+  /// Whether to compress the captured photo before upload/storing.
+  final bool compressFile;
+
+  /// When to upload: 'immediate' (right after capture) or 'onSubmit'.
+  final String uploadTiming;
+
   CameraComponent({
     required super.id,
     required super.type,
@@ -18,6 +39,13 @@ class CameraComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    this.cameraFacing = 'both',
+    this.showTimestamp = false,
+    this.timestampFormat = 'yyyy-MM-dd HH:mm:ss',
+    this.showCoordinates = false,
+    this.showDeviceInfo = false,
+    this.compressFile = false,
+    this.uploadTiming = 'onSubmit',
   });
 
   factory CameraComponent.fromJson(Map<String, dynamic> json) {
@@ -39,6 +67,26 @@ class CameraComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
+      cameraFacing: json['cameraFacing'] ?? 'both',
+      showTimestamp: json['showTimestamp'] ?? false,
+      timestampFormat: json['timestampFormat'] ?? 'yyyy-MM-dd HH:mm:ss',
+      showCoordinates: json['showCoordinates'] ?? false,
+      showDeviceInfo: json['showDeviceInfo'] ?? false,
+      compressFile: json['compressFile'] ?? false,
+      uploadTiming: json['uploadTiming'] ?? 'onSubmit',
     );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    json['cameraFacing'] = cameraFacing;
+    json['showTimestamp'] = showTimestamp;
+    json['timestampFormat'] = timestampFormat;
+    json['showCoordinates'] = showCoordinates;
+    json['showDeviceInfo'] = showDeviceInfo;
+    json['compressFile'] = compressFile;
+    json['uploadTiming'] = uploadTiming;
+    return json;
   }
 }

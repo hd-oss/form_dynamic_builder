@@ -7,6 +7,9 @@ class FileComponent extends FormComponent {
   final String accept;
   final int maxSize;
   final String uploadUrl;
+  final bool compressFile;
+  final int compressPercentage;
+  final String uploadTiming;
 
   FileComponent({
     required super.id,
@@ -27,6 +30,9 @@ class FileComponent extends FormComponent {
     this.accept = '',
     this.maxSize = 0,
     this.uploadUrl = '',
+    this.compressFile = false,
+    this.compressPercentage = 80,
+    this.uploadTiming = 'onSubmit',
   });
 
   factory FileComponent.fromJson(Map<String, dynamic> json) {
@@ -52,6 +58,9 @@ class FileComponent extends FormComponent {
       accept: json['accept'] ?? '',
       maxSize: json['maxSize'] ?? 0,
       uploadUrl: json['uploadUrl'] ?? '',
+      compressFile: json['compressFile'] ?? false,
+      compressPercentage: json['compressPercentage'] ?? 80,
+      uploadTiming: json['uploadTiming'] ?? 'onSubmit',
     );
   }
 
@@ -62,6 +71,9 @@ class FileComponent extends FormComponent {
     json['accept'] = accept;
     json['maxSize'] = maxSize;
     json['uploadUrl'] = uploadUrl;
+    json['compressFile'] = compressFile;
+    json['compressPercentage'] = compressPercentage;
+    json['uploadTiming'] = uploadTiming;
     return json;
   }
 }

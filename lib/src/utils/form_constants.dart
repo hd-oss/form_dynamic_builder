@@ -19,6 +19,7 @@ class FormConstants {
   static const String typeButton = 'button';
   static const String typeTags = 'tags';
   static const String typeCamera = 'camera';
+  static const String typeLocation = 'location';
   static const String typeUnknown = 'unknown';
 
   // ── Form Types ───────────────────────────────────────────────────────

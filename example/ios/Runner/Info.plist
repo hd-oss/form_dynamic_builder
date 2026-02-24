@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Geolocator: location permission -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
 </dict>
 </plist>

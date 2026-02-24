@@ -2,13 +2,12 @@ import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
-class SignatureComponent extends FormComponent {
-  final double? width;
-  final double? height;
-  final String uploadUrl;
-  final String uploadTiming;
+class LocationComponent extends FormComponent {
+  /// If true, shows an interactive map picker (flutter_map + OpenStreetMap).
+  /// If false, only shows a "Detect Location" GPS button.
+  final bool enableMapPicker;
 
-  SignatureComponent({
+  LocationComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -23,14 +22,11 @@ class SignatureComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    this.width,
-    this.height,
-    this.uploadUrl = '',
-    this.uploadTiming = 'onSubmit',
+    this.enableMapPicker = false,
   });
 
-  factory SignatureComponent.fromJson(Map<String, dynamic> json) {
-    return SignatureComponent(
+  factory LocationComponent.fromJson(Map<String, dynamic> json) {
+    return LocationComponent(
       id: json['id'],
       type: json['type'],
       key: json['key'],
@@ -48,19 +44,14 @@ class SignatureComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      width: (json['width'] as num?)?.toDouble(),
-      height: (json['height'] as num?)?.toDouble(),
-      uploadUrl: json['uploadUrl'] ?? '',
-      uploadTiming: json['uploadTiming'] ?? 'onSubmit',
+      enableMapPicker: json['enableMapPicker'] ?? false,
     );
   }
+
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    if (width != null) json['width'] = width;
-    if (height != null) json['height'] = height;
-    json['uploadUrl'] = uploadUrl;
-    json['uploadTiming'] = uploadTiming;
+    json['enableMapPicker'] = enableMapPicker;
     return json;
   }
 }

@@ -11,6 +11,7 @@ import '../widgets/fields/file_widget.dart';
 import '../widgets/fields/radio_widget.dart';
 import '../widgets/fields/select_boxes_widget.dart';
 import '../widgets/fields/select_widget.dart';
+import '../widgets/fields/location_widget.dart';
 import '../widgets/fields/signature_widget.dart';
 import '../widgets/fields/tags_field_widget.dart';
 import '../widgets/fields/text_field_widget.dart';
@@ -126,6 +127,12 @@ class ComponentRegistry {
         FormConstants.typeCamera,
         (c, ctrl) => DynamicCamera(
               component: c as CameraComponent,
+              controller: ctrl,
+            ));
+    register(
+        FormConstants.typeLocation,
+        (c, ctrl) => DynamicLocation(
+              component: c as LocationComponent,
               controller: ctrl,
             ));
   }

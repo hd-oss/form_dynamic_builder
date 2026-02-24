@@ -68,6 +68,8 @@ abstract class FormComponent {
         return TagsComponent.fromJson(json);
       case FormConstants.typeCamera:
         return CameraComponent.fromJson(json);
+      case FormConstants.typeLocation:
+        return LocationComponent.fromJson(json);
       default:
         return UnknownComponent.fromJson(json);
     }
