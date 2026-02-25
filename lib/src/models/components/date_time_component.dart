@@ -39,10 +39,10 @@ class DateTimeComponent extends FormComponent {
 
   factory DateTimeComponent.fromJson(Map<String, dynamic> json) {
     return DateTimeComponent(
-      id: json['id'],
-      type: json['type'],
-      key: json['key'],
-      label: json['label'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      key: json['key'] ?? '',
+      label: json['label'] ?? '',
       placeholder: json['placeholder'],
       description: json['description'] ?? '',
       required: json['required'] ?? false,

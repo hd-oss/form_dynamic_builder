@@ -37,10 +37,10 @@ class FileComponent extends FormComponent {
 
   factory FileComponent.fromJson(Map<String, dynamic> json) {
     return FileComponent(
-      id: json['id'],
-      type: json['type'],
-      key: json['key'],
-      label: json['label'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      key: json['key'] ?? '',
+      label: json['label'] ?? '',
       placeholder: json['placeholder'],
       description: json['description'] ?? '',
       required: json['required'] ?? false,

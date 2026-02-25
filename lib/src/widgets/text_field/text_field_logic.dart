@@ -15,6 +15,7 @@ class TextFieldLogic extends ChangeNotifier {
 
   late bool obscureText;
   MaskTextInputFormatter? maskFormatter;
+  TextInputFormatter? currencyFormatter;
   late TextEditingController textController;
 
   TextFieldLogic({
@@ -36,8 +37,13 @@ class TextFieldLogic extends ChangeNotifier {
       );
     }
 
+    if (isCurrencyField()) {
+      currencyFormatter = CurrencyInputFormatter();
+    }
+
     final currentValue =
         formController.getValue(component.key)?.toString() ?? '';
+
     if (maskFormatter != null && currentValue.isNotEmpty) {
       maskFormatter!.formatEditUpdate(
         TextEditingValue.empty,
@@ -45,6 +51,12 @@ class TextFieldLogic extends ChangeNotifier {
       );
       textController =
           TextEditingController(text: maskFormatter!.getMaskedText());
+    } else if (currencyFormatter != null && currentValue.isNotEmpty) {
+      final formatted = currencyFormatter!.formatEditUpdate(
+        TextEditingValue.empty,
+        TextEditingValue(text: currentValue),
+      );
+      textController = TextEditingController(text: formatted.text);
     } else {
       textController = TextEditingController(text: currentValue);
     }
@@ -65,8 +77,17 @@ class TextFieldLogic extends ChangeNotifier {
     dynamic valueToStore = value;
     if (component.inputMask.isNotEmpty && maskFormatter != null) {
       valueToStore = maskFormatter!.getUnmaskedText();
+    } else if (currencyFormatter != null) {
+      valueToStore = value.replaceAll(RegExp(r'[^0-9.]'), '');
     }
     formController.updateValue(component.key, valueToStore);
+  }
+
+  bool isCurrencyField() {
+    if (component is NumberComponent) {
+      return (component as NumberComponent).enableCurrency;
+    }
+    return component is CurrencyComponent;
   }
 
   String? getPrefixText() {
@@ -88,9 +109,11 @@ class TextFieldLogic extends ChangeNotifier {
 
     if (currencyCode != null) {
       try {
-        return NumberFormat.simpleCurrency(name: currencyCode).currencySymbol;
+        final symbol =
+            NumberFormat.simpleCurrency(name: currencyCode).currencySymbol;
+        return "$symbol ";
       } catch (e) {
-        return currencyCode;
+        return "$currencyCode ";
       }
     }
     return null;
@@ -116,5 +139,35 @@ class LowerCaseTextFormatter extends TextInputFormatter {
       text: newValue.text.toLowerCase(),
       selection: newValue.selection,
     );
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Remove any non-numeric characters except for the decimal point
+    final String text = newValue.text.replaceAll(RegExp(r'[^0-9.]'), '');
+
+    if (text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    try {
+      final double value = double.parse(text);
+      final formatter = NumberFormat.decimalPattern();
+      final String newText = formatter.format(value);
+
+      return newValue.copyWith(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newText.length),
+      );
+    } catch (e) {
+      return oldValue;
+    }
   }
 }

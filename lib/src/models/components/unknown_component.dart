@@ -22,9 +22,9 @@ class UnknownComponent extends FormComponent {
 
   factory UnknownComponent.fromJson(Map<String, dynamic> json) {
     return UnknownComponent(
-      id: json['id'],
-      type: json['type'],
-      key: json['key'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      key: json['key'] ?? '',
       label: json['label'] ?? '',
       placeholder: json['placeholder'],
       description: json['description'] ?? '',

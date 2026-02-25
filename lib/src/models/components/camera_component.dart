@@ -24,6 +24,9 @@ class CameraComponent extends FormComponent {
   /// When to upload: 'immediate' (right after capture) or 'onSubmit'.
   final String uploadTiming;
 
+  /// The URL to upload the captured photo to.
+  final String uploadUrl;
+
   CameraComponent({
     required super.id,
     required super.type,
@@ -46,14 +49,15 @@ class CameraComponent extends FormComponent {
     this.showDeviceInfo = false,
     this.compressFile = false,
     this.uploadTiming = 'onSubmit',
+    this.uploadUrl = '',
   });
 
   factory CameraComponent.fromJson(Map<String, dynamic> json) {
     return CameraComponent(
-      id: json['id'],
-      type: json['type'],
-      key: json['key'],
-      label: json['label'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      key: json['key'] ?? '',
+      label: json['label'] ?? '',
       placeholder: json['placeholder'],
       description: json['description'] ?? '',
       required: json['required'] ?? false,
@@ -74,6 +78,7 @@ class CameraComponent extends FormComponent {
       showDeviceInfo: json['showDeviceInfo'] ?? false,
       compressFile: json['compressFile'] ?? false,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
+      uploadUrl: json['uploadUrl'] ?? '',
     );
   }
 
@@ -87,6 +92,7 @@ class CameraComponent extends FormComponent {
     json['showDeviceInfo'] = showDeviceInfo;
     json['compressFile'] = compressFile;
     json['uploadTiming'] = uploadTiming;
+    json['uploadUrl'] = uploadUrl;
     return json;
   }
 }

@@ -94,6 +94,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                       widget.component.type == FormConstants.typeCurrency)
                     FilteringTextInputFormatter.allow(
                         RegExp(FormConstants.numericFilterPattern)),
+                  if (logic.currencyFormatter != null) logic.currencyFormatter!,
                 ],
                 onChanged: logic.onChanged,
               ),

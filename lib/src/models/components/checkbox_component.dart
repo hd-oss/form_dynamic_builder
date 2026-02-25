@@ -22,10 +22,10 @@ class CheckboxComponent extends FormComponent {
 
   factory CheckboxComponent.fromJson(Map<String, dynamic> json) {
     return CheckboxComponent(
-      id: json['id'],
-      type: json['type'],
-      key: json['key'],
-      label: json['label'],
+      id: json['id'] ?? '',
+      type: json['type'] ?? '',
+      key: json['key'] ?? '',
+      label: json['label'] ?? '',
       placeholder: json['placeholder'],
       description: json['description'] ?? '',
       required: json['required'] ?? false,

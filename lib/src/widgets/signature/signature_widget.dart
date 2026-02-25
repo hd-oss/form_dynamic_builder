@@ -81,39 +81,6 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              if (widget.component.uploadUrl.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    'Upload to: ${widget.component.uploadUrl}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                  ),
-                ),
-              Padding(
-                padding: const EdgeInsets.only(top: 6.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      widget.component.uploadTiming == 'immediate'
-                          ? Icons.bolt
-                          : Icons.send,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      widget.component.uploadTiming == 'immediate'
-                          ? 'Uploaded immediately'
-                          : 'Uploaded on submit',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           );
         },

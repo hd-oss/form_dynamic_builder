@@ -50,29 +50,6 @@ class _DynamicFileState extends State<DynamicFile> {
     );
   }
 
-  Widget _buildUploadTimingBadge(BuildContext context) {
-    final isImmediate = widget.component.uploadTiming == 'immediate';
-    return Padding(
-      padding: const EdgeInsets.only(top: 6.0),
-      child: Row(
-        children: [
-          Icon(
-            isImmediate ? Icons.bolt : Icons.send,
-            size: 14,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isImmediate ? 'Uploaded immediately' : 'Uploaded on submit',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final helperText = logic.buildHelperText();
@@ -162,17 +139,6 @@ class _DynamicFileState extends State<DynamicFile> {
                   ),
                 ),
               ),
-              if (widget.component.uploadUrl.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    'Upload to: ${widget.component.uploadUrl}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                  ),
-                ),
-              _buildUploadTimingBadge(context),
             ],
           );
         },
