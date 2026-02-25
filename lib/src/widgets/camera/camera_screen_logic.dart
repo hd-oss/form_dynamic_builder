@@ -11,6 +11,7 @@ class CameraScreenLogic extends ChangeNotifier {
   bool isReady = false;
   bool isTaking = false;
   FlashMode flashMode = FlashMode.auto;
+  bool _isDisposed = false;
 
   CameraScreenLogic({
     required this.cameras,
@@ -18,6 +19,13 @@ class CameraScreenLogic extends ChangeNotifier {
   }) {
     activeCamera = initialCamera;
     _initializeCamera(activeCamera);
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    }
   }
 
   Future<void> _initializeCamera(CameraDescription camera) async {
@@ -28,7 +36,9 @@ class CameraScreenLogic extends ChangeNotifier {
 
     try {
       await controller.initialize();
+      if (_isDisposed) return;
       await controller.setFlashMode(flashMode);
+      if (_isDisposed) return;
       isReady = true;
     } catch (e) {
       debugPrint('Error initializing camera: $e');
@@ -38,6 +48,7 @@ class CameraScreenLogic extends ChangeNotifier {
 
   @override
   void dispose() {
+    _isDisposed = true;
     controller.dispose();
     super.dispose();
   }

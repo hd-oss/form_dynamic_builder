@@ -7,6 +7,12 @@ class LocationComponent extends FormComponent {
   /// If false, only shows a "Detect Location" GPS button.
   final bool enableMapPicker;
 
+  /// If true, automatically attempts to detect location on load.
+  final bool defaultCurrentLocation;
+
+  /// If true, auto-zooms to the pinpoint when location is detected.
+  final bool autoZoomLocation;
+
   LocationComponent({
     required super.id,
     required super.type,
@@ -23,6 +29,8 @@ class LocationComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     this.enableMapPicker = false,
+    this.defaultCurrentLocation = false,
+    this.autoZoomLocation = false,
   });
 
   factory LocationComponent.fromJson(Map<String, dynamic> json) {
@@ -45,6 +53,8 @@ class LocationComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       enableMapPicker: json['enableMapPicker'] ?? false,
+      defaultCurrentLocation: json['defaultCurrentLocation'] ?? false,
+      autoZoomLocation: json['autoZoomLocation'] ?? false,
     );
   }
 
@@ -52,6 +62,8 @@ class LocationComponent extends FormComponent {
   Map<String, dynamic> toJson() {
     final json = super.toJson();
     json['enableMapPicker'] = enableMapPicker;
+    json['defaultCurrentLocation'] = defaultCurrentLocation;
+    json['autoZoomLocation'] = autoZoomLocation;
     return json;
   }
 }

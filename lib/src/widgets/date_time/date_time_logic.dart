@@ -15,15 +15,25 @@ class DateTimeLogic extends ChangeNotifier {
     if (value == null) return DateTime.now();
 
     try {
-      return DateTime.parse(value.toString());
-    } catch (_) {
       if (component.format != null && component.format!.isNotEmpty) {
-        try {
-          return DateFormat(component.format!).parse(value.toString());
-        } catch (_) {}
+        return DateFormat(component.format!).parse(value.toString());
       }
-      return DateTime.now();
-    }
+    } catch (_) {}
+
+    try {
+      return DateTime.parse(value.toString());
+    } catch (_) {}
+
+    try {
+      if (component.timeOnly) {
+        final parsedTime = DateFormat('HH:mm').parse(value.toString());
+        final now = DateTime.now();
+        return DateTime(now.year, now.month, now.day, parsedTime.hour,
+            parsedTime.minute, parsedTime.second);
+      }
+    } catch (_) {}
+
+    return DateTime.now();
   }
 
   DateTime? getMinDate() => _parseConstraint(component.setAfter);
@@ -43,14 +53,10 @@ class DateTimeLogic extends ChangeNotifier {
 
   void updateControllerValue(DateTime finalDateTime) {
     String result;
-    if (component.format != null && component.format!.isNotEmpty) {
-      result = DateFormat(component.format!).format(finalDateTime);
-    } else if (component.timeOnly) {
+    if (component.timeOnly) {
       result = DateFormat('HH:mm:ss').format(finalDateTime);
-    } else if (component.enableTime) {
-      result = DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime);
     } else {
-      result = DateFormat('yyyy-MM-dd').format(finalDateTime);
+      result = finalDateTime.toIso8601String();
     }
     formController.updateValue(component.key, result);
   }

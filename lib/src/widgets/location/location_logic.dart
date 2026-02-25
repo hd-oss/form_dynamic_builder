@@ -13,16 +13,31 @@ class LocationLogic extends ChangeNotifier {
 
   Map<String, double>? _lastKnownControllerValue;
   bool _isLoading = false;
+  bool _isDisposed = false;
 
   bool get isLoading => _isLoading;
 
   LocationLogic(this.component, this.formController) {
     _syncTextFieldsFromController();
     formController.addListener(_syncTextFieldsFromController);
+
+    // If enabled and no value set yet, auto-detect location
+    if (component.defaultCurrentLocation &&
+        formController.getValue(component.key) == null) {
+      detectLocation();
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    }
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     formController.removeListener(_syncTextFieldsFromController);
     latController.dispose();
     lngController.dispose();
@@ -91,6 +106,7 @@ class LocationLogic extends ChangeNotifier {
     notifyListeners();
 
     final loc = await LocationService.detectCurrentLocation();
+    if (_isDisposed) return false;
 
     _isLoading = false;
     notifyListeners();

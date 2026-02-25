@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
@@ -43,8 +44,56 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
         listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
           final value = widget.controller.getValue(widget.component.key);
-          final textController =
-              TextEditingController(text: value?.toString() ?? '');
+          String displayText = '';
+          if (value != null) {
+            DateTime? parsedDate;
+            if (value is DateTime) {
+              parsedDate = value;
+            } else {
+              try {
+                if (widget.component.format != null &&
+                    widget.component.format!.isNotEmpty) {
+                  parsedDate = DateFormat(widget.component.format!)
+                      .parse(value.toString());
+                } else {
+                  parsedDate = DateTime.parse(value.toString());
+                }
+              } catch (_) {
+                try {
+                  parsedDate = DateTime.parse(value.toString());
+                } catch (_) {}
+              }
+
+              if (parsedDate == null && widget.component.timeOnly) {
+                try {
+                  final parsedTime =
+                      DateFormat('HH:mm').parse(value.toString());
+                  final now = DateTime.now();
+                  parsedDate = DateTime(now.year, now.month, now.day,
+                      parsedTime.hour, parsedTime.minute, parsedTime.second);
+                } catch (_) {}
+              }
+            }
+
+            if (parsedDate != null) {
+              if (widget.component.format != null &&
+                  widget.component.format!.isNotEmpty) {
+                displayText =
+                    DateFormat(widget.component.format!).format(parsedDate);
+              } else if (widget.component.timeOnly) {
+                displayText = DateFormat('HH:mm:ss').format(parsedDate);
+              } else if (widget.component.enableTime) {
+                displayText =
+                    DateFormat('yyyy-MM-dd HH:mm:ss').format(parsedDate);
+              } else {
+                displayText = DateFormat('yyyy-MM-dd').format(parsedDate);
+              }
+            } else {
+              displayText = value.toString();
+            }
+          }
+
+          final textController = TextEditingController(text: displayText);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +137,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
   Future<void> _handlePicker(BuildContext context) async {
     if (widget.component.disabled) return;
 
-    final initialDate = logic.getInitialDate();
+    final initialDate = _clampedAndAlignedInitialDate();
 
     // Platform check
     if (Theme.of(context).platform == TargetPlatform.iOS ||
@@ -97,6 +146,24 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
     } else {
       await _showMaterialPicker(context, initialDate);
     }
+  }
+
+  DateTime _clampedAndAlignedInitialDate() {
+    var date = logic.getInitialDate();
+    final min = logic.getMinDate();
+    final max = logic.getMaxDate();
+
+    if (min != null && date.isBefore(min)) date = min;
+    if (max != null && date.isAfter(max)) date = max;
+
+    final interval = widget.component.timeMinuteStep ?? 1;
+    if (interval > 1 && interval <= 60 && 60 % interval == 0) {
+      final remainder = date.minute % interval;
+      if (remainder != 0) {
+        date = date.subtract(Duration(minutes: remainder));
+      }
+    }
+    return date;
   }
 
   Future<void> _showCupertinoDatePicker(
@@ -155,6 +222,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                   minimumDate: minDate,
                   maximumDate: maxDate,
                   use24hFormat: widget.component.timeUse24Hour,
+                  minuteInterval: widget.component.timeMinuteStep ?? 1,
                   onDateTimeChanged: (DateTime newDate) {
                     tempPickedDate = newDate;
                   },
@@ -226,6 +294,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
     // Step 2: Pick Time
     DateTime tempTime = pickedDate!;
 
+    if (!context.mounted) return;
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext context) {
@@ -255,6 +324,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                   mode: CupertinoDatePickerMode.time,
                   initialDateTime: tempTime,
                   use24hFormat: widget.component.timeUse24Hour,
+                  minuteInterval: widget.component.timeMinuteStep ?? 1,
                   onDateTimeChanged: (DateTime newDate) {
                     tempTime = newDate;
                   },

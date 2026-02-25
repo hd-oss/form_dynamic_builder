@@ -12,9 +12,24 @@ class CameraLogic extends ChangeNotifier {
   final FormController formController;
 
   bool _isProcessing = false;
+  bool _isDisposed = false;
+
   bool get isProcessing => _isProcessing;
 
   CameraLogic(this.component, this.formController);
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 
   void clearPhoto() {
     formController.updateValue(component.key, null);
@@ -32,6 +47,7 @@ class CameraLogic extends ChangeNotifier {
         showCoordinates: component.showCoordinates,
         showDeviceInfo: component.showDeviceInfo,
       );
+      if (_isDisposed) return;
       formController.updateValue(component.key, finalPath);
     } finally {
       _isProcessing = false;

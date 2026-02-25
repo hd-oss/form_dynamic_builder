@@ -6,6 +6,7 @@ import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
 import 'location_logic.dart';
+import 'map_picker_widget.dart';
 
 // ---------------------------------------------------------------------------
 // DynamicLocation — form field widget
@@ -27,22 +28,31 @@ class DynamicLocation extends StatefulWidget {
 
 class _DynamicLocationState extends State<DynamicLocation> {
   late final LocationLogic logic;
+  late final MapController _miniMapController;
 
   @override
   void initState() {
     super.initState();
     logic = LocationLogic(widget.component, widget.controller);
+    _miniMapController = MapController();
   }
 
   @override
   void dispose() {
     logic.dispose();
+    _miniMapController.dispose();
     super.dispose();
   }
 
   Future<void> _handleDetectLocation(BuildContext context) async {
     final success = await logic.detectLocation();
-    if (!success && context.mounted) {
+    if (success) {
+      final loc =
+          logic.parseLocation(widget.controller.getValue(widget.component.key));
+      if (loc != null && widget.component.autoZoomLocation) {
+        _miniMapController.move(LatLng(loc['lat']!, loc['lng']!), 15);
+      }
+    } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unable to get location. Check permissions.'),
@@ -58,11 +68,17 @@ class _DynamicLocationState extends State<DynamicLocation> {
     final result = await Navigator.push<Map<String, double>?>(
       context,
       MaterialPageRoute(
-        builder: (_) => _MapPickerScreen(initial: current),
+        builder: (_) => MapPickerScreen(
+          initial: current,
+          autoZoom: widget.component.autoZoomLocation,
+        ),
       ),
     );
     if (result != null && context.mounted) {
       logic.updateLocation(result);
+      if (widget.component.autoZoomLocation) {
+        _miniMapController.move(LatLng(result['lat']!, result['lng']!), 15);
+      }
     }
   }
 
@@ -162,6 +178,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                           child: SizedBox(
                             height: 160,
                             child: FlutterMap(
+                              mapController: _miniMapController,
                               options: MapOptions(
                                 initialCenter: LatLng(loc['lat']!, loc['lng']!),
                                 initialZoom: 15,
@@ -237,138 +254,4 @@ class _DynamicLocationState extends State<DynamicLocation> {
       ),
     );
   }
-}
-
-// ---------------------------------------------------------------------------
-// _MapPickerScreen — full-screen interactive map
-// ---------------------------------------------------------------------------
-
-class _MapPickerScreen extends StatefulWidget {
-  final Map<String, double>? initial;
-  const _MapPickerScreen({this.initial});
-
-  @override
-  State<_MapPickerScreen> createState() => _MapPickerScreenState();
-}
-
-class _MapPickerScreenState extends State<_MapPickerScreen> {
-  LatLng? _picked;
-  late final MapController _mapController;
-
-  // Default center: Indonesia
-  static const LatLng _defaultCenter = LatLng(-2.5489, 118.0149);
-
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-    if (widget.initial != null) {
-      _picked = LatLng(widget.initial!['lat']!, widget.initial!['lng']!);
-    }
-  }
-
-  void _onTap(TapPosition _, LatLng point) {
-    setState(() => _picked = point);
-  }
-
-  void _confirm() {
-    if (_picked == null) return;
-    Navigator.pop(context, {
-      'lat': _picked!.latitude,
-      'lng': _picked!.longitude,
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final center = _picked ??
-        widget.initial.let((i) => LatLng(i['lat']!, i['lng']!)) ??
-        _defaultCenter;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pick Location'),
-        actions: [
-          if (_picked != null)
-            TextButton(
-              onPressed: _confirm,
-              child:
-                  const Text('Confirm', style: TextStyle(color: Colors.white)),
-            ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: center,
-              initialZoom: 14,
-              onTap: _onTap,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.form_dynamic_builder',
-              ),
-              if (_picked != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _picked!,
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: Colors.red,
-                        size: 40,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          // Instruction banner
-          Positioned(
-            top: 12,
-            left: 16,
-            right: 16,
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text(
-                  _picked == null
-                      ? 'Tap on the map to select a location'
-                      : 'Selected: ${_picked!.latitude.toStringAsFixed(6)}, '
-                          '${_picked!.longitude.toStringAsFixed(6)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-          // Floating confirm button at bottom
-          if (_picked != null)
-            Positioned(
-              bottom: 24,
-              left: 24,
-              right: 24,
-              child: ElevatedButton.icon(
-                onPressed: _confirm,
-                icon: const Icon(Icons.check),
-                label: const Text('Confirm Location'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-extension _NullableExt<T> on T? {
-  R? let<R>(R Function(T) f) => this != null ? f(this as T) : null;
 }
