@@ -6,8 +6,9 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class CameraLogic extends ChangeNotifier {
+class CameraLogic extends ChangeNotifier with DataSourceMixin {
   final CameraComponent component;
   final FormController formController;
 
@@ -16,7 +17,13 @@ class CameraLogic extends ChangeNotifier {
 
   bool get isProcessing => _isProcessing;
 
-  CameraLogic(this.component, this.formController);
+  CameraLogic(this.component, this.formController) {
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
 
   @override
   void notifyListeners() {
@@ -28,6 +35,7 @@ class CameraLogic extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    disposeDataSource();
     super.dispose();
   }
 

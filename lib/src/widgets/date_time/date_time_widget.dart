@@ -107,26 +107,49 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              TextFormField(
-                focusNode: widget.controller.getFocusNode(widget.component.key),
-                controller: textController,
-                decoration: InputDecoration(
-                  hintText: widget.component.placeholder,
-                  border: const OutlineInputBorder(),
-                  errorText: widget.controller.errors[widget.component.key],
-                  prefixIcon: widget.component.timeOnly
-                      ? const Icon(Icons.access_time)
-                      : const Icon(Icons.calendar_today),
-                  suffixIcon: (widget.component.enableTime &&
-                          !widget.component.timeOnly)
-                      ? const Icon(Icons.access_time)
-                      : null,
+              if (logic.isLoadingDefaultValue)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              else if (logic.defaultValueError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Failed to load data',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 13),
+                  ),
+                )
+              else
+                TextFormField(
+                  focusNode:
+                      widget.controller.getFocusNode(widget.component.key),
+                  controller: textController,
+                  decoration: InputDecoration(
+                    hintText: widget.component.placeholder,
+                    border: const OutlineInputBorder(),
+                    errorText: widget.controller.errors[widget.component.key],
+                    prefixIcon: widget.component.timeOnly
+                        ? const Icon(Icons.access_time)
+                        : const Icon(Icons.calendar_today),
+                    suffixIcon: (widget.component.enableTime &&
+                            !widget.component.timeOnly)
+                        ? const Icon(Icons.access_time)
+                        : null,
+                  ),
+                  readOnly: true,
+                  onTap: widget.component.disabled
+                      ? null
+                      : () => _handlePicker(context),
                 ),
-                readOnly: true,
-                onTap: widget.component.disabled
-                    ? null
-                    : () => _handlePicker(context),
-              ),
             ],
           );
         },

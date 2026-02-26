@@ -21,6 +21,7 @@ class TagsComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.platforms,
     this.storeAs = 'string',
   });
 
@@ -44,6 +45,7 @@ class TagsComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       dataSource: parseDataSource(json),
+      platforms: json['platforms'],
       storeAs: json['storeAs'] ?? 'string',
     );
   }

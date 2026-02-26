@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
 
@@ -42,6 +44,116 @@ class _DynamicSignatureState extends State<DynamicSignature> {
       child: ListenableBuilder(
         listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
+          final value = widget.controller.getValue(widget.component.key);
+          final bool isExternalImage = value != null &&
+              value is String &&
+              value.isNotEmpty &&
+              logic.signatureController.isEmpty;
+
+          Widget buildImageOrCanvas() {
+            if (logic.isLoadingDefaultValue) {
+              return SizedBox(
+                height: widget.component.height ?? 150,
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+
+            if (logic.defaultValueError != null) {
+              return SizedBox(
+                height: widget.component.height ?? 150,
+                child: Center(
+                  child: Text(
+                    'Failed to load data',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (isExternalImage) {
+              final valStr = value.toString();
+              Widget imageWidget;
+              try {
+                if (valStr.startsWith('http://') ||
+                    valStr.startsWith('https://')) {
+                  imageWidget = Image.network(
+                    valStr,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Center(child: Icon(Icons.broken_image)),
+                  );
+                } else if (valStr.contains(',')) {
+                  // handle data:image/png;base64,...
+                  final base64Str = valStr.split(',').last;
+                  imageWidget = Image.memory(
+                    base64Decode(base64Str),
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Center(child: Icon(Icons.broken_image)),
+                  );
+                } else if (RegExp(r'^[A-Za-z0-9+/]+={0,2}$').hasMatch(valStr)) {
+                  imageWidget = Image.memory(
+                    base64Decode(valStr),
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Center(child: Icon(Icons.broken_image)),
+                  );
+                } else {
+                  // Fallback to file or generic error
+                  imageWidget = const Center(child: Icon(Icons.broken_image));
+                }
+              } catch (e) {
+                imageWidget = const Center(child: Icon(Icons.broken_image));
+              }
+
+              return Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                height: widget.component.height ?? 150,
+                width: widget.component.width ?? double.infinity,
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: imageWidget),
+                    if (widget.component.disabled)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+
+            return Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              height: widget.component.height ?? 150,
+              width: widget.component.width ?? double.infinity,
+              child: Signature(
+                controller: logic.signatureController,
+                height: widget.component.height ?? 150,
+                width: widget.component.width ?? double.infinity,
+                backgroundColor: Colors.white,
+              ),
+            );
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,21 +169,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                     tooltip: 'Clear Signature',
                   ),
                 ),
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  height: widget.component.height ?? 150,
-                  width: widget.component.width ?? double.infinity,
-                  child: Signature(
-                    controller: logic.signatureController,
-                    height: widget.component.height ?? 150,
-                    width: widget.component.width ?? double.infinity,
-                    backgroundColor: Colors.white,
-                  ),
-                ),
+                child: buildImageOrCanvas(),
               ),
               if (widget.component.description.isNotEmpty)
                 Padding(

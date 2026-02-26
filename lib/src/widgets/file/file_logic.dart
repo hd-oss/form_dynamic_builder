@@ -3,15 +3,22 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class FileLogic extends ChangeNotifier {
+class FileLogic extends ChangeNotifier with DataSourceMixin {
   final FileComponent component;
   final FormController formController;
 
   bool _isPicking = false;
   bool get isPicking => _isPicking;
 
-  FileLogic(this.component, this.formController);
+  FileLogic(this.component, this.formController) {
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
 
   String formatMaxSize(int bytes) {
     if (bytes <= 0) return '';
@@ -107,5 +114,11 @@ class FileLogic extends ChangeNotifier {
               ? updated
               : updated.first,
     );
+  }
+
+  @override
+  void dispose() {
+    disposeDataSource();
+    super.dispose();
   }
 }

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class TagsFieldLogic extends ChangeNotifier {
+class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
   final TagsComponent component;
   final FormController formController;
 
@@ -13,6 +14,19 @@ class TagsFieldLogic extends ChangeNotifier {
   TagsFieldLogic(this.component, this.formController) {
     textController = TextEditingController();
     _initTags();
+
+    formController.addListener(_onFormControllerChanged);
+
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
+
+  void _onFormControllerChanged() {
+    _initTags();
+    notifyListeners();
   }
 
   void _initTags() {
@@ -57,6 +71,8 @@ class TagsFieldLogic extends ChangeNotifier {
 
   @override
   void dispose() {
+    formController.removeListener(_onFormControllerChanged);
+    disposeDataSource();
     textController.dispose();
     super.dispose();
   }

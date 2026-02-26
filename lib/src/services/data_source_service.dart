@@ -131,14 +131,8 @@ class DataSourceService {
 
       // Extract nested data using dataKey
       if (api.dataKey.isNotEmpty) {
-        final keys = api.dataKey.split('.');
-        for (final key in keys) {
-          if (data is Map<String, dynamic>) {
-            data = data[key];
-          } else {
-            return [];
-          }
-        }
+        data = _extractValue(data, api.dataKey);
+        if (data == null) return [];
       }
 
       if (data is! List) return [];
@@ -156,15 +150,93 @@ class DataSourceService {
     }
   }
 
-  /// Extracts a value from a nested map using dot-separated path.
+  /// Fetches a single default value from a remote API for non-option components.
+  ///
+  /// Uses [DataSourceApi.valuePath] to extract the value from the response.
+  /// If the response root is a **List**, the first item is used.
+  /// If the response root is a **Map** (object), it is used directly.
+  ///
+  /// Returns `null` on error, non-200 status, or missing path.
+  static Future<dynamic> fetchDefaultValue({
+    required DataSourceApi api,
+    required FormController controller,
+    http.Client? httpClient,
+  }) async {
+    final url = interpolateUrl(api.url, controller);
+
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      ...controller.authHeaders,
+    };
+    for (final h in api.headers) {
+      headers.addAll(h);
+    }
+
+    final client = httpClient ?? http.Client();
+    http.Response response;
+    try {
+      final uri = Uri.parse(url);
+      if (api.method.toUpperCase() == 'POST') {
+        response = await client.post(
+          uri,
+          headers: headers,
+          body: api.body.isNotEmpty ? api.body : null,
+        );
+      } else {
+        response = await client.get(uri, headers: headers);
+      }
+    } catch (e) {
+      return null;
+    } finally {
+      if (httpClient == null) client.close();
+    }
+
+    if (response.statusCode != 200) return null;
+
+    try {
+      dynamic data = json.decode(response.body);
+
+      // Navigate nested data using dataKey.
+      if (api.dataKey.isNotEmpty) {
+        data = _extractValue(data, api.dataKey);
+        if (data == null) return null;
+      }
+
+      // Extract value using valuePath.
+      if (api.valuePath.isNotEmpty) {
+        return _extractValue(data, api.valuePath);
+      }
+
+      // No path — return the whole item's string representation.
+      return data?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Extracts a value from a nested map or list using a dot-separated path.
+  /// Supports array indexing syntax like `data[0].title` or `[0].title`.
   static dynamic _extractValue(dynamic item, String path) {
-    if (item == null) return null;
-    final parts = path.split('.');
+    if (item == null || path.isEmpty) return item;
+
+    // Normalize path to use dots for arrays, e.g., "data[0].title" -> "data.0.title"
+    // Also handles paths starting with index: "[0].title" -> "0.title"
+    final normalizedPath = path.replaceAll('[', '.').replaceAll(']', '');
+    final parts = normalizedPath.split('.').where((p) => p.isNotEmpty);
+
     dynamic current = item;
     for (final part in parts) {
       if (current is Map<String, dynamic>) {
         current = current[part];
+      } else if (current is List) {
+        final index = int.tryParse(part);
+        if (index != null && index >= 0 && index < current.length) {
+          current = current[index];
+        } else {
+          return null; // Index out of bounds or invalid format
+        }
       } else {
+        // Path asks to dive deeper, but current is not a Map or List
         return null;
       }
     }

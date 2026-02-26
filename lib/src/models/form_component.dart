@@ -20,6 +20,7 @@ abstract class FormComponent {
   final ConditionalConfig? conditional;
   final dynamic defaultValue;
   final DataSource? dataSource;
+  final Map<String, dynamic>? platforms;
 
   FormComponent({
     required this.id,
@@ -37,6 +38,7 @@ abstract class FormComponent {
     this.conditional,
     this.defaultValue,
     this.dataSource,
+    this.platforms,
   });
 
   factory FormComponent.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ abstract class FormComponent {
       if (conditional != null) 'conditional': conditional!.toJson(),
       if (defaultValue != null) 'defaultValue': defaultValue,
       if (dataSource != null) 'dataSource': dataSource!.toJson(),
+      if (platforms != null) 'platforms': platforms,
     };
   }
 }

@@ -7,8 +7,9 @@ import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../models/form_component.dart';
 import '../../utils/form_constants.dart';
+import '../mixins/data_source_mixin.dart';
 
-class TextFieldLogic extends ChangeNotifier {
+class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
   final FormComponent component;
   final FormController formController;
   final bool initialObscureText;
@@ -60,10 +61,46 @@ class TextFieldLogic extends ChangeNotifier {
     } else {
       textController = TextEditingController(text: currentValue);
     }
+
+    formController.addListener(_onFormControllerChanged);
+
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
+
+  void _onFormControllerChanged() {
+    final newValue = formController.getValue(component.key)?.toString() ?? '';
+
+    if (maskFormatter != null && newValue.isNotEmpty) {
+      final newFormatted = maskFormatter!.formatEditUpdate(
+        TextEditingValue.empty,
+        TextEditingValue(text: newValue),
+      );
+      if (textController.text != newFormatted.text) {
+        textController.text = newFormatted.text;
+      }
+    } else if (currencyFormatter != null && newValue.isNotEmpty) {
+      final newFormatted = currencyFormatter!.formatEditUpdate(
+        TextEditingValue.empty,
+        TextEditingValue(text: newValue),
+      );
+      if (textController.text != newFormatted.text) {
+        textController.text = newFormatted.text;
+      }
+    } else {
+      if (textController.text != newValue) {
+        textController.text = newValue;
+      }
+    }
   }
 
   @override
   void dispose() {
+    formController.removeListener(_onFormControllerChanged);
+    disposeDataSource();
     textController.dispose();
     super.dispose();
   }

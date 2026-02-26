@@ -19,6 +19,7 @@ class TextFieldComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.platforms,
   });
 
   factory TextFieldComponent.fromJson(Map<String, dynamic> json) {
@@ -41,6 +42,7 @@ class TextFieldComponent extends FormComponent {
       conditional: parseConditional(json),
       dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
+      platforms: json['platforms'],
     );
   }
 }

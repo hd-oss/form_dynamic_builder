@@ -196,23 +196,45 @@ class _DynamicCameraState extends State<DynamicCamera> {
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: Focus(
-                  focusNode:
-                      widget.controller.getFocusNode(widget.component.key),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (logic.isProcessing)
-                        _buildProcessingPlaceholder()
-                      else if (value != null && value.isNotEmpty) ...[
-                        _buildPreview(value),
-                        const SizedBox(height: 8),
-                        if (!widget.component.disabled) _buildRemoveButton(),
-                      ] else
-                        _buildTakePhotoButton(),
-                    ],
-                  ),
-                ),
+                child: logic.isLoadingDefaultValue
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                    : logic.defaultValueError != null
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              'Failed to load data',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontSize: 13),
+                            ),
+                          )
+                        : Focus(
+                            focusNode: widget.controller
+                                .getFocusNode(widget.component.key),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (logic.isProcessing)
+                                  _buildProcessingPlaceholder()
+                                else if (value != null && value.isNotEmpty) ...[
+                                  _buildPreview(value),
+                                  const SizedBox(height: 8),
+                                  if (!widget.component.disabled)
+                                    _buildRemoveButton(),
+                                ] else
+                                  _buildTakePhotoButton(),
+                              ],
+                            ),
+                          ),
               ),
             ],
           );

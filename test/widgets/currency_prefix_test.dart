@@ -44,7 +44,7 @@ void main() {
     // Let's verify via widget inspector style (byType TextField).
 
     final textField = tester.widget<TextField>(find.byType(TextField));
-    expect(textField.decoration?.prefixText, 'Rp');
+    expect(textField.decoration?.prefixText, 'Rp ');
   });
 
   testWidgets('NumberComponent displays currency symbol from intl (USD)',
@@ -81,6 +81,6 @@ void main() {
     );
 
     final textField = tester.widget<TextField>(find.byType(TextField));
-    expect(textField.decoration?.prefixText, '\$');
+    expect(textField.decoration?.prefixText, '\$ ');
   });
 }

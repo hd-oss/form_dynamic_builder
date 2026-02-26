@@ -5,8 +5,9 @@ import 'package:signature/signature.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class SignatureLogic extends ChangeNotifier {
+class SignatureLogic extends ChangeNotifier with DataSourceMixin {
   final SignatureComponent component;
   final FormController formController;
 
@@ -19,10 +20,32 @@ class SignatureLogic extends ChangeNotifier {
       exportBackgroundColor: Colors.white,
     );
     signatureController.onDrawEnd = saveSignature;
+
+    formController.addListener(_onFormControllerChanged);
+
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
+
+  void _onFormControllerChanged() {
+    final value = formController.getValue(component.key);
+    if (value == null && signatureController.isNotEmpty) {
+      signatureController.clear();
+      notifyListeners();
+    }
+    // Note: Loading a base64 string back into the canvas is complex and
+    // usually not supported out-of-the-box by the signature package without
+    // creating a custom image provider. For now, we mainly support clearing
+    // the signature if the form is reset or dependency changes.
   }
 
   @override
   void dispose() {
+    formController.removeListener(_onFormControllerChanged);
+    disposeDataSource();
     signatureController.dispose();
     super.dispose();
   }

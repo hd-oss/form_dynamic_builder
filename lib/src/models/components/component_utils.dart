@@ -12,6 +12,14 @@ ConditionalConfig? parseConditional(Map<String, dynamic> json) {
 }
 
 DataSource? parseDataSource(Map<String, dynamic> json) {
+  final platforms = json['platforms'] as Map<String, dynamic>?;
+  if (platforms != null && platforms.containsKey('mobile')) {
+    final mobile = platforms['mobile'] as Map<String, dynamic>?;
+    if (mobile != null && mobile['dataSource'] != null) {
+      return DataSource.fromJson(mobile['dataSource'] as Map<String, dynamic>);
+    }
+  }
+
   if (json['dataSource'] != null) {
     return DataSource.fromJson(json['dataSource'] as Map<String, dynamic>);
   }

@@ -74,70 +74,100 @@ class _DynamicFileState extends State<DynamicFile> {
                   errorText: widget.controller.errors[widget.component.key],
                   helperText: helperText.isNotEmpty ? helperText : null,
                 ),
-                child: Focus(
-                  focusNode:
-                      widget.controller.getFocusNode(widget.component.key),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (selectedFiles.isNotEmpty) ...[
-                        ...selectedFiles.map(
-                          (filePath) {
-                            final fileName =
-                                filePath.split(Platform.pathSeparator).last;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 4.0),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.insert_drive_file, size: 16),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      fileName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                child: logic.isLoadingDefaultValue
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                    : logic.defaultValueError != null
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              'Failed to load data',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontSize: 13),
+                            ),
+                          )
+                        : Focus(
+                            focusNode: widget.controller
+                                .getFocusNode(widget.component.key),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (selectedFiles.isNotEmpty) ...[
+                                  ...selectedFiles.map(
+                                    (filePath) {
+                                      final fileName = filePath
+                                          .split(Platform.pathSeparator)
+                                          .last;
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 4.0),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.insert_drive_file,
+                                                size: 16),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                fileName,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            if (!widget.component.disabled)
+                                              IconButton(
+                                                icon: const Icon(Icons.close,
+                                                    size: 16),
+                                                padding: EdgeInsets.zero,
+                                                constraints:
+                                                    const BoxConstraints(),
+                                                onPressed: () =>
+                                                    logic.removeFile(
+                                                        selectedFiles,
+                                                        filePath),
+                                              ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  if (!widget.component.disabled)
-                                    IconButton(
-                                      icon: const Icon(Icons.close, size: 16),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () => logic.removeFile(
-                                          selectedFiles, filePath),
-                                    ),
+                                  const SizedBox(height: 8),
                                 ],
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      if (!widget.component.disabled &&
-                          (widget.component.multiple || selectedFiles.isEmpty))
-                        ElevatedButton.icon(
-                          onPressed: logic.isPicking
-                              ? null
-                              : () => _handlePickFiles(context, selectedFiles),
-                          icon: logic.isPicking
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.upload_file),
-                          label: Text(logic.isPicking
-                              ? 'Picking...'
-                              : (widget.component.multiple
-                                  ? 'Add File'
-                                  : 'Upload File')),
-                        ),
-                    ],
-                  ),
-                ),
+                                if (!widget.component.disabled &&
+                                    (widget.component.multiple ||
+                                        selectedFiles.isEmpty))
+                                  ElevatedButton.icon(
+                                    onPressed: logic.isPicking
+                                        ? null
+                                        : () => _handlePickFiles(
+                                            context, selectedFiles),
+                                    icon: logic.isPicking
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        : const Icon(Icons.upload_file),
+                                    label: Text(logic.isPicking
+                                        ? 'Picking...'
+                                        : (widget.component.multiple
+                                            ? 'Add File'
+                                            : 'Upload File')),
+                                  ),
+                              ],
+                            ),
+                          ),
               ),
             ],
           );

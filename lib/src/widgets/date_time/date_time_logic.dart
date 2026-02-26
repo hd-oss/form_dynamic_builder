@@ -3,12 +3,19 @@ import 'package:intl/intl.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class DateTimeLogic extends ChangeNotifier {
+class DateTimeLogic extends ChangeNotifier with DataSourceMixin {
   final DateTimeComponent component;
   final FormController formController;
 
-  DateTimeLogic(this.component, this.formController);
+  DateTimeLogic(this.component, this.formController) {
+    initDefaultValue(
+      dataSource: component.dataSource,
+      controller: formController,
+      componentKey: component.key,
+    );
+  }
 
   DateTime getInitialDate() {
     final value = formController.getValue(component.key);
@@ -53,11 +60,21 @@ class DateTimeLogic extends ChangeNotifier {
 
   void updateControllerValue(DateTime finalDateTime) {
     String result;
-    if (component.timeOnly) {
+    if (component.format != null && component.format!.isNotEmpty) {
+      result = DateFormat(component.format!).format(finalDateTime);
+    } else if (component.timeOnly) {
       result = DateFormat('HH:mm:ss').format(finalDateTime);
+    } else if (component.enableTime) {
+      result = DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime);
     } else {
-      result = finalDateTime.toIso8601String();
+      result = DateFormat('yyyy-MM-dd').format(finalDateTime);
     }
     formController.updateValue(component.key, result);
+  }
+
+  @override
+  void dispose() {
+    disposeDataSource();
+    super.dispose();
   }
 }

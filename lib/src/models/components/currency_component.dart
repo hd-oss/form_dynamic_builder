@@ -22,6 +22,7 @@ class CurrencyComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.platforms,
     this.currency = 'IDR',
     this.decimalPlaces = 2,
   });
@@ -46,6 +47,7 @@ class CurrencyComponent extends FormComponent {
       conditional: parseConditional(json),
       dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
+      platforms: json['platforms'],
       currency: json['currency'] ?? 'IDR',
       decimalPlaces: json['decimalPlaces'] ?? 2,
     );
