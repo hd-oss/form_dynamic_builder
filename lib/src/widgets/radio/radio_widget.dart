@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'radio_logic.dart';
 
 class DynamicRadio extends StatefulWidget {
@@ -45,7 +46,7 @@ class _DynamicRadioState extends State<DynamicRadio> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              if (logic.isLoadingOptions)
+              if (logic.dsState == DataSourceState.loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -56,7 +57,7 @@ class _DynamicRadioState extends State<DynamicRadio> {
                     ),
                   ),
                 )
-              else if (logic.dataSourceError != null)
+              else if (logic.dsState == DataSourceState.error)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(

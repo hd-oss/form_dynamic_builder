@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_boxes_component.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'select_boxes_logic.dart';
 
 class SelectBoxesWidget extends StatefulWidget {
@@ -55,7 +56,7 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              if (logic.isLoadingOptions)
+              if (logic.dsState == DataSourceState.loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -66,7 +67,7 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
                     ),
                   ),
                 )
-              else if (logic.dataSourceError != null)
+              else if (logic.dsState == DataSourceState.error)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(

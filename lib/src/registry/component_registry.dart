@@ -4,7 +4,7 @@ import '../controller/form_controller.dart';
 import '../models/components/all_components.dart';
 import '../models/form_component.dart';
 import '../utils/form_constants.dart';
-import '../widgets/camera/camera_fied_widget.dart';
+import '../widgets/camera/camera_field_widget.dart';
 import '../widgets/date_time/date_time_widget.dart';
 import '../widgets/checkbox/checkbox_widget.dart';
 import '../widgets/file/file_widget.dart';

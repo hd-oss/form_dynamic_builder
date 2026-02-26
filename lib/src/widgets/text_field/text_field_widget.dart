@@ -5,6 +5,7 @@ import '../../controller/form_controller.dart';
 import '../../models/form_component.dart';
 import '../../utils/form_constants.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'text_field_logic.dart';
 
 class DynamicTextField extends StatefulWidget {
@@ -66,7 +67,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              if (logic.isLoadingDefaultValue)
+              if (logic.dsState == DataSourceState.loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -77,7 +78,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                     ),
                   ),
                 )
-              else if (logic.defaultValueError != null)
+              else if (logic.dsState == DataSourceState.error)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'select_logic.dart';
 
 class DynamicSelect extends StatefulWidget {
@@ -46,7 +47,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              if (logic.isLoadingOptions)
+              if (logic.dsState == DataSourceState.loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -57,7 +58,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
                     ),
                   ),
                 )
-              else if (logic.dataSourceError != null)
+              else if (logic.dsState == DataSourceState.error)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(

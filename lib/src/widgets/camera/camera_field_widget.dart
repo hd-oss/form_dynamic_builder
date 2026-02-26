@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'camera_field_logic.dart';
 import 'camera_screen_widget.dart';
 
@@ -196,7 +197,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: logic.isLoadingDefaultValue
+                child: logic.dsState == DataSourceState.loading
                     ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
@@ -207,7 +208,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
                           ),
                         ),
                       )
-                    : logic.defaultValueError != null
+                    : logic.dsState == DataSourceState.error
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(

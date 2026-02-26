@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'file_logic.dart';
 
 class DynamicFile extends StatefulWidget {
@@ -74,7 +75,7 @@ class _DynamicFileState extends State<DynamicFile> {
                   errorText: widget.controller.errors[widget.component.key],
                   helperText: helperText.isNotEmpty ? helperText : null,
                 ),
-                child: logic.isLoadingDefaultValue
+                child: logic.dsState == DataSourceState.loading
                     ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
@@ -85,7 +86,7 @@ class _DynamicFileState extends State<DynamicFile> {
                           ),
                         ),
                       )
-                    : logic.defaultValueError != null
+                    : logic.dsState == DataSourceState.error
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(

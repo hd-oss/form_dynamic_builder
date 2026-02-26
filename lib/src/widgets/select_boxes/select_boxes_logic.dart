@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_boxes_component.dart';
 import '../../models/components/select_option.dart';
-import '../mixins/data_source_mixin.dart';
+import '../../services/mixins/data_source_mixin.dart';
 
 class SelectBoxesLogic extends ChangeNotifier with DataSourceMixin {
   final SelectBoxesComponent component;

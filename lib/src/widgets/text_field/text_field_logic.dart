@@ -7,7 +7,7 @@ import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../models/form_component.dart';
 import '../../utils/form_constants.dart';
-import '../mixins/data_source_mixin.dart';
+import '../../services/mixins/data_source_mixin.dart';
 
 class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
   final FormComponent component;

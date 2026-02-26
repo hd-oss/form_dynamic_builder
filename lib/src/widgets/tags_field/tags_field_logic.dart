@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../mixins/data_source_mixin.dart';
+import '../../services/mixins/data_source_mixin.dart';
 
 class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
   final TagsComponent component;

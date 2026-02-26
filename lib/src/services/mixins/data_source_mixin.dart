@@ -3,7 +3,14 @@ import 'package:flutter/foundation.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_option.dart';
 import '../../models/data_source.dart';
-import '../../services/data_source_service.dart';
+import '../data_source_service.dart';
+
+enum DataSourceState {
+  initial,
+  loading,
+  loaded,
+  error,
+}
 
 /// A mixin for Logic classes that need to load data from a dataSource API.
 ///
@@ -20,14 +27,12 @@ import '../../services/data_source_service.dart';
 /// 2. **Dependency-based re-fetch** — Only when `{{componentKey}}` values
 ///    actually change (not on every form event).
 mixin DataSourceMixin on ChangeNotifier {
-  // --- Options mode state ---
-  List<SelectOption> dynamicOptions = [];
-  bool isLoadingOptions = false;
-  String? dataSourceError;
+  // --- Unified DataSource State ---
+  DataSourceState dsState = DataSourceState.initial;
+  String? dsError;
 
-  // --- Default value mode state ---
-  bool isLoadingDefaultValue = false;
-  String? defaultValueError;
+  // --- Options mode specific ---
+  List<SelectOption> dynamicOptions = [];
 
   bool _isDataSourceDisposed = false;
   FormController? _dsController;
@@ -162,8 +167,8 @@ mixin DataSourceMixin on ChangeNotifier {
   Future<void> _fetchOptions(FormController controller) async {
     if (_isDataSourceDisposed || _dsApi == null) return;
 
-    isLoadingOptions = true;
-    dataSourceError = null;
+    dsState = DataSourceState.loading;
+    dsError = null;
     notifyListeners();
 
     try {
@@ -175,11 +180,11 @@ mixin DataSourceMixin on ChangeNotifier {
       if (_isDataSourceDisposed) return;
 
       dynamicOptions = options;
-      isLoadingOptions = false;
+      dsState = DataSourceState.loaded;
     } catch (e) {
       if (_isDataSourceDisposed) return;
-      dataSourceError = e.toString();
-      isLoadingOptions = false;
+      dsError = e.toString();
+      dsState = DataSourceState.error;
     }
 
     notifyListeners();
@@ -190,8 +195,8 @@ mixin DataSourceMixin on ChangeNotifier {
       return;
     }
 
-    isLoadingDefaultValue = true;
-    defaultValueError = null;
+    dsState = DataSourceState.loading;
+    dsError = null;
     notifyListeners();
 
     try {
@@ -205,11 +210,11 @@ mixin DataSourceMixin on ChangeNotifier {
       if (value != null) {
         controller.updateValue(_dsComponentKey!, value);
       }
-      isLoadingDefaultValue = false;
+      dsState = DataSourceState.loaded;
     } catch (e) {
       if (_isDataSourceDisposed) return;
-      defaultValueError = e.toString();
-      isLoadingDefaultValue = false;
+      dsError = e.toString();
+      dsState = DataSourceState.error;
     }
 
     notifyListeners();

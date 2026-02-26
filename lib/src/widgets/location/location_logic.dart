@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../services/location_service.dart';
-import '../mixins/data_source_mixin.dart';
+import '../../services/mixins/data_source_mixin.dart';
 
 class LocationLogic extends ChangeNotifier with DataSourceMixin {
   final LocationComponent component;

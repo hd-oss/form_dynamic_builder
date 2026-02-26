@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'checkbox_logic.dart';
 
 class DynamicCheckbox extends StatefulWidget {
@@ -50,7 +51,7 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
                   border: InputBorder.none,
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: logic.isLoadingDefaultValue
+                child: logic.dsState == DataSourceState.loading
                     ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 12.0),
                         child: Center(
@@ -61,7 +62,7 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
                           ),
                         ),
                       )
-                    : logic.defaultValueError != null
+                    : logic.dsState == DataSourceState.error
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(

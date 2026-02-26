@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'location_logic.dart';
 import 'map_picker_widget.dart';
 
@@ -101,7 +102,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: logic.isLoadingDefaultValue
+                child: logic.dsState == DataSourceState.loading
                     ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
@@ -112,7 +113,7 @@ class _DynamicLocationState extends State<DynamicLocation> {
                           ),
                         ),
                       )
-                    : logic.defaultValueError != null
+                    : logic.dsState == DataSourceState.error
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(

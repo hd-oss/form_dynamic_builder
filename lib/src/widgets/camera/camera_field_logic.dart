@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../mixins/data_source_mixin.dart';
+import '../../services/mixins/data_source_mixin.dart';
 
 class CameraLogic extends ChangeNotifier with DataSourceMixin {
   final CameraComponent component;

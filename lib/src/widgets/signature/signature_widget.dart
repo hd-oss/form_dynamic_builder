@@ -6,6 +6,7 @@ import 'package:signature/signature.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'signature_logic.dart';
 
 class DynamicSignature extends StatefulWidget {
@@ -51,7 +52,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
               logic.signatureController.isEmpty;
 
           Widget buildImageOrCanvas() {
-            if (logic.isLoadingDefaultValue) {
+            if (logic.dsState == DataSourceState.loading) {
               return SizedBox(
                 height: widget.component.height ?? 150,
                 child: const Center(
@@ -64,7 +65,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
               );
             }
 
-            if (logic.defaultValueError != null) {
+            if (logic.dsState == DataSourceState.error) {
               return SizedBox(
                 height: widget.component.height ?? 150,
                 child: Center(

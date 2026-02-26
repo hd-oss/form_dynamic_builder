@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
+import '../../services/mixins/data_source_mixin.dart';
 import 'date_time_logic.dart';
 
 class DynamicDateTime extends StatefulWidget {
@@ -107,7 +108,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              if (logic.isLoadingDefaultValue)
+              if (logic.dsState == DataSourceState.loading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -118,7 +119,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                     ),
                   ),
                 )
-              else if (logic.defaultValueError != null)
+              else if (logic.dsState == DataSourceState.error)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
