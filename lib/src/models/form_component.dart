@@ -1,6 +1,7 @@
 import '../utils/form_constants.dart';
 import 'components/all_components.dart';
 import 'conditional_config.dart';
+import 'data_source.dart';
 import 'validation_rule.dart';
 
 abstract class FormComponent {
@@ -18,6 +19,7 @@ abstract class FormComponent {
   final List<ValidationRule> validation;
   final ConditionalConfig? conditional;
   final dynamic defaultValue;
+  final DataSource? dataSource;
 
   FormComponent({
     required this.id,
@@ -34,6 +36,7 @@ abstract class FormComponent {
     this.validation = const [],
     this.conditional,
     this.defaultValue,
+    this.dataSource,
   });
 
   factory FormComponent.fromJson(Map<String, dynamic> json) {
@@ -91,6 +94,7 @@ abstract class FormComponent {
       'validation': validation.map((e) => e.toJson()).toList(),
       if (conditional != null) 'conditional': conditional!.toJson(),
       if (defaultValue != null) 'defaultValue': defaultValue,
+      if (dataSource != null) 'dataSource': dataSource!.toJson(),
     };
   }
 }

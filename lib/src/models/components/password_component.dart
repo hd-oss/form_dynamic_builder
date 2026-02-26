@@ -20,6 +20,7 @@ class PasswordComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.showToggle = true,
   });
 
@@ -41,6 +42,7 @@ class PasswordComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       showToggle: json['showToggle'] ?? true,
     );

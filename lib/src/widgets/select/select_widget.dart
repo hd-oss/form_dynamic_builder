@@ -46,7 +46,28 @@ class _DynamicSelectState extends State<DynamicSelect> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              if (Theme.of(context).platform == TargetPlatform.iOS ||
+              if (logic.isLoadingOptions)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              else if (logic.dataSourceError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Failed to load options',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 13),
+                  ),
+                )
+              else if (Theme.of(context).platform == TargetPlatform.iOS ||
                   Theme.of(context).platform == TargetPlatform.macOS)
                 _buildCupertinoSelect(context)
               else
@@ -66,7 +87,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
         border: const OutlineInputBorder(),
         errorText: widget.controller.errors[widget.component.key],
       ),
-      items: widget.component.options.map((option) {
+      items: logic.allOptions.map((option) {
         return DropdownMenuItem<String>(
           value: option.value,
           child: Text(option.label),
@@ -116,9 +137,8 @@ class _DynamicSelectState extends State<DynamicSelect> {
                   CupertinoButton(
                     child: const Text('Done'),
                     onPressed: () {
-                      if (widget.component.options.isNotEmpty) {
-                        logic.updateValue(
-                            widget.component.options[tempIndex].value);
+                      if (logic.allOptions.isNotEmpty) {
+                        logic.updateValue(logic.allOptions[tempIndex].value);
                       }
                       Navigator.of(context).pop();
                     },
@@ -133,7 +153,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
                   onSelectedItemChanged: (int index) {
                     tempIndex = index;
                   },
-                  children: widget.component.options.map((option) {
+                  children: logic.allOptions.map((option) {
                     return Center(child: Text(option.label));
                   }).toList(),
                 ),

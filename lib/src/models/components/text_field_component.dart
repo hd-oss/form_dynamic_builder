@@ -18,6 +18,7 @@ class TextFieldComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
   });
 
   factory TextFieldComponent.fromJson(Map<String, dynamic> json) {
@@ -38,6 +39,7 @@ class TextFieldComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
     );
   }

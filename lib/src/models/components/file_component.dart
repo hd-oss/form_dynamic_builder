@@ -26,6 +26,7 @@ class FileComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.multiple = false,
     this.accept = '',
     this.maxSize = 0,
@@ -53,6 +54,7 @@ class FileComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       multiple: json['multiple'] ?? false,
       accept: json['accept'] ?? '',

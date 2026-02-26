@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class SelectLogic extends ChangeNotifier {
+class SelectLogic extends ChangeNotifier with DataSourceMixin {
   final SelectComponent component;
   final FormController formController;
 
-  SelectLogic(this.component, this.formController);
+  SelectLogic(this.component, this.formController) {
+    initDataSource(
+      dataSource: component.dataSource,
+      controller: formController,
+    );
+  }
 
   String? get value => formController.getValue(component.key) as String?;
 
@@ -17,14 +23,28 @@ class SelectLogic extends ChangeNotifier {
     }
   }
 
-  SelectOption get selectedOption => component.options.firstWhere(
+  /// Returns dynamic options if dataSource is API, otherwise static options.
+  List<SelectOption> get allOptions {
+    if (component.dataSource != null && component.dataSource!.isApi) {
+      return dynamicOptions;
+    }
+    return component.options;
+  }
+
+  SelectOption get selectedOption => allOptions.firstWhere(
         (element) => element.value == value,
         orElse: () => SelectOption(label: '', value: ''),
       );
 
   int get initialIndex {
-    int index = component.options.indexWhere((e) => e.value == value);
+    int index = allOptions.indexWhere((e) => e.value == value);
     if (index == -1) index = 0;
     return index;
+  }
+
+  @override
+  void dispose() {
+    disposeDataSource();
+    super.dispose();
   }
 }

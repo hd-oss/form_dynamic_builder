@@ -15,7 +15,12 @@ class FormController extends ChangeNotifier
   @override
   final FormConfig config;
 
-  FormController({required this.config}) {
+  final Map<String, String> authHeaders;
+
+  FormController({
+    required this.config,
+    this.authHeaders = const {},
+  }) {
     initializeValues();
   }
 

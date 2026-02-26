@@ -18,6 +18,7 @@ class UnknownComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
   });
 
   factory UnknownComponent.fromJson(Map<String, dynamic> json) {
@@ -38,6 +39,7 @@ class UnknownComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
     );
   }

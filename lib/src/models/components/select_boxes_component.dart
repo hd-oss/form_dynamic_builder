@@ -22,6 +22,7 @@ class SelectBoxesComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.options = const [],
     this.inline = false,
   });
@@ -45,6 +46,7 @@ class SelectBoxesComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'], // Might be null or list
+      dataSource: parseDataSource(json),
       options: (json['options'] as List?)
               ?.map((e) => SelectOption.fromJson(e as Map<String, dynamic>))
               .toList() ??

@@ -21,6 +21,7 @@ class CurrencyComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.currency = 'IDR',
     this.decimalPlaces = 2,
   });
@@ -43,6 +44,7 @@ class CurrencyComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       currency: json['currency'] ?? 'IDR',
       decimalPlaces: json['decimalPlaces'] ?? 2,

@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../mixins/data_source_mixin.dart';
 
-class RadioLogic extends ChangeNotifier {
+class RadioLogic extends ChangeNotifier with DataSourceMixin {
   final RadioComponent component;
   final FormController formController;
 
-  RadioLogic(this.component, this.formController);
+  RadioLogic(this.component, this.formController) {
+    initDataSource(
+      dataSource: component.dataSource,
+      controller: formController,
+    );
+  }
 
   String? get groupValue => formController.getValue(component.key) as String?;
 
@@ -15,5 +21,19 @@ class RadioLogic extends ChangeNotifier {
     if (!component.disabled) {
       formController.updateValue(component.key, newValue);
     }
+  }
+
+  /// Returns dynamic options if dataSource is API, otherwise static options.
+  List<SelectOption> get allOptions {
+    if (component.dataSource != null && component.dataSource!.isApi) {
+      return dynamicOptions;
+    }
+    return component.options;
+  }
+
+  @override
+  void dispose() {
+    disposeDataSource();
+    super.dispose();
   }
 }

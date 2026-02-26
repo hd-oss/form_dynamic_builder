@@ -10,6 +10,7 @@ class FormConfig {
   final List<FormComponent> components;
   final List<FormStep> steps;
   final FormSettings settings;
+  final Map<String, dynamic>? dsForm;
 
   final String type;
   final String? createdAt;
@@ -23,6 +24,7 @@ class FormConfig {
     required this.components,
     this.steps = const [],
     required this.settings,
+    this.dsForm,
     this.createdAt,
     this.updatedAt,
   });
@@ -52,6 +54,7 @@ class FormConfig {
       settings: json['settings'] != null
           ? FormSettings.fromJson(Map<String, dynamic>.from(json['settings']))
           : FormSettings(),
+      dsForm: json['ds_form'] as Map<String, dynamic>?,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -66,6 +69,7 @@ class FormConfig {
       'components': components.map((e) => e.toJson()).toList(),
       'steps': steps.map((e) => e.toJson()).toList(),
       'settings': settings.toJson(),
+      if (dsForm != null) 'ds_form': dsForm,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };

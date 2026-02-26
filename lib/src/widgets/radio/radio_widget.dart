@@ -45,28 +45,50 @@ class _DynamicRadioState extends State<DynamicRadio> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              InputDecorator(
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  errorText: widget.controller.errors[widget.component.key],
-                ),
-                child: Focus(
-                  focusNode:
-                      widget.controller.getFocusNode(widget.component.key),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: widget.component.options.map((option) {
-                      return RadioListTile<String>(
-                        title: Text(option.label),
-                        value: option.value,
-                        groupValue: logic.groupValue,
-                        onChanged: logic.onChanged,
-                        contentPadding: EdgeInsets.zero,
-                      );
-                    }).toList(),
+              if (logic.isLoadingOptions)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              else if (logic.dataSourceError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Failed to load options',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 13),
+                  ),
+                )
+              else
+                InputDecorator(
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    errorText: widget.controller.errors[widget.component.key],
+                  ),
+                  child: Focus(
+                    focusNode:
+                        widget.controller.getFocusNode(widget.component.key),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: logic.allOptions.map((option) {
+                        return RadioListTile<String>(
+                          title: Text(option.label),
+                          value: option.value,
+                          groupValue: logic.groupValue,
+                          onChanged: logic.onChanged,
+                          contentPadding: EdgeInsets.zero,
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
-              ),
             ],
           );
         },

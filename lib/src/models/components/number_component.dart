@@ -24,6 +24,7 @@ class NumberComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.min,
     this.max,
     this.enableCurrency = false,
@@ -49,6 +50,7 @@ class NumberComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       min: json['min'],
       max: json['max'],

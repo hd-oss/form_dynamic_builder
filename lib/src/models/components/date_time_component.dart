@@ -27,6 +27,7 @@ class DateTimeComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.enableTime = false,
     this.timeOnly = false,
     this.timeHourStep,
@@ -55,6 +56,7 @@ class DateTimeComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       enableTime: json['enableTime'] ?? false,
       timeOnly: json['timeOnly'] ?? false,

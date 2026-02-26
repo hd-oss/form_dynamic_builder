@@ -42,6 +42,7 @@ class CameraComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.cameraFacing = 'both',
     this.showTimestamp = false,
     this.timestampFormat = 'yyyy-MM-dd HH:mm:ss',
@@ -70,6 +71,7 @@ class CameraComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
+      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       cameraFacing: json['cameraFacing'] ?? 'both',
       showTimestamp: json['showTimestamp'] ?? false,

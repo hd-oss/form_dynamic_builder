@@ -21,6 +21,7 @@ class SelectComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.options = const [],
   });
 
@@ -49,6 +50,7 @@ class SelectComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
+      dataSource: parseDataSource(json),
       options: optionsList,
     );
   }

@@ -21,6 +21,7 @@ class RadioComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
+    super.dataSource,
     this.options = const [],
   });
 
@@ -49,6 +50,7 @@ class RadioComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
+      dataSource: parseDataSource(json),
       options: optionsList,
     );
   }
