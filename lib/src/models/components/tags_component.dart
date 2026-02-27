@@ -3,6 +3,7 @@ import '../validation_rule.dart';
 import 'component_utils.dart';
 
 class TagsComponent extends FormComponent {
+  final String? placeholderTags;
   final String storeAs;
 
   TagsComponent({
@@ -20,9 +21,10 @@ class TagsComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.storeAs = 'string',
+    this.placeholderTags,
   });
 
   factory TagsComponent.fromJson(Map<String, dynamic> json) {
@@ -44,9 +46,10 @@ class TagsComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      dataSource: parseDataSource(json),
       platforms: json['platforms'],
       storeAs: json['storeAs'] ?? 'string',
+      placeholderTags: json['placeholderTags'],
+      dataSource: parseDataSource(json),
     );
   }
 
@@ -54,6 +57,7 @@ class TagsComponent extends FormComponent {
   Map<String, dynamic> toJson() {
     final json = super.toJson();
     json['storeAs'] = storeAs;
+    if (placeholderTags != null) json['placeholderTags'] = placeholderTags;
     return json;
   }
 }

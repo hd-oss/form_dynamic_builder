@@ -53,7 +53,7 @@ class _DynamicRadioState extends State<DynamicRadio> {
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
                     ),
                   ),
                 )
@@ -79,13 +79,26 @@ class _DynamicRadioState extends State<DynamicRadio> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: logic.allOptions.map((option) {
-                        return RadioListTile<String>(
+                        return ListTile(
+                          leading: Radio<String>(
+                            value: option.value,
+                            groupValue: logic.groupValue,
+                            onChanged: logic.onChanged,
+                          ),
                           title: Text(option.label),
-                          value: option.value,
-                          groupValue: logic.groupValue,
-                          onChanged: logic.onChanged,
                           contentPadding: EdgeInsets.zero,
+                          minTileHeight: 0,
+                          horizontalTitleGap: 0,
                         );
+
+                        // return RadioListTile<String>(
+                        //   title: Text(option.label),
+                        //   value: option.value,
+                        //   groupValue: logic.groupValue,
+                        //   onChanged: logic.onChanged,
+                        //   contentPadding: EdgeInsets.zero,
+
+                        // );
                       }).toList(),
                     ),
                   ),

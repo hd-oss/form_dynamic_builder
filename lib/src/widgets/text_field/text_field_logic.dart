@@ -6,6 +6,7 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../models/form_component.dart';
+import '../../models/data_source.dart';
 import '../../utils/form_constants.dart';
 import '../../services/mixins/data_source_mixin.dart';
 
@@ -64,8 +65,17 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
 
     formController.addListener(_onFormControllerChanged);
 
+    DataSource? dataSource;
+    if (component is TextFieldComponent) {
+      dataSource = (component as TextFieldComponent).dataSource;
+    } else if (component is NumberComponent) {
+      dataSource = (component as NumberComponent).dataSource;
+    } else if (component is CurrencyComponent) {
+      dataSource = (component as CurrencyComponent).dataSource;
+    }
+
     initDefaultValue(
-      dataSource: component.dataSource,
+      dataSource: dataSource,
       controller: formController,
       componentKey: component.key,
     );

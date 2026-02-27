@@ -5,6 +5,7 @@ import 'select_option.dart';
 
 class RadioComponent extends FormComponent {
   final List<SelectOption> options;
+  final bool inline;
 
   RadioComponent({
     required super.id,
@@ -21,18 +22,13 @@ class RadioComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.options = const [],
+    this.inline = false,
   });
 
   factory RadioComponent.fromJson(Map<String, dynamic> json) {
-    var optionsList = <SelectOption>[];
-    if (json['options'] != null) {
-      optionsList = (json['options'] as List)
-          .map((e) => SelectOption.fromJson(e))
-          .toList();
-    }
     return RadioComponent(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
@@ -51,9 +47,13 @@ class RadioComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      dataSource: parseDataSource(json),
       platforms: json['platforms'],
-      options: optionsList,
+      options: (json['options'] as List?)
+              ?.map((e) => SelectOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      inline: json['inline'] ?? false,
+      dataSource: parseDataSource(json),
     );
   }
 

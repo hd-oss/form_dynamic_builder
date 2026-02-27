@@ -39,8 +39,8 @@ class UnknownComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
+      dataSource: parseDataSource(json),
     );
   }
 }

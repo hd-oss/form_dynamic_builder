@@ -5,6 +5,7 @@ import 'select_option.dart';
 
 class SelectComponent extends FormComponent {
   final List<SelectOption> options;
+  final String? calculateValue;
 
   SelectComponent({
     required super.id,
@@ -21,18 +22,13 @@ class SelectComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.options = const [],
+    this.calculateValue,
   });
 
   factory SelectComponent.fromJson(Map<String, dynamic> json) {
-    var optionsList = <SelectOption>[];
-    if (json['options'] != null) {
-      optionsList = (json['options'] as List)
-          .map((e) => SelectOption.fromJson(e))
-          .toList();
-    }
     return SelectComponent(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
@@ -51,9 +47,13 @@ class SelectComponent extends FormComponent {
           const [],
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
-      dataSource: parseDataSource(json),
       platforms: json['platforms'],
-      options: optionsList,
+      options: (json['options'] as List?)
+              ?.map((e) => SelectOption.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      dataSource: parseDataSource(json),
+      calculateValue: json['calculateValue'],
     );
   }
 

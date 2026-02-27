@@ -105,8 +105,9 @@ mixin FormValidationMixin on ChangeNotifier {
       FormComponent component, dynamic value, String stringValue) {
     _errors.remove(component.key);
 
-    final bool isValueEmpty =
-        value == null || (value is String && value.isEmpty);
+    final bool isValueEmpty = value == null ||
+        (value is String && value.trim().isEmpty) ||
+        (value is Iterable && value.isEmpty);
 
     ValidationRule? requiredRule;
     try {

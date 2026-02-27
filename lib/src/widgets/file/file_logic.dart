@@ -13,11 +13,12 @@ class FileLogic extends ChangeNotifier with DataSourceMixin {
   bool get isPicking => _isPicking;
 
   FileLogic(this.component, this.formController) {
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
+    // FileComponent no longer supports dataSource
+    // initDefaultValue(
+    //   dataSource: component.dataSource,
+    //   controller: controller,
+    //   componentKey: component.key,
+    // );
   }
 
   String formatMaxSize(int bytes) {

@@ -5,6 +5,7 @@ import 'component_utils.dart';
 class CurrencyComponent extends FormComponent {
   final String currency;
   final int decimalPlaces;
+  final String? calculateValue;
 
   CurrencyComponent({
     required super.id,
@@ -21,10 +22,11 @@ class CurrencyComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.currency = 'IDR',
-    this.decimalPlaces = 2,
+    this.decimalPlaces = 0,
+    this.calculateValue,
   });
 
   factory CurrencyComponent.fromJson(Map<String, dynamic> json) {
@@ -45,18 +47,21 @@ class CurrencyComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       platforms: json['platforms'],
       currency: json['currency'] ?? 'IDR',
-      decimalPlaces: json['decimalPlaces'] ?? 2,
+      decimalPlaces: json['decimalPlaces'] ?? 0,
+      dataSource: parseDataSource(json),
+      calculateValue: json['calculateValue'],
     );
   }
+
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
     json['currency'] = currency;
     json['decimalPlaces'] = decimalPlaces;
+    if (calculateValue != null) json['calculateValue'] = calculateValue;
     return json;
   }
 }

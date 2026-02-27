@@ -63,7 +63,7 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
                     ),
                   ),
                 )
@@ -80,18 +80,37 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
               else
                 ...logic.allOptions.map((option) {
                   final isSelected = currentValues.contains(option.value);
-                  return CheckboxListTile.adaptive(
+                  return ListTile(
+                    leading: Checkbox.adaptive(
+                      value: isSelected,
+                      onChanged: widget.component.disabled
+                          ? null
+                          : (bool? checked) {
+                              logic.updateValue(option.value, checked ?? false);
+                            },
+                    ),
                     title: Text(option.label),
-                    value: isSelected,
-                    onChanged: widget.component.disabled
+                    onTap: widget.component.disabled
                         ? null
-                        : (bool? checked) {
-                            logic.updateValue(option.value, checked ?? false);
+                        : () {
+                            logic.updateValue(option.value, !isSelected);
                           },
-                    controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    dense: true,
+                    minTileHeight: 0,
+                    horizontalTitleGap: 0,
                   );
+                  // return CheckboxListTile.adaptive(
+                  //   title: Text(option.label),
+                  //   value: isSelected,
+                  //   onChanged: widget.component.disabled
+                  //       ? null
+                  //       : (bool? checked) {
+                  //           logic.updateValue(option.value, checked ?? false);
+                  //         },
+                  //   controlAffinity: ListTileControlAffinity.leading,
+                  //   contentPadding: EdgeInsets.zero,
+                  //   dense: true,
+                  // );
                 }),
               if (widget.controller.errors.containsKey(widget.component.key))
                 Padding(

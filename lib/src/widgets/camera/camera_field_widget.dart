@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
 import 'camera_field_logic.dart';
 import 'camera_screen_widget.dart';
+import '../common/data_source_state_builder.dart';
 
 // ============================================================================
 // DynamicCamera Field Widget
@@ -161,7 +161,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: const Center(child: CircularProgressIndicator()),
+      child: const Center(child: CircularProgressIndicator.adaptive()),
     );
   }
 
@@ -182,9 +182,10 @@ class _DynamicCameraState extends State<DynamicCamera> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListenableBuilder(
-        listenable: Listenable.merge([widget.controller, logic]),
-        builder: (context, _) {
+      child: DataSourceStateBuilder(
+        logic: logic,
+        component: widget.component,
+        builder: (context) {
           final value =
               widget.controller.getValue(widget.component.key) as String?;
 
@@ -197,45 +198,23 @@ class _DynamicCameraState extends State<DynamicCamera> {
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: logic.dsState == DataSourceState.loading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24.0),
-                        child: Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      )
-                    : logic.dsState == DataSourceState.error
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              'Failed to load data',
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 13),
-                            ),
-                          )
-                        : Focus(
-                            focusNode: widget.controller
-                                .getFocusNode(widget.component.key),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (logic.isProcessing)
-                                  _buildProcessingPlaceholder()
-                                else if (value != null && value.isNotEmpty) ...[
-                                  _buildPreview(value),
-                                  const SizedBox(height: 8),
-                                  if (!widget.component.disabled)
-                                    _buildRemoveButton(),
-                                ] else
-                                  _buildTakePhotoButton(),
-                              ],
-                            ),
-                          ),
+                child: Focus(
+                  focusNode:
+                      widget.controller.getFocusNode(widget.component.key),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (logic.isProcessing)
+                        _buildProcessingPlaceholder()
+                      else if (value != null && value.isNotEmpty) ...[
+                        _buildPreview(value),
+                        const SizedBox(height: 8),
+                        if (!widget.component.disabled) _buildRemoveButton(),
+                      ] else
+                        _buildTakePhotoButton(),
+                    ],
+                  ),
+                ),
               ),
             ],
           );

@@ -9,11 +9,12 @@ class CheckboxLogic extends ChangeNotifier with DataSourceMixin {
   final FormController formController;
 
   CheckboxLogic(this.component, this.formController) {
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
+    // CheckboxComponent no longer supports dataSource
+    // initDefaultValue(
+    //   dataSource: component.dataSource,
+    //   controller: formController,
+    //   componentKey: component.key,
+    // );
   }
 
   bool get value =>

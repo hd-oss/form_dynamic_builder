@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../common/adaptive_button.dart';
+import '../common/data_source_state_builder.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
 import 'file_logic.dart';
 
 class DynamicFile extends StatefulWidget {
@@ -57,9 +58,10 @@ class _DynamicFileState extends State<DynamicFile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListenableBuilder(
-        listenable: Listenable.merge([widget.controller, logic]),
-        builder: (context, _) {
+      child: DataSourceStateBuilder(
+        logic: logic,
+        component: widget.component,
+        builder: (context) {
           final value = widget.controller.getValue(widget.component.key);
           final selectedFiles = value is List
               ? List<String>.from(value)
@@ -71,104 +73,74 @@ class _DynamicFileState extends State<DynamicFile> {
               FieldLabel(component: widget.component),
               InputDecorator(
                 decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
+                  border: InputBorder.none,
                   errorText: widget.controller.errors[widget.component.key],
                   helperText: helperText.isNotEmpty ? helperText : null,
                 ),
-                child: logic.dsState == DataSourceState.loading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24.0),
-                        child: Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      )
-                    : logic.dsState == DataSourceState.error
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              'Failed to load data',
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 13),
-                            ),
-                          )
-                        : Focus(
-                            focusNode: widget.controller
-                                .getFocusNode(widget.component.key),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (selectedFiles.isNotEmpty) ...[
-                                  ...selectedFiles.map(
-                                    (filePath) {
-                                      final fileName = filePath
-                                          .split(Platform.pathSeparator)
-                                          .last;
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 4.0),
-                                        child: Row(
-                                          children: [
-                                            const Icon(Icons.insert_drive_file,
-                                                size: 16),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Text(
-                                                fileName,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            if (!widget.component.disabled)
-                                              IconButton(
-                                                icon: const Icon(Icons.close,
-                                                    size: 16),
-                                                padding: EdgeInsets.zero,
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                onPressed: () =>
-                                                    logic.removeFile(
-                                                        selectedFiles,
-                                                        filePath),
-                                              ),
-                                          ],
-                                        ),
-                                      );
-                                    },
+                child: Focus(
+                  focusNode:
+                      widget.controller.getFocusNode(widget.component.key),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (selectedFiles.isNotEmpty) ...[
+                        ...selectedFiles.map(
+                          (filePath) {
+                            final fileName =
+                                filePath.split(Platform.pathSeparator).last;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.insert_drive_file, size: 16),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      fileName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  if (!widget.component.disabled)
+                                    IconButton(
+                                      icon: const Icon(Icons.close, size: 16),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => logic.removeFile(
+                                          selectedFiles, filePath),
+                                    ),
                                 ],
-                                if (!widget.component.disabled &&
-                                    (widget.component.multiple ||
-                                        selectedFiles.isEmpty))
-                                  ElevatedButton.icon(
-                                    onPressed: logic.isPicking
-                                        ? null
-                                        : () => _handlePickFiles(
-                                            context, selectedFiles),
-                                    icon: logic.isPicking
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          )
-                                        : const Icon(Icons.upload_file),
-                                    label: Text(logic.isPicking
-                                        ? 'Picking...'
-                                        : (widget.component.multiple
-                                            ? 'Add File'
-                                            : 'Upload File')),
-                                  ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (!widget.component.disabled &&
+                          (widget.component.multiple || selectedFiles.isEmpty))
+                        AdaptiveButton(
+                          onPressed: logic.isPicking
+                              ? null
+                              : () => _handlePickFiles(context, selectedFiles),
+                          icon: logic.isPicking
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator.adaptive(
+                                      strokeWidth: 2),
+                                )
+                              : const Icon(Icons.upload_file),
+                          child: Text(logic.isPicking
+                              ? 'Picking...'
+                              : (widget.component.multiple
+                                  ? 'Add File'
+                                  : 'Upload File')),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ],
           );

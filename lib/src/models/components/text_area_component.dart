@@ -20,8 +20,8 @@ class TextAreaComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.rows = 3,
   });
 
@@ -43,9 +43,9 @@ class TextAreaComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       platforms: json['platforms'],
+      dataSource: parseDataSource(json),
       rows: json['rows'] ?? 3,
     );
   }

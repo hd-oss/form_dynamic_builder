@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../common/data_source_state_builder.dart';
 import 'date_time_logic.dart';
 
 class DynamicDateTime extends StatefulWidget {
@@ -32,18 +32,13 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
   }
 
   @override
-  void dispose() {
-    logic.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListenableBuilder(
-        listenable: Listenable.merge([widget.controller, logic]),
-        builder: (context, _) {
+      child: DataSourceStateBuilder(
+        logic: logic,
+        component: widget.component,
+        builder: (context) {
           final value = widget.controller.getValue(widget.component.key);
           String displayText = '';
           if (value != null) {
@@ -108,49 +103,26 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              if (logic.dsState == DataSourceState.loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                )
-              else if (logic.dsState == DataSourceState.error)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Failed to load data',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 13),
-                  ),
-                )
-              else
-                TextFormField(
-                  focusNode:
-                      widget.controller.getFocusNode(widget.component.key),
-                  controller: textController,
-                  decoration: InputDecoration(
-                    hintText: widget.component.placeholder,
-                    border: const OutlineInputBorder(),
-                    errorText: widget.controller.errors[widget.component.key],
-                    prefixIcon: widget.component.timeOnly
-                        ? const Icon(Icons.access_time)
-                        : const Icon(Icons.calendar_today),
-                    suffixIcon: (widget.component.enableTime &&
-                            !widget.component.timeOnly)
-                        ? const Icon(Icons.access_time)
-                        : null,
-                  ),
-                  readOnly: true,
-                  onTap: widget.component.disabled
-                      ? null
-                      : () => _handlePicker(context),
+              TextFormField(
+                focusNode: widget.controller.getFocusNode(widget.component.key),
+                controller: textController,
+                decoration: InputDecoration(
+                  hintText: widget.component.placeholder,
+                  border: const OutlineInputBorder(),
+                  errorText: widget.controller.errors[widget.component.key],
+                  prefixIcon: widget.component.timeOnly
+                      ? const Icon(Icons.access_time)
+                      : const Icon(Icons.calendar_today),
+                  suffixIcon: (widget.component.enableTime &&
+                          !widget.component.timeOnly)
+                      ? const Icon(Icons.access_time)
+                      : null,
                 ),
+                readOnly: true,
+                onTap: widget.component.disabled
+                    ? null
+                    : () => _handlePicker(context),
+              ),
             ],
           );
         },

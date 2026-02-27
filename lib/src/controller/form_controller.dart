@@ -17,11 +17,25 @@ class FormController extends ChangeNotifier
 
   final Map<String, String> authHeaders;
 
+  final Map<String, dynamic> _dsForm = {};
+
+  /// Access dynamic data provided by the application.
+  Map<String, dynamic> get dsForm => _dsForm;
+
   FormController({
     required this.config,
     this.authHeaders = const {},
   }) {
+    if (config.dsForm != null) {
+      _dsForm.addAll(config.dsForm!);
+    }
     initializeValues();
+  }
+
+  /// Updates manually provided dynamic data.
+  void updateDsForm(Map<String, dynamic> data) {
+    _dsForm.addAll(data);
+    notifyListeners();
   }
 
   /// Clears all values, errors, and resets navigation.

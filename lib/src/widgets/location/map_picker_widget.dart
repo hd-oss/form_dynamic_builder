@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../common/adaptive_button.dart';
+
 import 'map_picker_logic.dart';
 
 class MapPickerScreen extends StatefulWidget {
@@ -129,13 +131,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   bottom: 24,
                   left: 24,
                   right: 24,
-                  child: ElevatedButton.icon(
+                  child: AdaptiveButton(
                     onPressed: _confirm,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     icon: const Icon(Icons.check),
-                    label: const Text('Confirm Location'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                    child: const Text('Use This Location'),
                   ),
                 ),
             ],

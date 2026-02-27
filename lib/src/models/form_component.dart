@@ -19,8 +19,8 @@ abstract class FormComponent {
   final List<ValidationRule> validation;
   final ConditionalConfig? conditional;
   final dynamic defaultValue;
-  final DataSource? dataSource;
   final Map<String, dynamic>? platforms;
+  final DataSource? dataSource;
 
   FormComponent({
     required this.id,
@@ -37,8 +37,8 @@ abstract class FormComponent {
     this.validation = const [],
     this.conditional,
     this.defaultValue,
-    this.dataSource,
     this.platforms,
+    this.dataSource,
   });
 
   factory FormComponent.fromJson(Map<String, dynamic> json) {
@@ -96,8 +96,8 @@ abstract class FormComponent {
       'validation': validation.map((e) => e.toJson()).toList(),
       if (conditional != null) 'conditional': conditional!.toJson(),
       if (defaultValue != null) 'defaultValue': defaultValue,
-      if (dataSource != null) 'dataSource': dataSource!.toJson(),
       if (platforms != null) 'platforms': platforms,
+      if (dataSource != null) 'dataSource': dataSource!.toJson(),
     };
   }
 }

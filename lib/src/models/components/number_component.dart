@@ -8,6 +8,7 @@ class NumberComponent extends FormComponent {
   final bool enableCurrency;
   final String? currency;
   final int? decimalPlaces;
+  final String? calculateValue;
 
   NumberComponent({
     required super.id,
@@ -24,13 +25,14 @@ class NumberComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.min,
     this.max,
     this.enableCurrency = false,
     this.currency,
     this.decimalPlaces,
+    this.calculateValue,
   });
 
   factory NumberComponent.fromJson(Map<String, dynamic> json) {
@@ -51,14 +53,15 @@ class NumberComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
       platforms: json['platforms'],
-      min: json['min'],
-      max: json['max'],
+      min: (json['min'] as num?)?.toDouble(),
+      max: (json['max'] as num?)?.toDouble(),
       enableCurrency: json['enableCurrency'] ?? false,
       currency: json['currency'],
       decimalPlaces: json['decimalPlaces'],
+      dataSource: parseDataSource(json),
+      calculateValue: json['calculateValue'],
     );
   }
 
@@ -70,6 +73,7 @@ class NumberComponent extends FormComponent {
     json['enableCurrency'] = enableCurrency;
     if (currency != null) json['currency'] = currency;
     if (decimalPlaces != null) json['decimalPlaces'] = decimalPlaces;
+    if (calculateValue != null) json['calculateValue'] = calculateValue;
     return json;
   }
 }

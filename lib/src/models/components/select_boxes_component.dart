@@ -22,8 +22,8 @@ class SelectBoxesComponent extends FormComponent {
     super.validation,
     super.conditional,
     super.defaultValue,
-    super.dataSource,
     super.platforms,
+    super.dataSource,
     this.options = const [],
     this.inline = false,
   });

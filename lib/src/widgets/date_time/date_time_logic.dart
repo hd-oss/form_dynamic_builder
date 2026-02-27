@@ -10,11 +10,12 @@ class DateTimeLogic extends ChangeNotifier with DataSourceMixin {
   final FormController formController;
 
   DateTimeLogic(this.component, this.formController) {
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
+    // DateTimeComponent no longer supports dataSource
+    // initDefaultValue(
+    //   dataSource: component.dataSource,
+    //   controller: controller,
+    //   componentKey: component.key,
+    // );
   }
 
   DateTime getInitialDate() {

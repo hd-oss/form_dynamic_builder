@@ -45,7 +45,7 @@ class _CameraScreenState extends State<CameraScreen> {
         if (!logic.isReady) {
           return const Scaffold(
             backgroundColor: Colors.black,
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator.adaptive()),
           );
         }
 
@@ -91,7 +91,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     right: 0,
                     child: Center(
                       child: logic.isTaking
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const CircularProgressIndicator.adaptive(
+                              backgroundColor: Colors.white)
                           : FloatingActionButton(
                               onPressed: () async {
                                 final path = await logic.takePicture();

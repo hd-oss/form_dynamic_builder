@@ -24,7 +24,6 @@ class SignatureComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
-    super.platforms,
     this.width,
     this.height,
     this.uploadUrl = '',
@@ -49,9 +48,8 @@ class SignatureComponent extends FormComponent {
               .toList() ??
           const [],
       conditional: parseConditional(json),
-      dataSource: parseDataSource(json),
       defaultValue: json['defaultValue'],
-      platforms: json['platforms'],
+      dataSource: parseDataSource(json),
       width: (json['width'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
       uploadUrl: json['uploadUrl'] ?? '',

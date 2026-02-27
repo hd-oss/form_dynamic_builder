@@ -19,6 +19,8 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   http: ^1.2.0
+  flutter_image_compress: ^2.4.0
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:

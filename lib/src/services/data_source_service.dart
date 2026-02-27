@@ -53,8 +53,8 @@ class DataSourceService {
   }
 
   static String _resolveDsForm(String path, FormController controller) {
-    final dsForm = controller.config.dsForm;
-    if (dsForm == null) return '';
+    final dsForm = controller.dsForm;
+    if (dsForm.isEmpty) return '';
 
     final parts = path.split('.');
     dynamic current = dsForm;

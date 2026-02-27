@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../common/data_source_state_builder.dart';
 import 'checkbox_logic.dart';
 
 class DynamicCheckbox extends StatefulWidget {
@@ -39,9 +39,10 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListenableBuilder(
-        listenable: Listenable.merge([widget.controller, logic]),
-        builder: (context, _) {
+      child: DataSourceStateBuilder(
+        logic: logic,
+        component: widget.component,
+        builder: (context) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -51,35 +52,16 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
                   border: InputBorder.none,
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: logic.dsState == DataSourceState.loading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12.0),
-                        child: Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      )
-                    : logic.dsState == DataSourceState.error
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              'Failed to load data',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontSize: 13,
-                              ),
-                            ),
-                          )
-                        : CheckboxListTile.adaptive(
-                            title: Text(widget.component.label),
-                            value: logic.value,
-                            onChanged: logic.onChanged,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                child: ListTile(
+                  leading: Checkbox.adaptive(
+                    value: logic.value,
+                    onChanged: logic.onChanged,
+                  ),
+                  title: Text(widget.component.label),
+                  contentPadding: EdgeInsets.zero,
+                  minTileHeight: 0,
+                  horizontalTitleGap: 0,
+                ),
               ),
             ],
           );
