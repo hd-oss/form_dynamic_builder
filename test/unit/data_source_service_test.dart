@@ -3,8 +3,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 
 import 'package:form_dynamic_builder/src/controller/form_controller.dart';
 import 'package:form_dynamic_builder/src/models/components/select_component.dart';
@@ -38,6 +36,7 @@ const _singleBookResponse = '''
 FormConfig buildConfig({
   Map<String, dynamic>? dsForm,
   List<Map<String, dynamic>> components = const [],
+  ApiQueryCallback? onApiQuery,
 }) {
   return FormConfig(
     id: 'test_form',
@@ -47,6 +46,7 @@ FormConfig buildConfig({
         components.map((e) => SelectComponent.fromJson(e)).toList().cast(),
     settings: FormSettings(),
     dsForm: dsForm,
+    onApiQuery: onApiQuery,
   );
 }
 
@@ -55,9 +55,14 @@ FormController buildController({
   Map<String, dynamic>? dsForm,
   List<Map<String, dynamic>> components = const [],
   Map<String, String> authHeaders = const {},
+  ApiQueryCallback? onApiQuery,
 }) {
   return FormController(
-    config: buildConfig(dsForm: dsForm, components: components),
+    config: buildConfig(
+      dsForm: dsForm,
+      components: components,
+      onApiQuery: onApiQuery,
+    ),
     authHeaders: authHeaders,
   );
 }
@@ -282,12 +287,13 @@ void main() {
     // -----------------------------------------------------------------------
     test('Skenario 1 — GET tanpa filter: mengembalikan semua options dari API',
         () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.toString(),
-            'https://potterapi-fedeperin.vercel.app/en/books');
-        expect(request.method, 'GET');
-        return http.Response(_potterBooksResponse, 200);
-      });
+      final controller = buildController(
+        onApiQuery: (url, method, headers, body) async {
+          expect(url, 'https://potterapi-fedeperin.vercel.app/en/books');
+          expect(method, 'GET');
+          return _potterBooksResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url: 'https://potterapi-fedeperin.vercel.app/en/books',
@@ -295,12 +301,9 @@ void main() {
         valuePath: 'index',
       );
 
-      final controller = buildController();
-
       final options = await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(options.length, 4);
@@ -316,11 +319,13 @@ void main() {
     test(
         'Skenario 2 — GET dengan static filter dalam URL: mengembalikan hasil terfilter',
         () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.toString(),
-            'https://potterapi-fedeperin.vercel.app/en/books?index=1');
-        return http.Response(_singleBookResponse, 200);
-      });
+      final controller = buildController(
+        onApiQuery: (url, method, headers, body) async {
+          expect(
+              url, 'https://potterapi-fedeperin.vercel.app/en/books?index=1');
+          return _singleBookResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url: 'https://potterapi-fedeperin.vercel.app/en/books?index=1',
@@ -328,12 +333,9 @@ void main() {
         valuePath: 'index',
       );
 
-      final controller = buildController();
-
       final options = await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(options.length, 1);
@@ -349,18 +351,6 @@ void main() {
         () async {
       String? capturedUrl;
 
-      final mockClient = MockClient((request) async {
-        capturedUrl = request.url.toString();
-        return http.Response(_singleBookResponse, 200);
-      });
-
-      final api = DataSourceApi(
-        url:
-            'https://potterapi-fedeperin.vercel.app/en/books?title={{titleBook}}',
-        labelPath: 'title',
-        valuePath: 'index',
-      );
-
       final controller = buildController(
         components: [
           {
@@ -370,13 +360,24 @@ void main() {
             'label': 'Book Title',
           }
         ],
+        onApiQuery: (url, method, headers, body) async {
+          capturedUrl = url;
+          return _singleBookResponse;
+        },
       );
+
+      final api = DataSourceApi(
+        url:
+            'https://potterapi-fedeperin.vercel.app/en/books?title={{titleBook}}',
+        labelPath: 'title',
+        valuePath: 'index',
+      );
+
       controller.updateValue('titleBook', 'The Chamber of Secrets');
 
       await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       // Uri.parse encodes spaces as %20; decode before comparing.
@@ -392,10 +393,17 @@ void main() {
         () async {
       String? capturedUrl;
 
-      final mockClient = MockClient((request) async {
-        capturedUrl = request.url.toString();
-        return http.Response(_singleBookResponse, 200);
-      });
+      final controller = buildController(
+        dsForm: {
+          'task': {
+            'lcs': {'bookTitle': 'The Prisoner of Azkaban'}
+          }
+        },
+        onApiQuery: (url, method, headers, body) async {
+          capturedUrl = url;
+          return _singleBookResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url:
@@ -404,18 +412,9 @@ void main() {
         valuePath: 'index',
       );
 
-      final controller = buildController(
-        dsForm: {
-          'task': {
-            'lcs': {'bookTitle': 'The Prisoner of Azkaban'}
-          }
-        },
-      );
-
       await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       // Uri.parse encodes spaces as %20; decode before comparing.
@@ -431,10 +430,12 @@ void main() {
         () async {
       String? capturedUrl;
 
-      final mockClient = MockClient((request) async {
-        capturedUrl = request.url.toString();
-        return http.Response(_potterBooksResponse, 200);
-      });
+      final controller = buildController(
+        onApiQuery: (url, method, headers, body) async {
+          capturedUrl = url;
+          return _potterBooksResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url:
@@ -443,12 +444,9 @@ void main() {
         valuePath: 'index',
       );
 
-      final controller = buildController();
-
       await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(capturedUrl, contains(DateTime.now().year.toString()));
@@ -458,32 +456,13 @@ void main() {
     // -----------------------------------------------------------------------
     // Error handling
     // -----------------------------------------------------------------------
-    test('API mengembalikan status 500: fetchOptions mengembalikan list kosong',
-        () async {
-      final mockClient =
-          MockClient((_) async => http.Response('Internal Server Error', 500));
-
-      final api = DataSourceApi(
-        url: 'https://potterapi-fedeperin.vercel.app/en/books',
-        labelPath: 'title',
-        valuePath: 'index',
-      );
-
-      final options = await DataSourceService.fetchOptions(
-        api: api,
-        controller: buildController(),
-        httpClient: mockClient,
-      );
-
-      expect(options, isEmpty);
-    });
-
     test('Network error (exception): fetchOptions mengembalikan list kosong',
         () async {
-      // MockClient yang langsung throw exception saat dipakai.
-      final mockClient = MockClient((_) async {
-        throw const SocketException('Connection refused');
-      });
+      final controller = buildController(
+        onApiQuery: (url, method, headers, body) async {
+          throw const SocketException('Connection refused');
+        },
+      );
 
       final api = DataSourceApi(
         url: 'https://potterapi-fedeperin.vercel.app/en/books',
@@ -493,12 +472,13 @@ void main() {
 
       final options = await DataSourceService.fetchOptions(
         api: api,
-        controller: buildController(),
-        httpClient: mockClient,
+        controller: controller,
       );
 
       expect(options, isEmpty);
     });
+
+    // ... removing unused test 'Network error...' because they overlap now with the exception test
 
     // -----------------------------------------------------------------------
     // Auth headers
@@ -506,10 +486,13 @@ void main() {
     test('Auth headers dari FormController dikirim dalam request', () async {
       Map<String, String>? capturedHeaders;
 
-      final mockClient = MockClient((request) async {
-        capturedHeaders = request.headers;
-        return http.Response(_potterBooksResponse, 200);
-      });
+      final controller = buildController(
+        authHeaders: {'Authorization': 'Bearer test_token_123'},
+        onApiQuery: (url, method, headers, body) async {
+          capturedHeaders = headers;
+          return _potterBooksResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url: 'https://potterapi-fedeperin.vercel.app/en/books',
@@ -517,14 +500,9 @@ void main() {
         valuePath: 'index',
       );
 
-      final controller = buildController(
-        authHeaders: {'Authorization': 'Bearer test_token_123'},
-      );
-
       await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(capturedHeaders?['Authorization'], 'Bearer test_token_123');
@@ -546,8 +524,11 @@ void main() {
       }
       ''';
 
-      final mockClient =
-          MockClient((_) async => http.Response(nestedResponse, 200));
+      final controller = buildController(
+        onApiQuery: (url, method, headers, body) async {
+          return nestedResponse;
+        },
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -558,8 +539,7 @@ void main() {
 
       final options = await DataSourceService.fetchOptions(
         api: api,
-        controller: buildController(),
-        httpClient: mockClient,
+        controller: controller,
       );
 
       expect(options.length, 1);

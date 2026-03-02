@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import 'date_time_logic.dart';
 
 class DynamicDateTime extends StatefulWidget {
@@ -35,9 +34,7 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
+      child: Builder(
         builder: (context) {
           final value = widget.controller.getValue(widget.component.key);
           String displayText = '';

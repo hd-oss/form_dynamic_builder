@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../services/location_service.dart';
-import '../../services/mixins/data_source_mixin.dart';
 
-class LocationLogic extends ChangeNotifier with DataSourceMixin {
+class LocationLogic extends ChangeNotifier {
   final LocationComponent component;
   final FormController formController;
 
@@ -27,12 +26,6 @@ class LocationLogic extends ChangeNotifier with DataSourceMixin {
         formController.getValue(component.key) == null) {
       detectLocation();
     }
-
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
   }
 
   @override

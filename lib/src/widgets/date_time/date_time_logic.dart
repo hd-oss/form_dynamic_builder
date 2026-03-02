@@ -3,9 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
 
-class DateTimeLogic extends ChangeNotifier with DataSourceMixin {
+class DateTimeLogic extends ChangeNotifier {
   final DateTimeComponent component;
   final FormController formController;
 
@@ -75,7 +74,6 @@ class DateTimeLogic extends ChangeNotifier with DataSourceMixin {
 
   @override
   void dispose() {
-    disposeDataSource();
     super.dispose();
   }
 }

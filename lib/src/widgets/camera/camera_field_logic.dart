@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../../utils/image_compressor.dart';
 
-class CameraLogic extends ChangeNotifier with DataSourceMixin {
+class CameraLogic extends ChangeNotifier {
   final CameraComponent component;
   final FormController formController;
 
@@ -18,11 +19,7 @@ class CameraLogic extends ChangeNotifier with DataSourceMixin {
   bool get isProcessing => _isProcessing;
 
   CameraLogic(this.component, this.formController) {
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
+    // Initialization
   }
 
   @override
@@ -35,11 +32,25 @@ class CameraLogic extends ChangeNotifier with DataSourceMixin {
   @override
   void dispose() {
     _isDisposed = true;
-    disposeDataSource();
     super.dispose();
   }
 
   void clearPhoto() {
+    final currentPath = formController.getValue(component.key);
+    if (currentPath != null && currentPath is String) {
+      try {
+        if (!currentPath.startsWith('http') &&
+            !currentPath.startsWith('https')) {
+          final file = File(currentPath);
+          if (file.existsSync()) {
+            file.deleteSync();
+            if (kDebugMode) print('Deleted physical photo: $currentPath');
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) print('Failed to delete $currentPath: $e');
+      }
+    }
     formController.updateValue(component.key, null);
   }
 
@@ -48,15 +59,39 @@ class CameraLogic extends ChangeNotifier with DataSourceMixin {
     notifyListeners();
 
     try {
+      String pathToProcess = rawPath;
+      if (component.compressFile) {
+        pathToProcess = await ImageCompressor.compressImage(
+          imagePath: rawPath,
+          quality: component.compressPercentage,
+        );
+      }
+
       final finalPath = await burnMetadataOntoPhoto(
-        imagePath: rawPath,
+        imagePath: pathToProcess,
         showTimestamp: component.showTimestamp,
         timestampFormat: component.timestampFormat,
         showCoordinates: component.showCoordinates,
         showDeviceInfo: component.showDeviceInfo,
       );
       if (_isDisposed) return;
-      formController.updateValue(component.key, finalPath);
+
+      if (component.uploadTiming == 'immediate' &&
+          formController.config.onFileUpload != null &&
+          component.uploadUrl.isNotEmpty) {
+        final remoteUrl = await formController.config.onFileUpload!(
+          finalPath,
+          component.uploadUrl,
+        );
+        if (remoteUrl != null) {
+          formController.updateValue(component.key, remoteUrl);
+        } else {
+          // If upload fails, fallback to local path (or maybe null/error)
+          formController.updateValue(component.key, finalPath);
+        }
+      } else {
+        formController.updateValue(component.key, finalPath);
+      }
     } finally {
       _isProcessing = false;
       notifyListeners();

@@ -11,12 +11,18 @@ class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
   late TextEditingController textController;
   List<String> tags = [];
 
+  List<SelectOption> suggestions = [];
+
   TagsFieldLogic(this.component, this.formController) {
     textController = TextEditingController();
     _initTags();
 
     formController.addListener(_onFormControllerChanged);
 
+    initDataSource(
+      dataSource: component.dataSource,
+      controller: formController,
+    );
     initDefaultValue(
       dataSource: component.dataSource,
       controller: formController,
@@ -61,12 +67,50 @@ class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
       notifyListeners();
     }
     textController.clear();
+    clearSuggestions();
   }
 
   void removeTag(String tag) {
     tags.remove(tag);
     _updateController();
     notifyListeners();
+  }
+
+  void fetchSuggestions(String query) {
+    if (query.isEmpty) {
+      clearSuggestions();
+      return;
+    }
+
+    // Split query into individual alphanumeric words to allow detached multi-word queries
+    // like "harry s" to match "harry potter and the sorcerer's stone"
+    final queryTerms = query
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .where((t) => t.isNotEmpty)
+        .toList();
+
+    suggestions = dynamicOptions.where((option) {
+      final labelLower = option.label.toLowerCase();
+      final valueLower = option.value.toLowerCase();
+
+      // Ensure every word typed by the user exists in either the label or the value
+      return queryTerms.every(
+          (term) => labelLower.contains(term) || valueLower.contains(term));
+    }).toList();
+
+    notifyListeners();
+  }
+
+  void clearSuggestions() {
+    if (suggestions.isNotEmpty) {
+      suggestions = [];
+      notifyListeners();
+    }
+  }
+
+  void selectSuggestion(SelectOption option) {
+    addTag(option.value);
   }
 
   @override

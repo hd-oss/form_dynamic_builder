@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../common/data_source_state_builder.dart';
 import 'radio_logic.dart';
 
 class DynamicRadio extends StatefulWidget {
@@ -42,68 +42,43 @@ class _DynamicRadioState extends State<DynamicRadio> {
       child: ListenableBuilder(
         listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FieldLabel(component: widget.component),
-              if (logic.dsState == DataSourceState.loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+          return DataSourceStateBuilder(
+            logic: logic,
+            component: widget.component,
+            builder: (context) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FieldLabel(component: widget.component),
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      errorText: widget.controller.errors[widget.component.key],
+                    ),
+                    child: Focus(
+                      focusNode:
+                          widget.controller.getFocusNode(widget.component.key),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: logic.allOptions.map((option) {
+                          return ListTile(
+                            leading: Radio<String>(
+                              value: option.value,
+                              groupValue: logic.groupValue,
+                              onChanged: logic.onChanged,
+                            ),
+                            title: Text(option.label),
+                            contentPadding: EdgeInsets.zero,
+                            minTileHeight: 0,
+                            horizontalTitleGap: 0,
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                )
-              else if (logic.dsState == DataSourceState.error)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Failed to load options',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 13),
-                  ),
-                )
-              else
-                InputDecorator(
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    errorText: widget.controller.errors[widget.component.key],
-                  ),
-                  child: Focus(
-                    focusNode:
-                        widget.controller.getFocusNode(widget.component.key),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: logic.allOptions.map((option) {
-                        return ListTile(
-                          leading: Radio<String>(
-                            value: option.value,
-                            groupValue: logic.groupValue,
-                            onChanged: logic.onChanged,
-                          ),
-                          title: Text(option.label),
-                          contentPadding: EdgeInsets.zero,
-                          minTileHeight: 0,
-                          horizontalTitleGap: 0,
-                        );
-
-                        // return RadioListTile<String>(
-                        //   title: Text(option.label),
-                        //   value: option.value,
-                        //   groupValue: logic.groupValue,
-                        //   onChanged: logic.onChanged,
-                        //   contentPadding: EdgeInsets.zero,
-
-                        // );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-            ],
+                ],
+              );
+            },
           );
         },
       ),

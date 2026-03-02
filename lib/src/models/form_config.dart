@@ -3,6 +3,24 @@ import 'form_component.dart';
 import 'form_settings.dart';
 import 'form_step.dart';
 
+typedef DatabaseQueryCallback = Future<List<Map<String, dynamic>>> Function(
+  String connectionString,
+  String dbName,
+  String query,
+);
+
+typedef ApiQueryCallback = Future<dynamic> Function(
+  String url,
+  String method,
+  Map<String, String> headers,
+  String body,
+);
+
+typedef FileUploadCallback = Future<String?> Function(
+  String localPath,
+  String uploadUrl,
+);
+
 class FormConfig {
   final String id;
   final String title;
@@ -15,6 +33,9 @@ class FormConfig {
   final String type;
   final String? createdAt;
   final String? updatedAt;
+  final DatabaseQueryCallback? onDatabaseQuery;
+  final ApiQueryCallback? onApiQuery;
+  final FileUploadCallback? onFileUpload;
 
   FormConfig({
     required this.id,
@@ -27,9 +48,17 @@ class FormConfig {
     this.dsForm,
     this.createdAt,
     this.updatedAt,
+    this.onDatabaseQuery,
+    this.onApiQuery,
+    this.onFileUpload,
   });
 
-  factory FormConfig.fromJson(Map<String, dynamic> json) {
+  factory FormConfig.fromJson(
+    Map<String, dynamic> json, {
+    DatabaseQueryCallback? onDatabaseQuery,
+    ApiQueryCallback? onApiQuery,
+    FileUploadCallback? onFileUpload,
+  }) {
     var componentsList = <FormComponent>[];
     if (json['components'] != null) {
       componentsList = (json['components'] as List)
@@ -57,6 +86,9 @@ class FormConfig {
       dsForm: json['ds_form'] as Map<String, dynamic>?,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      onDatabaseQuery: onDatabaseQuery,
+      onApiQuery: onApiQuery,
+      onFileUpload: onFileUpload,
     );
   }
 

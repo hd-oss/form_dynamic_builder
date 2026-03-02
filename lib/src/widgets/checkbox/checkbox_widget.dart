@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import 'checkbox_logic.dart';
 
 class DynamicCheckbox extends StatefulWidget {
@@ -39,33 +38,27 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
-        builder: (context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FieldLabel(component: widget.component),
-              InputDecorator(
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  errorText: widget.controller.errors[widget.component.key],
-                ),
-                child: ListTile(
-                  leading: Checkbox.adaptive(
-                    value: logic.value,
-                    onChanged: logic.onChanged,
-                  ),
-                  title: Text(widget.component.label),
-                  contentPadding: EdgeInsets.zero,
-                  minTileHeight: 0,
-                  horizontalTitleGap: 0,
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FieldLabel(component: widget.component),
+          InputDecorator(
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              errorText: widget.controller.errors[widget.component.key],
+            ),
+            child: ListTile(
+              leading: Checkbox.adaptive(
+                value: logic.value,
+                onChanged: logic.onChanged,
               ),
-            ],
-          );
-        },
+              title: Text(widget.component.label),
+              contentPadding: EdgeInsets.zero,
+              minTileHeight: 0,
+              horizontalTitleGap: 0,
+            ),
+          ),
+        ],
       ),
     );
   }

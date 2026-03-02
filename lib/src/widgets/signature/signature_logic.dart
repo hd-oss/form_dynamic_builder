@@ -1,13 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
 
-class SignatureLogic extends ChangeNotifier with DataSourceMixin {
+class SignatureLogic extends ChangeNotifier {
   final SignatureComponent component;
   final FormController formController;
 
@@ -22,12 +22,6 @@ class SignatureLogic extends ChangeNotifier with DataSourceMixin {
     signatureController.onDrawEnd = saveSignature;
 
     formController.addListener(_onFormControllerChanged);
-
-    initDefaultValue(
-      dataSource: component.dataSource,
-      controller: formController,
-      componentKey: component.key,
-    );
   }
 
   void _onFormControllerChanged() {
@@ -45,7 +39,6 @@ class SignatureLogic extends ChangeNotifier with DataSourceMixin {
   @override
   void dispose() {
     formController.removeListener(_onFormControllerChanged);
-    disposeDataSource();
     signatureController.dispose();
     super.dispose();
   }
@@ -58,8 +51,32 @@ class SignatureLogic extends ChangeNotifier with DataSourceMixin {
 
     final data = await signatureController.toPngBytes();
     if (data != null) {
-      final base64String = base64Encode(data);
-      formController.updateValue(component.key, base64String);
+      if (component.uploadTiming == 'immediate' &&
+          formController.config.onFileUpload != null &&
+          component.uploadUrl.isNotEmpty) {
+        // Save to temporary file for upload
+        final tempDir = Directory.systemTemp;
+        final tempFile = File(
+            '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.png');
+        await tempFile.writeAsBytes(data);
+
+        final remoteUrl = await formController.config.onFileUpload!(
+          tempFile.path,
+          component.uploadUrl,
+        );
+
+        if (remoteUrl != null) {
+          formController.updateValue(component.key, remoteUrl);
+        } else {
+          // Fallback to base64 if upload fails
+          final base64String = base64Encode(data);
+          formController.updateValue(component.key, base64String);
+        }
+      } else {
+        // Default behavior: save as base64 string
+        final base64String = base64Encode(data);
+        formController.updateValue(component.key, base64String);
+      }
     }
   }
 

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../common/dropdown_overlay.dart';
+import '../common/data_source_state_builder.dart';
 import 'select_logic.dart';
 
 class DynamicSelect extends StatefulWidget {
@@ -23,6 +24,7 @@ class DynamicSelect extends StatefulWidget {
 
 class _DynamicSelectState extends State<DynamicSelect> {
   late final SelectLogic logic;
+  bool _isDropdownShowing = false;
 
   @override
   void initState() {
@@ -43,37 +45,22 @@ class _DynamicSelectState extends State<DynamicSelect> {
       child: ListenableBuilder(
         listenable: Listenable.merge([widget.controller, logic]),
         builder: (context, _) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FieldLabel(component: widget.component),
-              if (logic.dsState == DataSourceState.loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
-                    ),
-                  ),
-                )
-              else if (logic.dsState == DataSourceState.error)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Failed to load options',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 13),
-                  ),
-                )
-              else if (Theme.of(context).platform == TargetPlatform.iOS ||
-                  Theme.of(context).platform == TargetPlatform.macOS)
-                _buildCupertinoSelect(context)
-              else
-                _buildMaterialSelect(context),
-            ],
+          return DataSourceStateBuilder(
+            logic: logic,
+            component: widget.component,
+            builder: (context) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FieldLabel(component: widget.component),
+                  if (Theme.of(context).platform == TargetPlatform.iOS ||
+                      Theme.of(context).platform == TargetPlatform.macOS)
+                    _buildCupertinoSelect(context)
+                  else
+                    _buildMaterialSelect(context),
+                ],
+              );
+            },
           );
         },
       ),
@@ -81,20 +68,59 @@ class _DynamicSelectState extends State<DynamicSelect> {
   }
 
   Widget _buildMaterialSelect(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      focusNode: widget.controller.getFocusNode(widget.component.key),
-      value: logic.value,
-      decoration: InputDecoration(
-        border: const OutlineInputBorder(),
-        errorText: widget.controller.errors[widget.component.key],
-      ),
-      items: logic.allOptions.map((option) {
-        return DropdownMenuItem<String>(
-          value: option.value,
-          child: Text(option.label),
+    return DropdownOverlay<SelectOption>(
+      isShowing: _isDropdownShowing,
+      items: logic.allOptions,
+      onItemSelected: (option) {
+        setState(() {
+          _isDropdownShowing = false;
+        });
+        logic.updateValue(option.value);
+      },
+      onDismissed: () {
+        setState(() {
+          _isDropdownShowing = false;
+        });
+      },
+      itemBuilder: (context, option) {
+        return ListTile(
+          title: Text(option.label),
+          selected: logic.value == option.value,
+          minTileHeight: 0,
         );
-      }).toList(),
-      onChanged: logic.updateValue,
+      },
+      child: GestureDetector(
+        onTap: widget.component.disabled
+            ? null
+            : () {
+                final node =
+                    widget.controller.getFocusNode(widget.component.key);
+                if (!node.hasFocus) node.requestFocus();
+                setState(() {
+                  _isDropdownShowing = !_isDropdownShowing;
+                });
+              },
+        child: AbsorbPointer(
+          child: TextFormField(
+            focusNode: widget.controller.getFocusNode(widget.component.key),
+            readOnly: true,
+            controller: TextEditingController(
+              text: logic.selectedOption.label.isEmpty
+                  ? (widget.component.placeholder ?? '')
+                  : logic.selectedOption.label,
+            ),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              errorText: widget.controller.errors[widget.component.key],
+              suffixIcon: Icon(
+                _isDropdownShowing
+                    ? Icons.arrow_drop_up
+                    : Icons.arrow_drop_down,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

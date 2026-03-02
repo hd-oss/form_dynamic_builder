@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../common/adaptive_button.dart';
-import '../common/data_source_state_builder.dart';
 import '../field_label.dart';
 import 'file_logic.dart';
 
@@ -58,9 +57,7 @@ class _DynamicFileState extends State<DynamicFile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
+      child: Builder(
         builder: (context) {
           final value = widget.controller.getValue(widget.component.key);
           final selectedFiles = value is List

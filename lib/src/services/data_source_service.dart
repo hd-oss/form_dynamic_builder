@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../controller/form_controller.dart';
@@ -14,9 +13,20 @@ class DataSourceService {
   /// - `{{componentKey}}` — from form field values
   /// - `{{ds_form.task.lcs.xxx}}` / `{{ds_form.task.los.xxx}}` — from dsForm
   /// - `{{var.static.current_year}}` etc — basic date/time variables
-  static String interpolateUrl(String url, FormController controller) {
-    return url.replaceAllMapped(RegExp(r'\{\{(.+?)\}\}'), (match) {
+  static String interpolateUrl(String url, FormController controller,
+      [Map<String, String>? extraParams]) {
+    return interpolateString(url, controller, extraParams);
+  }
+
+  /// Interpolates placeholders in a string (e.g., URL or Database Query).
+  static String interpolateString(String text, FormController controller,
+      [Map<String, String>? extraParams]) {
+    return text.replaceAllMapped(RegExp(r'\{\{(.+?)\}\}'), (match) {
       final key = match.group(1)!;
+
+      if (extraParams != null && extraParams.containsKey(key)) {
+        return Uri.encodeComponent(extraParams[key]!);
+      }
 
       // Basic variables
       if (key.startsWith('var.static.')) {
@@ -75,7 +85,8 @@ class DataSourceService {
     final matches = RegExp(r'\{\{(.+?)\}\}').allMatches(url);
     for (final match in matches) {
       final key = match.group(1)!;
-      if (!key.startsWith('var.static.') && !key.startsWith('ds_form.')) {
+      if (!key.startsWith('var.static.') &&
+          !key.startsWith('ds_form.')) {
         keys.add(key);
       }
     }
@@ -84,14 +95,15 @@ class DataSourceService {
 
   /// Fetches options from a remote API.
   ///
-  /// Pass [httpClient] to inject a mock client in tests.
-  /// When null, a new [http.Client] is created per request.
+  /// Uses [FormConfig.onApiQuery] to delegate the HTTP request to the host app.
   static Future<List<SelectOption>> fetchOptions({
     required DataSourceApi api,
     required FormController controller,
-    http.Client? httpClient,
+    Map<String, String>? extraParams,
   }) async {
-    final url = interpolateUrl(api.url, controller);
+    if (controller.config.onApiQuery == null) return [];
+
+    final url = interpolateUrl(api.url, controller, extraParams);
 
     // Build headers
     final headers = <String, String>{
@@ -102,33 +114,26 @@ class DataSourceService {
       headers.addAll(h);
     }
 
-    // Make request
-    final client = httpClient ?? http.Client();
-    http.Response response;
+    // Make request via IoC Callback
+    dynamic data;
     try {
-      final uri = Uri.parse(url);
-      if (api.method.toUpperCase() == 'POST') {
-        response = await client.post(
-          uri,
-          headers: headers,
-          body: api.body.isNotEmpty ? api.body : null,
-        );
-      } else {
-        response = await client.get(uri, headers: headers);
+      final responseData = await controller.config.onApiQuery!(
+        url,
+        api.method,
+        headers,
+        api.body,
+      );
+
+      data = responseData;
+      if (data is String) {
+        data = json.decode(data);
       }
     } catch (e) {
       return [];
-    } finally {
-      // Only close client that we created ourselves.
-      if (httpClient == null) client.close();
     }
-
-    if (response.statusCode != 200) return [];
 
     // Parse response
     try {
-      dynamic data = json.decode(response.body);
-
       // Extract nested data using dataKey
       if (api.dataKey.isNotEmpty) {
         data = _extractValue(data, api.dataKey);
@@ -138,11 +143,78 @@ class DataSourceService {
       if (data is! List) return [];
 
       return data.map<SelectOption>((item) {
-        final label = _extractValue(item, api.labelPath);
-        final value = _extractValue(item, api.valuePath);
+        final rawLabel = _extractValue(item, api.labelPath);
+        final rawValue = _extractValue(item, api.valuePath);
+
+        String finalLabel = '';
+        String finalValue = '';
+
+        if (api.labelPath.isEmpty && api.valuePath.isNotEmpty) {
+          finalLabel = rawValue?.toString() ?? '';
+          finalValue = rawValue?.toString() ?? '';
+        } else if (api.valuePath.isEmpty && api.labelPath.isNotEmpty) {
+          finalLabel = rawLabel?.toString() ?? '';
+          finalValue = rawLabel?.toString() ?? '';
+        } else if (api.labelPath.isEmpty && api.valuePath.isEmpty) {
+          finalLabel = item?.toString() ?? '';
+          finalValue = item?.toString() ?? '';
+        } else {
+          finalLabel = rawLabel?.toString() ?? '';
+          finalValue = rawValue?.toString() ?? '';
+        }
+
         return SelectOption(
-          label: label?.toString() ?? '',
-          value: value?.toString() ?? '',
+          label: finalLabel,
+          value: finalValue,
+        );
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Fetches options from a local Database callback.
+  static Future<List<SelectOption>> fetchDatabaseOptions({
+    required DataSourceDatabase database,
+    required FormController controller,
+    Map<String, String>? extraParams,
+  }) async {
+    if (controller.config.onDatabaseQuery == null) return [];
+
+    final query = interpolateString(database.query, controller, extraParams);
+
+    try {
+      final data = await controller.config.onDatabaseQuery!(
+        database.connectionString,
+        database.dbName,
+        query,
+      );
+
+      return data.map<SelectOption>((item) {
+        final rawLabel = _extractValue(item, database.labelPath);
+        final rawValue = _extractValue(item, database.valuePath);
+
+        String finalLabel = '';
+        String finalValue = '';
+
+        if (database.labelPath.isEmpty && database.valuePath.isNotEmpty) {
+          finalLabel = rawValue?.toString() ?? '';
+          finalValue = rawValue?.toString() ?? '';
+        } else if (database.valuePath.isEmpty &&
+            database.labelPath.isNotEmpty) {
+          finalLabel = rawLabel?.toString() ?? '';
+          finalValue = rawLabel?.toString() ?? '';
+        } else if (database.labelPath.isEmpty && database.valuePath.isEmpty) {
+          finalLabel = item.toString();
+          finalValue = item.toString();
+        } else {
+          finalLabel = rawLabel?.toString() ?? '';
+          finalValue = rawValue?.toString() ?? '';
+        }
+
+        return SelectOption(
+          label: finalLabel,
+          value: finalValue,
         );
       }).toList();
     } catch (e) {
@@ -152,16 +224,14 @@ class DataSourceService {
 
   /// Fetches a single default value from a remote API for non-option components.
   ///
-  /// Uses [DataSourceApi.valuePath] to extract the value from the response.
-  /// If the response root is a **List**, the first item is used.
-  /// If the response root is a **Map** (object), it is used directly.
-  ///
+  /// Uses [FormConfig.onApiQuery] to delegate the HTTP request to the host app.
   /// Returns `null` on error, non-200 status, or missing path.
   static Future<dynamic> fetchDefaultValue({
     required DataSourceApi api,
     required FormController controller,
-    http.Client? httpClient,
   }) async {
+    if (controller.config.onApiQuery == null) return null;
+
     final url = interpolateUrl(api.url, controller);
 
     final headers = <String, String>{
@@ -172,30 +242,24 @@ class DataSourceService {
       headers.addAll(h);
     }
 
-    final client = httpClient ?? http.Client();
-    http.Response response;
+    dynamic data;
     try {
-      final uri = Uri.parse(url);
-      if (api.method.toUpperCase() == 'POST') {
-        response = await client.post(
-          uri,
-          headers: headers,
-          body: api.body.isNotEmpty ? api.body : null,
-        );
-      } else {
-        response = await client.get(uri, headers: headers);
+      final responseData = await controller.config.onApiQuery!(
+        url,
+        api.method,
+        headers,
+        api.body,
+      );
+
+      data = responseData;
+      if (data is String) {
+        data = json.decode(data);
       }
     } catch (e) {
       return null;
-    } finally {
-      if (httpClient == null) client.close();
     }
 
-    if (response.statusCode != 200) return null;
-
     try {
-      dynamic data = json.decode(response.body);
-
       // Navigate nested data using dataKey.
       if (api.dataKey.isNotEmpty) {
         data = _extractValue(data, api.dataKey);
@@ -209,6 +273,37 @@ class DataSourceService {
 
       // No path — return the whole item's string representation.
       return data?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Fetches a single default value from a local Database for non-option components.
+  static Future<dynamic> fetchDatabaseDefaultValue({
+    required DataSourceDatabase database,
+    required FormController controller,
+  }) async {
+    if (controller.config.onDatabaseQuery == null) return null;
+
+    final query = interpolateString(database.query, controller);
+
+    try {
+      final data = await controller.config.onDatabaseQuery!(
+        database.connectionString,
+        database.dbName,
+        query,
+      );
+
+      if (data.isEmpty) return null;
+
+      // Use the first row for default value
+      final firstRow = data.first;
+
+      if (database.valuePath.isNotEmpty) {
+        return _extractValue(firstRow, database.valuePath);
+      }
+
+      return firstRow.toString();
     } catch (_) {
       return null;
     }

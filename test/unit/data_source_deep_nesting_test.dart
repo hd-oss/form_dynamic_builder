@@ -1,6 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 
 import 'package:form_dynamic_builder/src/controller/form_controller.dart';
 import 'package:form_dynamic_builder/src/models/data_source.dart';
@@ -44,9 +42,18 @@ void main() {
       }
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -56,7 +63,6 @@ void main() {
       final result = await DataSourceService.fetchDefaultValue(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result, equals('Deep Value 2'));
@@ -70,9 +76,18 @@ void main() {
       ]
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -82,7 +97,6 @@ void main() {
       final result = await DataSourceService.fetchDefaultValue(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result, equals('Item 2'));
@@ -95,9 +109,18 @@ void main() {
       ]
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -107,7 +130,6 @@ void main() {
       final result = await DataSourceService.fetchDefaultValue(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result, isNull);
@@ -127,9 +149,18 @@ void main() {
       }
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -140,7 +171,6 @@ void main() {
       final result = await DataSourceService.fetchDefaultValue(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result, equals('John Doe'));
@@ -158,9 +188,18 @@ void main() {
       }
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -171,7 +210,6 @@ void main() {
       final result = await DataSourceService.fetchDefaultValue(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result, equals('Second'));
@@ -189,9 +227,18 @@ void main() {
       }
       ''';
 
-      final mockClient = MockClient((request) async {
-        return http.Response(jsonResponse, 200);
-      });
+      controller = FormController(
+        config: FormConfig(
+          id: 'test',
+          title: 'Test',
+          components: [],
+          settings: FormSettings(),
+          description: '',
+          onApiQuery: (url, method, headers, body) async {
+            return jsonResponse;
+          },
+        ),
+      );
 
       final api = DataSourceApi(
         url: 'https://example.com/api',
@@ -203,7 +250,6 @@ void main() {
       final result = await DataSourceService.fetchOptions(
         api: api,
         controller: controller,
-        httpClient: mockClient,
       );
 
       expect(result.length, 2);

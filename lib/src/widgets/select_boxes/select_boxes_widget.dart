@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_boxes_component.dart';
 import '../field_label.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../common/data_source_state_builder.dart';
 import 'select_boxes_logic.dart';
 
 class SelectBoxesWidget extends StatefulWidget {
@@ -44,86 +44,60 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
         builder: (context, _) {
           final currentValues = logic.currentValues;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FieldLabel(component: widget.component),
-              if (widget.component.description.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    widget.component.description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              if (logic.dsState == DataSourceState.loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+          return DataSourceStateBuilder(
+            logic: logic,
+            component: widget.component,
+            builder: (context) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FieldLabel(component: widget.component),
+                  if (widget.component.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        widget.component.description,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
-                  ),
-                )
-              else if (logic.dsState == DataSourceState.error)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Failed to load options',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 13),
-                  ),
-                )
-              else
-                ...logic.allOptions.map((option) {
-                  final isSelected = currentValues.contains(option.value);
-                  return ListTile(
-                    leading: Checkbox.adaptive(
-                      value: isSelected,
-                      onChanged: widget.component.disabled
+                  ...logic.allOptions.map((option) {
+                    final isSelected = currentValues.contains(option.value);
+                    return ListTile(
+                      leading: Checkbox.adaptive(
+                        value: isSelected,
+                        onChanged: widget.component.disabled
+                            ? null
+                            : (bool? checked) {
+                                logic.updateValue(
+                                    option.value, checked ?? false);
+                              },
+                      ),
+                      title: Text(option.label),
+                      onTap: widget.component.disabled
                           ? null
-                          : (bool? checked) {
-                              logic.updateValue(option.value, checked ?? false);
+                          : () {
+                              logic.updateValue(option.value, !isSelected);
                             },
+                      contentPadding: EdgeInsets.zero,
+                      minTileHeight: 0,
+                      horizontalTitleGap: 0,
+                    );
+                  }),
+                  if (widget.controller.errors
+                      .containsKey(widget.component.key))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        widget.controller.errors[widget.component.key]!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                    title: Text(option.label),
-                    onTap: widget.component.disabled
-                        ? null
-                        : () {
-                            logic.updateValue(option.value, !isSelected);
-                          },
-                    contentPadding: EdgeInsets.zero,
-                    minTileHeight: 0,
-                    horizontalTitleGap: 0,
-                  );
-                  // return CheckboxListTile.adaptive(
-                  //   title: Text(option.label),
-                  //   value: isSelected,
-                  //   onChanged: widget.component.disabled
-                  //       ? null
-                  //       : (bool? checked) {
-                  //           logic.updateValue(option.value, checked ?? false);
-                  //         },
-                  //   controlAffinity: ListTileControlAffinity.leading,
-                  //   contentPadding: EdgeInsets.zero,
-                  //   dense: true,
-                  // );
-                }),
-              if (widget.controller.errors.containsKey(widget.component.key))
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    widget.controller.errors[widget.component.key]!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-            ],
+                ],
+              );
+            },
           );
         },
       ),

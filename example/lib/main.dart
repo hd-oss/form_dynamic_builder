@@ -1,7 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'paste_json_dialog.dart';
 
 void main() {
@@ -38,11 +43,36 @@ class _FormPageState extends State<FormPage> {
   bool _isLoading = true;
 
   static const String _storageKey = 'saved_form_json';
+  Database? _database;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedForm();
+    _initDatabase().then((_) {
+      _loadSavedForm();
+    });
+  }
+
+  Future<void> _initDatabase() async {
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final dbPath = join(docsDir.path, 'example.db');
+
+      _database = await openDatabase(
+        dbPath,
+        version: 1,
+        onCreate: (db, version) async {
+          await db.execute(
+            'CREATE TABLE items (id INTEGER PRIMARY KEY, name TEXT)',
+          );
+          await db.insert('items', {'name': 'Real DB Item 1 (Sqflite)'});
+          await db.insert('items', {'name': 'Real DB Item 2 (Sqflite)'});
+          await db.insert('items', {'name': 'Real DB Item 3 (Sqflite)'});
+        },
+      );
+    } catch (e) {
+      debugPrint('Error initializing database: $e');
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -93,6 +123,40 @@ class _FormPageState extends State<FormPage> {
           "label": "Welcome to Dynamic Builder",
           "placeholder": "Paste your custom JSON to begin!",
           "disabled": true
+        },
+        {
+          "type": "select",
+          "key": "api_test",
+          "label": "Test API Data Source",
+          "dataSource": {
+            "type": "api",
+            "api": {
+              "url": "https://potterapi-fedeperin.vercel.app/en/books",
+              "method": "GET",
+              "labelPath": "title",
+              "valuePath": "index"
+            }
+          }
+        },
+        {
+          "type": "select",
+          "key": "db_test",
+          "label": "Test DB Data Source",
+          "dataSource": {
+            "type": "database",
+            "database": {
+              "query": "SELECT id, name FROM items",
+              "labelPath": "name",
+              "valuePath": "id"
+            }
+          }
+        },
+        {
+          "type": "camera",
+          "key": "photo",
+          "label": "Take a Photo (Immediate Upload)",
+          "uploadTiming": "immediate",
+          "uploadUrl": "https://example.com/api/upload"
         }
       ]
     };
@@ -101,7 +165,68 @@ class _FormPageState extends State<FormPage> {
   Future<void> _updateForm(Map<String, dynamic> jsonMap,
       {bool save = true}) async {
     try {
-      final config = FormConfig.fromJson(jsonMap);
+      final config = FormConfig.fromJson(
+        jsonMap,
+        onApiQuery: (url, method, headers, body) async {
+          debugPrint('API Query (Dio): $method $url');
+          final dio = Dio();
+          try {
+            final response = await dio.request(
+              url,
+              data: body.isNotEmpty ? body : null,
+              options: Options(
+                method: method,
+                headers: headers,
+              ),
+            );
+            return response
+                .data; // Dio parses JSON automatically for maps/lists
+          } catch (e) {
+            debugPrint('Dio Error: $e');
+            return null;
+          }
+        },
+        onFileUpload: (localPath, uploadUrl) async {
+          debugPrint('File Upload (Dio): $localPath to $uploadUrl');
+          final dio = Dio();
+          try {
+            final fileName = localPath.split(Platform.pathSeparator).last;
+            final formData = FormData.fromMap({
+              'file':
+                  await MultipartFile.fromFile(localPath, filename: fileName),
+            });
+
+            // Dummy implementation using post request, assuming backend exists
+            // Since this is an example, we catch the socket exception
+            // and fallback to returning a simulated remote URL
+            final response = await dio.post(uploadUrl, data: formData);
+            if (response.statusCode == 200) {
+              return response.data['url'] ??
+                  'https://example.com/uploads/$fileName';
+            }
+          } catch (e) {
+            debugPrint('Dio Upload Error: $e');
+
+            // Simulating a successful upload response if backend is offline
+            await Future.delayed(const Duration(seconds: 1));
+            final fileName = localPath.split(Platform.pathSeparator).last;
+            return 'https://example.com/uploads/simulated_$fileName';
+          }
+          return null;
+        },
+        onDatabaseQuery: (connectionString, dbName, query) async {
+          debugPrint('DB Query (Sqflite): $query');
+          if (_database != null) {
+            try {
+              return await _database!.rawQuery(query);
+            } catch (e) {
+              debugPrint('DB Query Error: $e');
+              return [];
+            }
+          }
+          return [];
+        },
+      );
 
       setState(() {
         _formConfig = config;

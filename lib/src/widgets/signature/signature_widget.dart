@@ -5,7 +5,6 @@ import 'package:signature/signature.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import 'signature_logic.dart';
 
 class DynamicSignature extends StatefulWidget {
@@ -139,9 +138,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
+      child: Builder(
         builder: (context) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,

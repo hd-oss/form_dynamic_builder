@@ -7,6 +7,7 @@ import 'package:form_dynamic_builder/src/models/form_config.dart';
 import 'package:form_dynamic_builder/src/models/form_settings.dart';
 import 'package:form_dynamic_builder/src/widgets/date_time/date_time_widget.dart';
 import 'package:form_dynamic_builder/src/widgets/select/select_widget.dart';
+import 'package:form_dynamic_builder/src/widgets/common/dropdown_overlay.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -125,7 +126,7 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('SelectWidget shows DropdownButtonFormField on Android',
+    testWidgets('SelectWidget shows DropdownOverlay on Android',
         (WidgetTester tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
@@ -162,7 +163,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
+      expect(find.byType(DropdownOverlay<SelectOption>), findsOneWidget);
       expect(find.byType(CupertinoPicker), findsNothing);
 
       debugDefaultTargetPlatformOverride = null;

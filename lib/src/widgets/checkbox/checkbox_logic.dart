@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
 
-class CheckboxLogic extends ChangeNotifier with DataSourceMixin {
+class CheckboxLogic extends ChangeNotifier {
   final CheckboxComponent component;
   final FormController formController;
 
@@ -29,7 +28,6 @@ class CheckboxLogic extends ChangeNotifier with DataSourceMixin {
 
   @override
   void dispose() {
-    disposeDataSource();
     super.dispose();
   }
 }

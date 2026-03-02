@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../../utils/image_compressor.dart';
 
-class FileLogic extends ChangeNotifier with DataSourceMixin {
+class FileLogic extends ChangeNotifier {
   final FileComponent component;
   final FormController formController;
 
@@ -82,7 +84,29 @@ class FileLogic extends ChangeNotifier with DataSourceMixin {
               return '${file.name} exceeds max size of ${formatMaxSize(component.maxSize)}';
             }
             if (file.path != null && !current.contains(file.path!)) {
-              current = [...current, file.path!];
+              String filePath = file.path!;
+              if (component.compressFile) {
+                filePath = await ImageCompressor.compressImage(
+                  imagePath: filePath,
+                  quality: component.compressPercentage,
+                );
+              }
+
+              if (component.uploadTiming == 'immediate' &&
+                  formController.config.onFileUpload != null &&
+                  component.uploadUrl.isNotEmpty) {
+                final remoteUrl = await formController.config.onFileUpload!(
+                  filePath,
+                  component.uploadUrl,
+                );
+                if (remoteUrl != null) {
+                  current = [...current, remoteUrl];
+                } else {
+                  current = [...current, filePath];
+                }
+              } else {
+                current = [...current, filePath];
+              }
             }
           }
           formController.updateValue(component.key, current);
@@ -92,7 +116,29 @@ class FileLogic extends ChangeNotifier with DataSourceMixin {
             return '${file.name} exceeds max size of ${formatMaxSize(component.maxSize)}';
           }
           if (file.path != null) {
-            formController.updateValue(component.key, file.path);
+            String filePath = file.path!;
+            if (component.compressFile) {
+              filePath = await ImageCompressor.compressImage(
+                imagePath: filePath,
+                quality: component.compressPercentage,
+              );
+            }
+
+            if (component.uploadTiming == 'immediate' &&
+                formController.config.onFileUpload != null &&
+                component.uploadUrl.isNotEmpty) {
+              final remoteUrl = await formController.config.onFileUpload!(
+                filePath,
+                component.uploadUrl,
+              );
+              if (remoteUrl != null) {
+                formController.updateValue(component.key, remoteUrl);
+              } else {
+                formController.updateValue(component.key, filePath);
+              }
+            } else {
+              formController.updateValue(component.key, filePath);
+            }
           }
         }
       }
@@ -105,7 +151,21 @@ class FileLogic extends ChangeNotifier with DataSourceMixin {
     }
   }
 
+  void _deleteFile(String path) {
+    try {
+      if (path.startsWith('http') || path.startsWith('https')) return;
+      final file = File(path);
+      if (file.existsSync()) {
+        file.deleteSync();
+        if (kDebugMode) print('Deleted physical file: $path');
+      }
+    } catch (e) {
+      if (kDebugMode) print('Failed to delete physical file $path: $e');
+    }
+  }
+
   void removeFile(List<String> current, String filePath) {
+    _deleteFile(filePath);
     final updated = List<String>.from(current)..remove(filePath);
     formController.updateValue(
       component.key,
@@ -119,7 +179,6 @@ class FileLogic extends ChangeNotifier with DataSourceMixin {
 
   @override
   void dispose() {
-    disposeDataSource();
     super.dispose();
   }
 }

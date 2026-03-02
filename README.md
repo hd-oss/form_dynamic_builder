@@ -31,6 +31,37 @@ dependencies:
 
 ---
 
+## File Uploads (IoC)
+
+For components like `Camera`, `File`, and `Signature`, the form builder delegates file uploads back to the Host Application using the `onFileUpload` callback. 
+
+By default, these components use `uploadTiming: "onSubmit"`, meaning they will only store the **local file path** in the form's state. It is up to the host application to upload these files when the entire form is submitted.
+
+However, if a component is configured with `uploadTiming: "immediate"`, the form builder will attempt to upload the file right after it is selected/captured. To support this, you must provide the `onFileUpload` callback:
+
+```dart
+final config = FormConfig.fromJson(
+  formJson,
+  onFileUpload: (String localPath, String uploadUrl) async {
+    // Example: Use Dio or http to upload the file to `uploadUrl`
+    final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
+    request.files.add(await http.MultipartFile.fromPath('file', localPath));
+    
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody);
+      return data['url']; // Return the remote URL of the uploaded file
+    }
+    return null; // Return null on failure (will fallback to storing local path)
+  },
+);
+```
+
+If `onFileUpload` is successful and returns a String (the remote URL), the form will store this remote URL in its state instead of the local path.
+
+---
+
 ## Permissions
 
 Some field types require platform permissions to be declared in your app. Follow the setup below based on which components you use.
@@ -181,6 +212,83 @@ if (controller.validate()) {
   print(values); // { "name": "John", "photo": "/tmp/photo_annotated_xxx.png" }
 }
 ```
+
+}
+```
+
+---
+
+## Data Source Configuration
+
+The form builder supports fetching dynamic values and options from external sources using the `dataSource` property. There are two supported types: `api` and `database`. Both types use **Inversion of Control (IoC)**, meaning the form builder delegates the actual data fetching (HTTP request or Database query) back to your Host Application.
+
+### `type: "api"`
+Fetches data via HTTP requests. Requires connectivity.
+
+```json
+"dataSource": {
+  "type": "api",
+  "api": {
+    "url": "https://api.example.com/options?search={{searchQuery}}",
+    "method": "GET",
+    "dataKey": "data.items",
+    "labelPath": "name",
+    "valuePath": "id",
+    "headers": [{"Authorization": "Bearer token"}],
+    "body": ""
+  }
+}
+```
+
+**Host Application Implementation for `api`:**
+You must provide the `onApiQuery` callback when initializing the `FormConfig`. The form builder will not make the HTTP request internally.
+
+```dart
+final config = FormConfig.fromJson(
+  formJson,
+  onApiQuery: (String url, String method, Map<String, String> headers, String body) async {
+    // Example using http package handling the fetch logic
+    final response = await http.get(Uri.parse(url), headers: headers);
+    return response.body; // ensure you return a String or decoded JSON Map/List
+  },
+);
+```
+
+### `type: "database"`
+Fetches data from a local database (e.g., SQLite) by allowing the host application to execute the query via a callback function. This uses Inversion of Control.
+
+```json
+"dataSource": {
+  "type": "database",
+  "database": {
+    "connectionString": "sqlite:browser",
+    "dbName": "lcs",
+    "query": "SELECT user_name as label, user_id as value FROM mst_users WHERE group_id = {{ds_form.lcs.group_id}};",
+    "labelPath": "label",
+    "valuePath": "value"
+  }
+}
+```
+
+**Host Application Implementation for `database`:**
+You must provide the `onDatabaseQuery` callback when initializing the `FormConfig`.
+
+```dart
+final config = FormConfig.fromJson(
+  formJson,
+  onDatabaseQuery: (String connectionString, String dbName, String query) async {
+    // Example using sqflite
+    final db = await openDatabase('$dbName.db');
+    return await db.rawQuery(query);
+  },
+);
+```
+
+**Placeholders:**
+Both `api.url` and `database.query` support placeholders for interpolation:
+- `{{componentKey}}`: Injects the current value of another field.
+- `{{ds_form.xxx}}`: Injects dynamic data passed via `dsForm`.
+- `{{var.static.current_year}}`: Injects static variables (e.g. `current_date`, `current_month`).
 
 ---
 

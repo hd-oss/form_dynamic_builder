@@ -37,6 +37,7 @@ mixin DataSourceMixin on ChangeNotifier {
   bool _isDataSourceDisposed = false;
   FormController? _dsController;
   DataSourceApi? _dsApi;
+  DataSourceDatabase? _dsDatabase;
   String? _dsComponentKey; // used in default value mode
   Set<String> _dependentKeys = {};
   bool _isDefaultValueMode = false;
@@ -53,12 +54,21 @@ mixin DataSourceMixin on ChangeNotifier {
     required DataSource? dataSource,
     required FormController controller,
   }) {
-    if (dataSource == null || !dataSource.isApi) return;
+    if (dataSource == null || (!dataSource.isApi && !dataSource.isDatabase)) {
+      return;
+    }
 
     _isDefaultValueMode = false;
     _dsController = controller;
-    _dsApi = dataSource.api!;
-    _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+
+    if (dataSource.isApi) {
+      _dsApi = dataSource.api!;
+      _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+    } else if (dataSource.isDatabase) {
+      _dsDatabase = dataSource.database!;
+      _dependentKeys =
+          DataSourceService.extractDependentKeys(_dsDatabase!.query);
+    }
 
     _snapshotDependentValues(controller);
 
@@ -85,13 +95,22 @@ mixin DataSourceMixin on ChangeNotifier {
     required FormController controller,
     required String componentKey,
   }) {
-    if (dataSource == null || !dataSource.isApi) return;
+    if (dataSource == null || (!dataSource.isApi && !dataSource.isDatabase)) {
+      return;
+    }
 
     _isDefaultValueMode = true;
     _dsController = controller;
-    _dsApi = dataSource.api!;
     _dsComponentKey = componentKey;
-    _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+
+    if (dataSource.isApi) {
+      _dsApi = dataSource.api!;
+      _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+    } else if (dataSource.isDatabase) {
+      _dsDatabase = dataSource.database!;
+      _dependentKeys =
+          DataSourceService.extractDependentKeys(_dsDatabase!.query);
+    }
 
     _snapshotDependentValues(controller);
 
@@ -121,7 +140,9 @@ mixin DataSourceMixin on ChangeNotifier {
   }
 
   void _onFormChanged() {
-    if (_isDataSourceDisposed || _dsController == null || _dsApi == null) {
+    if (_isDataSourceDisposed ||
+        _dsController == null ||
+        (_dsApi == null && _dsDatabase == null)) {
       return;
     }
 
@@ -165,17 +186,27 @@ mixin DataSourceMixin on ChangeNotifier {
   }
 
   Future<void> _fetchOptions(FormController controller) async {
-    if (_isDataSourceDisposed || _dsApi == null) return;
+    if (_isDataSourceDisposed || (_dsApi == null && _dsDatabase == null)) {
+      return;
+    }
 
     dsState = DataSourceState.loading;
     dsError = null;
     notifyListeners();
 
     try {
-      final options = await DataSourceService.fetchOptions(
-        api: _dsApi!,
-        controller: controller,
-      );
+      List<SelectOption> options = [];
+      if (_dsApi != null) {
+        options = await DataSourceService.fetchOptions(
+          api: _dsApi!,
+          controller: controller,
+        );
+      } else if (_dsDatabase != null) {
+        options = await DataSourceService.fetchDatabaseOptions(
+          database: _dsDatabase!,
+          controller: controller,
+        );
+      }
 
       if (_isDataSourceDisposed) return;
 
@@ -191,7 +222,9 @@ mixin DataSourceMixin on ChangeNotifier {
   }
 
   Future<void> _fetchDefaultValue(FormController controller) async {
-    if (_isDataSourceDisposed || _dsApi == null || _dsComponentKey == null) {
+    if (_isDataSourceDisposed ||
+        (_dsApi == null && _dsDatabase == null) ||
+        _dsComponentKey == null) {
       return;
     }
 
@@ -200,10 +233,18 @@ mixin DataSourceMixin on ChangeNotifier {
     notifyListeners();
 
     try {
-      final value = await DataSourceService.fetchDefaultValue(
-        api: _dsApi!,
-        controller: controller,
-      );
+      dynamic value;
+      if (_dsApi != null) {
+        value = await DataSourceService.fetchDefaultValue(
+          api: _dsApi!,
+          controller: controller,
+        );
+      } else if (_dsDatabase != null) {
+        value = await DataSourceService.fetchDatabaseDefaultValue(
+          database: _dsDatabase!,
+          controller: controller,
+        );
+      }
 
       if (_isDataSourceDisposed) return;
 

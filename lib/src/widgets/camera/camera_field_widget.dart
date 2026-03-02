@@ -7,7 +7,6 @@ import '../../models/components/all_components.dart';
 import '../field_label.dart';
 import 'camera_field_logic.dart';
 import 'camera_screen_widget.dart';
-import '../common/data_source_state_builder.dart';
 
 // ============================================================================
 // DynamicCamera Field Widget
@@ -182,9 +181,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
+      child: Builder(
         builder: (context) {
           final value =
               widget.controller.getValue(widget.component.key) as String?;

@@ -20,6 +20,7 @@ class CameraComponent extends FormComponent {
 
   /// Whether to compress the captured photo before upload/storing.
   final bool compressFile;
+  final int compressPercentage;
 
   /// When to upload: 'immediate' (right after capture) or 'onSubmit'.
   final String uploadTiming;
@@ -49,6 +50,7 @@ class CameraComponent extends FormComponent {
     this.showCoordinates = false,
     this.showDeviceInfo = false,
     this.compressFile = false,
+    this.compressPercentage = 80,
     this.uploadTiming = 'onSubmit',
     this.uploadUrl = '',
   });
@@ -79,6 +81,7 @@ class CameraComponent extends FormComponent {
       showCoordinates: json['showCoordinates'] ?? false,
       showDeviceInfo: json['showDeviceInfo'] ?? false,
       compressFile: json['compressFile'] ?? false,
+      compressPercentage: json['compressPercentage'] ?? 80,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
       uploadUrl: json['uploadUrl'] ?? '',
     );
@@ -93,6 +96,7 @@ class CameraComponent extends FormComponent {
     json['showCoordinates'] = showCoordinates;
     json['showDeviceInfo'] = showDeviceInfo;
     json['compressFile'] = compressFile;
+    json['compressPercentage'] = compressPercentage;
     json['uploadTiming'] = uploadTiming;
     json['uploadUrl'] = uploadUrl;
     return json;
