@@ -1,17 +1,20 @@
 import '../form_component.dart';
+import '../upload_config.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
-class FileComponent extends FormComponent {
+class FileUploadComponent extends FormComponent {
   final bool multiple;
   final String accept;
   final int maxSize;
   final String uploadUrl;
+  final String uploadType;
+  final OtherUploadConfig? uploadConfig;
   final bool compressFile;
   final int compressPercentage;
   final String uploadTiming;
 
-  FileComponent({
+  FileUploadComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -31,13 +34,15 @@ class FileComponent extends FormComponent {
     this.accept = '',
     this.maxSize = 0,
     this.uploadUrl = '',
+    this.uploadType = 'callback',
+    this.uploadConfig,
     this.compressFile = false,
     this.compressPercentage = 80,
     this.uploadTiming = 'onSubmit',
   });
 
-  factory FileComponent.fromJson(Map<String, dynamic> json) {
-    return FileComponent(
+  factory FileUploadComponent.fromJson(Map<String, dynamic> json) {
+    return FileUploadComponent(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
       key: json['key'] ?? '',
@@ -60,6 +65,11 @@ class FileComponent extends FormComponent {
       accept: json['accept'] ?? '',
       maxSize: json['maxSize'] ?? 0,
       uploadUrl: json['uploadUrl'] ?? '',
+      uploadType: json['uploadType'] as String? ?? 'callback',
+      uploadConfig: json['otherUploadConfig'] != null
+          ? OtherUploadConfig.fromJson(
+              json['otherUploadConfig'] as Map<String, dynamic>)
+          : null,
       compressFile: json['compressFile'] ?? false,
       compressPercentage: json['compressPercentage'] ?? 80,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
@@ -73,6 +83,10 @@ class FileComponent extends FormComponent {
     json['accept'] = accept;
     json['maxSize'] = maxSize;
     json['uploadUrl'] = uploadUrl;
+    json['uploadType'] = uploadType;
+    if (uploadConfig != null) {
+      json['otherUploadConfig'] = uploadConfig!.toJson();
+    }
     json['compressFile'] = compressFile;
     json['compressPercentage'] = compressPercentage;
     json['uploadTiming'] = uploadTiming;

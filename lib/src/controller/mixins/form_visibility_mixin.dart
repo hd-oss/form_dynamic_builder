@@ -1,6 +1,7 @@
 import '../../models/form_config.dart';
 import '../../models/form_component.dart';
 import '../../models/conditional_config.dart';
+import '../../models/file_data.dart';
 import '../../utils/form_constants.dart';
 
 mixin FormVisibilityMixin {
@@ -10,11 +11,9 @@ mixin FormVisibilityMixin {
   FormComponent? findComponent(String key);
 
   /// Returns only values for components that are currently visible.
+  /// Values are processed to "submission format" (e.g. unwrapping FileData).
   Map<String, dynamic> get visibleValues {
-    final allComponents = [...config.components];
-    for (var step in config.steps) {
-      allComponents.addAll(step.components);
-    }
+    final allComponents = getAllComponents();
 
     final visibleKeys = allComponents
         .where(
@@ -22,9 +21,43 @@ mixin FormVisibilityMixin {
         .map((c) => c.key)
         .toSet();
 
-    return Map.fromEntries(
-      values.entries.where((e) => visibleKeys.contains(e.key)),
-    );
+    final result = <String, dynamic>{};
+    for (var key in visibleKeys) {
+      if (values.containsKey(key)) {
+        result[key] = _unwrapValue(values[key]);
+      }
+    }
+    return result;
+  }
+
+  /// Returns all form values, including hidden ones.
+  /// Values are processed to "submission format" (unwrapping FileData).
+  Map<String, dynamic> get allValues {
+    final result = <String, dynamic>{};
+    for (var entry in values.entries) {
+      result[entry.key] = _unwrapValue(entry.value);
+    }
+    return result;
+  }
+
+  /// Helper to convert internal representation (like FileData) to submission format.
+  dynamic _unwrapValue(dynamic value) {
+    if (value is FileData) {
+      return value.submissionValue;
+    }
+    if (value is List) {
+      return value.map((e) => e is FileData ? e.submissionValue : e).toList();
+    }
+    return value;
+  }
+
+  /// Gets all components across all steps and top-level.
+  List<FormComponent> getAllComponents() {
+    final allComponents = [...config.components];
+    for (var step in config.steps) {
+      allComponents.addAll(step.components);
+    }
+    return allComponents;
   }
 
   bool isComponentVisible(FormComponent component) {

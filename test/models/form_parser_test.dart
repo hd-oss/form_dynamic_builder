@@ -125,21 +125,21 @@ void main() {
       expect(config.components.length, 3);
 
       // Component 0: uploadTiming=immediate, no compress
-      final c0 = config.components[0] as FileComponent;
+      final c0 = config.components[0] as FileUploadComponent;
       expect(c0.compressFile, false);
       expect(c0.compressPercentage, 80);
       expect(c0.uploadTiming, 'immediate');
       expect(c0.accept, '.pdf,.doc');
 
       // Component 1: uploadTiming=onSubmit, compress 60%
-      final c1 = config.components[1] as FileComponent;
+      final c1 = config.components[1] as FileUploadComponent;
       expect(c1.compressFile, true);
       expect(c1.compressPercentage, 60);
       expect(c1.uploadTiming, 'onSubmit');
       expect(c1.maxSize, 50000);
 
       // Component 2: no uploadUrl — uploadTiming=immediate, compress defaults
-      final c2 = config.components[2] as FileComponent;
+      final c2 = config.components[2] as FileUploadComponent;
       expect(c2.compressFile, false);
       expect(c2.compressPercentage, 80); // default
       expect(c2.uploadTiming, 'immediate');
@@ -160,7 +160,7 @@ void main() {
       };
 
       final config = FormConfig.fromJson(jsonMap);
-      final comp = config.components[0] as FileComponent;
+      final comp = config.components[0] as FileUploadComponent;
 
       expect(comp.compressFile, false);
       expect(comp.compressPercentage, 80);
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('Should serialize new fields correctly with toJson', () {
-      final comp = FileComponent(
+      final comp = FileUploadComponent(
         id: 'f1',
         type: 'file',
         key: 'doc',

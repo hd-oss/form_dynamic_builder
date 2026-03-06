@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_option.dart';
 import '../../models/data_source.dart';
-import '../data_source_service.dart';
+import '../datasource_service.dart';
 
 enum DataSourceState {
   initial,
@@ -63,11 +63,11 @@ mixin DataSourceMixin on ChangeNotifier {
 
     if (dataSource.isApi) {
       _dsApi = dataSource.api!;
-      _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+      _dependentKeys = DatasourceService.extractDependentKeys(_dsApi!.url);
     } else if (dataSource.isDatabase) {
       _dsDatabase = dataSource.database!;
       _dependentKeys =
-          DataSourceService.extractDependentKeys(_dsDatabase!.query);
+          DatasourceService.extractDependentKeys(_dsDatabase!.query);
     }
 
     _snapshotDependentValues(controller);
@@ -105,11 +105,12 @@ mixin DataSourceMixin on ChangeNotifier {
 
     if (dataSource.isApi) {
       _dsApi = dataSource.api!;
-      _dependentKeys = DataSourceService.extractDependentKeys(_dsApi!.url);
+      _dependentKeys = DatasourceService.extractDependentKeys(_dsApi!.url);
     } else if (dataSource.isDatabase) {
       _dsDatabase = dataSource.database!;
-      _dependentKeys =
-          DataSourceService.extractDependentKeys(_dsDatabase!.query);
+      _dependentKeys = DatasourceService.extractDependentKeys(
+        _dsDatabase!.query,
+      );
     }
 
     _snapshotDependentValues(controller);
@@ -197,12 +198,12 @@ mixin DataSourceMixin on ChangeNotifier {
     try {
       List<SelectOption> options = [];
       if (_dsApi != null) {
-        options = await DataSourceService.fetchOptions(
+        options = await DatasourceService.fetchOptions(
           api: _dsApi!,
           controller: controller,
         );
       } else if (_dsDatabase != null) {
-        options = await DataSourceService.fetchDatabaseOptions(
+        options = await DatasourceService.fetchDatabaseOptions(
           database: _dsDatabase!,
           controller: controller,
         );
@@ -235,12 +236,12 @@ mixin DataSourceMixin on ChangeNotifier {
     try {
       dynamic value;
       if (_dsApi != null) {
-        value = await DataSourceService.fetchDefaultValue(
+        value = await DatasourceService.fetchDefaultValue(
           api: _dsApi!,
           controller: controller,
         );
       } else if (_dsDatabase != null) {
-        value = await DataSourceService.fetchDatabaseDefaultValue(
+        value = await DatasourceService.fetchDatabaseDefaultValue(
           database: _dsDatabase!,
           controller: controller,
         );

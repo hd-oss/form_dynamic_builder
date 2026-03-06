@@ -1,4 +1,5 @@
 import '../form_component.dart';
+import '../upload_config.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
@@ -28,6 +29,12 @@ class CameraComponent extends FormComponent {
   /// The URL to upload the captured photo to.
   final String uploadUrl;
 
+  /// Upload type: 'callback' or 'other'.
+  final String uploadType;
+
+  /// Config for direct HTTP upload (used when uploadType == 'other').
+  final OtherUploadConfig? uploadConfig;
+
   CameraComponent({
     required super.id,
     required super.type,
@@ -53,6 +60,8 @@ class CameraComponent extends FormComponent {
     this.compressPercentage = 80,
     this.uploadTiming = 'onSubmit',
     this.uploadUrl = '',
+    this.uploadType = 'callback',
+    this.uploadConfig,
   });
 
   factory CameraComponent.fromJson(Map<String, dynamic> json) {
@@ -84,6 +93,11 @@ class CameraComponent extends FormComponent {
       compressPercentage: json['compressPercentage'] ?? 80,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
       uploadUrl: json['uploadUrl'] ?? '',
+      uploadType: json['uploadType'] as String? ?? 'callback',
+      uploadConfig: json['otherUploadConfig'] != null
+          ? OtherUploadConfig.fromJson(
+              json['otherUploadConfig'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -99,6 +113,10 @@ class CameraComponent extends FormComponent {
     json['compressPercentage'] = compressPercentage;
     json['uploadTiming'] = uploadTiming;
     json['uploadUrl'] = uploadUrl;
+    json['uploadType'] = uploadType;
+    if (uploadConfig != null) {
+      json['otherUploadConfig'] = uploadConfig!.toJson();
+    }
     return json;
   }
 }

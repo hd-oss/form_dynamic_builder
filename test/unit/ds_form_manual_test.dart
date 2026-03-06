@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
-import 'package:form_dynamic_builder/src/services/data_source_service.dart';
+import 'package:form_dynamic_builder/src/services/datasource_service.dart';
 
 void main() {
   test('ds_form manual update and interpolation test', () {
@@ -22,7 +22,7 @@ void main() {
 
     // Initial check
     expect(
-      DataSourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
+      DatasourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
       'initial_lcs',
     );
 
@@ -36,11 +36,11 @@ void main() {
 
     // Verify interpolation uses updated values
     expect(
-      DataSourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
+      DatasourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
       'updated_lcs',
     );
     expect(
-      DataSourceService.interpolateUrl(
+      DatasourceService.interpolateUrl(
           '{{ds_form.task.los.status}}', controller),
       'approved',
     );
@@ -51,12 +51,12 @@ void main() {
     });
 
     expect(
-      DataSourceService.interpolateUrl('{{ds_form.user.name}}', controller),
+      DatasourceService.interpolateUrl('{{ds_form.user.name}}', controller),
       'John',
     );
     // Previous data should still be there if merged correctly (addAll is used)
     expect(
-      DataSourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
+      DatasourceService.interpolateUrl('{{ds_form.task.lcs.id}}', controller),
       'updated_lcs',
     );
   });

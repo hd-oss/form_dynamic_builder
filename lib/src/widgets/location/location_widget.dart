@@ -45,21 +45,6 @@ class _DynamicLocationState extends State<DynamicLocation> {
   // ACTION HANDLERS
   // ==========================================================================
 
-  Future<void> _handleDetectLocation() async {
-    final success = await logic.detectLocation();
-
-    if (!success) {
-      if (!mounted) return;
-      return _showError('Unable to get location. Check permissions.');
-    }
-
-    final loc =
-        logic.parseLocation(widget.controller.getValue(widget.component.key));
-    if (loc != null && widget.component.autoZoomLocation) {
-      _miniMapController.move(LatLng(loc['lat']!, loc['lng']!), 15);
-    }
-  }
-
   Future<void> _openMapPicker() async {
     final current =
         logic.parseLocation(widget.controller.getValue(widget.component.key));
@@ -86,12 +71,6 @@ class _DynamicLocationState extends State<DynamicLocation> {
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.orange),
-    );
-  }
-
   // ==========================================================================
   // COORDINATE INPUT (manual mode)
   // ==========================================================================
@@ -101,70 +80,40 @@ class _DynamicLocationState extends State<DynamicLocation> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildLatInput()),
+            Expanded(
+                child: TextFormField(
+              controller: logic.latController,
+              decoration: const InputDecoration(
+                labelText: 'Latitude',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              enabled: !widget.component.disabled,
+              onChanged: (_) => logic.syncControllerFromTextFields(),
+            )),
             const SizedBox(width: 8),
-            Expanded(child: _buildLngInput()),
+            Expanded(
+                child: TextFormField(
+              controller: logic.lngController,
+              decoration: const InputDecoration(
+                labelText: 'Longitude',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              enabled: !widget.component.disabled,
+              onChanged: (_) => logic.syncControllerFromTextFields(),
+            )),
           ],
         ),
         const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _buildLatInput() {
-    return TextFormField(
-      controller: logic.latController,
-      decoration: const InputDecoration(
-        labelText: 'Latitude',
-        border: OutlineInputBorder(),
-        isDense: true,
-      ),
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: true,
-      ),
-      enabled: !widget.component.disabled,
-      onChanged: (_) => logic.syncControllerFromTextFields(),
-    );
-  }
-
-  Widget _buildLngInput() {
-    return TextFormField(
-      controller: logic.lngController,
-      decoration: const InputDecoration(
-        labelText: 'Longitude',
-        border: OutlineInputBorder(),
-        isDense: true,
-      ),
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: true,
-      ),
-      enabled: !widget.component.disabled,
-      onChanged: (_) => logic.syncControllerFromTextFields(),
-    );
-  }
-
-  // ==========================================================================
-  // LOCATION DISPLAY (when map picker is enabled)
-  // ==========================================================================
-
-  Widget _buildLocationPreview(Map<String, double> loc) {
-    return Row(
-      children: [
-        const Icon(Icons.location_on, size: 20, color: Colors.red),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            logic.formatLocation(loc),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-        if (!widget.component.disabled)
-          GestureDetector(
-            onTap: logic.clearLocation,
-            child: const Icon(Icons.close, size: 25),
-          ),
       ],
     );
   }
@@ -179,33 +128,28 @@ class _DynamicLocationState extends State<DynamicLocation> {
       child: SizedBox(
         height: 160,
         child: FlutterMap(
-          mapController: _miniMapController,
-          options: MapOptions(
-            initialCenter: LatLng(loc['lat']!, loc['lng']!),
-            initialZoom: 15,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.none,
-            ),
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.form_dynamic_builder',
-            ),
-            MarkerLayer(
-              markers: [
+            mapController: _miniMapController,
+            options: MapOptions(
+                initialCenter: LatLng(loc['lat']!, loc['lng']!),
+                initialZoom: 15,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.none,
+                )),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.form_dynamic_builder',
+              ),
+              MarkerLayer(markers: [
                 Marker(
-                  point: LatLng(loc['lat']!, loc['lng']!),
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.red,
-                    size: 36,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                    point: LatLng(loc['lat']!, loc['lng']!),
+                    child: const Icon(
+                      Icons.location_pin,
+                      color: Colors.red,
+                      size: 36,
+                    )),
+              ]),
+            ]),
       ),
     );
   }
@@ -291,7 +235,18 @@ class _DynamicLocationState extends State<DynamicLocation> {
           if (!widget.component.enableMapPicker)
             _buildManualInput()
           else if (loc != null) ...[
-            _buildLocationPreview(loc),
+            Row(children: [
+              const Icon(Icons.location_on, size: 20, color: Colors.red),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(logic.formatLocation(loc),
+                    style: Theme.of(context).textTheme.bodyMedium),
+              ),
+              if (!widget.component.disabled)
+                GestureDetector(
+                    onTap: logic.clearLocation,
+                    child: const Icon(Icons.close, size: 25)),
+            ]),
             const SizedBox(height: 8),
           ],
           if (loc != null) ...[

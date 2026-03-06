@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../../services/mixins/upload_mixin.dart';
 import '../field_label.dart';
 import 'signature_logic.dart';
 
@@ -36,20 +36,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
     super.dispose();
   }
 
-  // ==========================================================================
-  // EXTERNAL IMAGE HANDLING
-  // ==========================================================================
-
-  bool _isExternalImage(dynamic value) {
-    return value != null &&
-        value is String &&
-        value.isNotEmpty &&
-        logic.signatureController.isEmpty;
-  }
-
-  Widget _buildExternalImage(String value) {
-    final imageWidget = _decodeImage(value);
-
+  Widget _buildExternalImage(dynamic value) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -61,7 +48,10 @@ class _DynamicSignatureState extends State<DynamicSignature> {
       width: widget.component.width ?? double.infinity,
       child: Stack(
         children: [
-          Positioned.fill(child: imageWidget),
+          Positioned.fill(
+              child: logic.buildImageFromValue(context, value,
+                  height: widget.component.height,
+                  width: widget.component.width)),
           if (widget.component.disabled)
             Positioned.fill(
               child: Container(color: Colors.white.withOpacity(0.5)),
@@ -69,40 +59,6 @@ class _DynamicSignatureState extends State<DynamicSignature> {
         ],
       ),
     );
-  }
-
-  Widget _decodeImage(String val) {
-    try {
-      if (val.startsWith('http://') || val.startsWith('https://')) {
-        return Image.network(
-          val,
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-              const Center(child: Icon(Icons.broken_image)),
-        );
-      }
-
-      if (val.contains(',')) {
-        final base64Str = val.split(',').last;
-        return Image.memory(
-          base64Decode(base64Str),
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-              const Center(child: Icon(Icons.broken_image)),
-        );
-      }
-
-      if (RegExp(r'^[A-Za-z0-9+/]+={0,2}$').hasMatch(val)) {
-        return Image.memory(
-          base64Decode(val),
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-              const Center(child: Icon(Icons.broken_image)),
-        );
-      }
-    } catch (_) {}
-
-    return const Center(child: Icon(Icons.broken_image));
   }
 
   // ==========================================================================
@@ -134,12 +90,13 @@ class _DynamicSignatureState extends State<DynamicSignature> {
 
   @override
   Widget build(BuildContext context) {
-    final value = widget.controller.getValue(widget.component.key);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Builder(
-        builder: (context) {
+      child: ListenableBuilder(
+        listenable: Listenable.merge([widget.controller, logic]),
+        builder: (context, _) {
+          final value = widget.controller.getValue(widget.component.key);
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -149,20 +106,57 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                   border: InputBorder.none,
                   errorText: widget.controller.errors[widget.component.key],
                 ),
-                child: Stack(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _isExternalImage(value)
-                        ? _buildExternalImage(value.toString())
-                        : _buildSignatureCanvas(),
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.red),
-                        onPressed: widget.component.disabled
-                            ? null
-                            : logic.clearSignature,
-                        tooltip: 'Clear Signature',
+                    if (logic.uploadStatus == UploadStatus.uploading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12.0),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator.adaptive(
+                                strokeWidth: 4),
+                          ),
+                        ),
                       ),
+                    if (logic.uploadStatus == UploadStatus.error)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.warning_amber_rounded,
+                                color: Colors.orange, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                logic.uploadError ?? 'Upload failed',
+                                style: TextStyle(
+                                    color: Colors.orange[800],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Stack(
+                      children: [
+                        logic.isExternalImage(value)
+                            ? _buildExternalImage(value)
+                            : _buildSignatureCanvas(),
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.red),
+                            onPressed: widget.component.disabled
+                                ? null
+                                : logic.clearSignature,
+                            tooltip: 'Clear Signature',
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

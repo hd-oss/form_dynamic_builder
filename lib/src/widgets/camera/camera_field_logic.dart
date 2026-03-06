@@ -7,16 +7,18 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../../models/file_data.dart';
+
 import '../../utils/image_compressor.dart';
 
-class CameraLogic extends ChangeNotifier {
+import '../../services/mixins/upload_mixin.dart';
+import '../../services/upload_service.dart';
+
+class CameraLogic extends ChangeNotifier with UploadMixin {
   final CameraComponent component;
   final FormController formController;
 
-  bool _isProcessing = false;
   bool _isDisposed = false;
-
-  bool get isProcessing => _isProcessing;
 
   CameraLogic(this.component, this.formController) {
     // Initialization
@@ -36,8 +38,15 @@ class CameraLogic extends ChangeNotifier {
   }
 
   void clearPhoto() {
-    final currentPath = formController.getValue(component.key);
-    if (currentPath != null && currentPath is String) {
+    final value = formController.getValue(component.key);
+    String? currentPath;
+    if (value is FileData) {
+      currentPath = value.localPath;
+    } else if (value is String) {
+      currentPath = value;
+    }
+
+    if (currentPath != null) {
       try {
         if (!currentPath.startsWith('http') &&
             !currentPath.startsWith('https')) {
@@ -55,8 +64,7 @@ class CameraLogic extends ChangeNotifier {
   }
 
   Future<void> processAndSavePhoto(String rawPath) async {
-    _isProcessing = true;
-    notifyListeners();
+    updateUploadStatus(UploadStatus.uploading);
 
     try {
       String pathToProcess = rawPath;
@@ -76,25 +84,40 @@ class CameraLogic extends ChangeNotifier {
       );
       if (_isDisposed) return;
 
-      if (component.uploadTiming == 'immediate' &&
-          formController.config.onFileUpload != null &&
-          component.uploadUrl.isNotEmpty) {
-        final remoteUrl = await formController.config.onFileUpload!(
-          finalPath,
-          component.uploadUrl,
+      final uploadResult = await UploadService.processAndUpload(
+        localPaths: [finalPath],
+        formController: formController,
+        uploadUrl: component.uploadUrl,
+        uploadTiming: component.uploadTiming,
+        uploadType: component.uploadType,
+        uploadConfig: component.uploadConfig,
+        compressFile: false, // Already processed metadata burning
+        maxSize: 0, // Camera quality usually handled by package
+      );
+
+      if (uploadResult.isSuccess) {
+        final resultValue = uploadResult.values.first;
+        final size =
+            File(finalPath).existsSync() ? File(finalPath).lengthSync() : null;
+        final fileData = FileData.fromUpload(
+          localPath: finalPath,
+          size: size,
+          uploadedUrl: resultValue is String ? resultValue : null,
+          uploadResponse: resultValue is! String ? resultValue : null,
         );
-        if (remoteUrl != null) {
-          formController.updateValue(component.key, remoteUrl);
-        } else {
-          // If upload fails, fallback to local path (or maybe null/error)
-          formController.updateValue(component.key, finalPath);
-        }
+        formController.updateValue(component.key, fileData);
+        updateUploadStatus(UploadStatus.success);
       } else {
-        formController.updateValue(component.key, finalPath);
+        // Fallback: keep local file wrapped in FileData
+        final size =
+            File(finalPath).existsSync() ? File(finalPath).lengthSync() : null;
+        formController.updateValue(
+            component.key, FileData.fromLocalPath(finalPath, size: size));
+        updateUploadStatus(UploadStatus.error,
+            error: uploadResult.errorMessage);
       }
-    } finally {
-      _isProcessing = false;
-      notifyListeners();
+    } catch (e) {
+      updateUploadStatus(UploadStatus.error, error: 'Processing failed: $e');
     }
   }
 
@@ -225,5 +248,33 @@ class CameraLogic extends ChangeNotifier {
     } catch (e) {
       return 'GPS: N/A';
     }
+  }
+
+  Widget buildImageFromValue(dynamic value) {
+    String? path;
+    if (value is FileData) {
+      path = value.url ?? value.localPath;
+    } else if (value is String) {
+      path = value;
+    }
+
+    if (path == null || path.isEmpty) {
+      return const Center(child: Icon(Icons.broken_image));
+    }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Center(child: Icon(Icons.broken_image)),
+      );
+    }
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) =>
+          const Center(child: Icon(Icons.broken_image)),
+    );
   }
 }

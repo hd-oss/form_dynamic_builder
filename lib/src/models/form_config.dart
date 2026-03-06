@@ -16,8 +16,8 @@ typedef ApiQueryCallback = Future<dynamic> Function(
   String body,
 );
 
-typedef FileUploadCallback = Future<String?> Function(
-  String localPath,
+typedef FileUploadCallback = Future<dynamic> Function(
+  List<String> localPath,
   String uploadUrl,
 );
 

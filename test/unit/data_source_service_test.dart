@@ -9,7 +9,7 @@ import 'package:form_dynamic_builder/src/models/components/select_component.dart
 import 'package:form_dynamic_builder/src/models/data_source.dart';
 import 'package:form_dynamic_builder/src/models/form_config.dart';
 import 'package:form_dynamic_builder/src/models/form_settings.dart';
-import 'package:form_dynamic_builder/src/services/data_source_service.dart';
+import 'package:form_dynamic_builder/src/services/datasource_service.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -81,7 +81,7 @@ void main() {
       const url = 'https://potterapi-fedeperin.vercel.app/en/books';
       final controller = buildController();
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result, equals(url));
     });
@@ -95,7 +95,7 @@ void main() {
       const url = 'https://potterapi-fedeperin.vercel.app/en/books?index=1';
       final controller = buildController();
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result, equals(url));
     });
@@ -123,7 +123,7 @@ void main() {
       // Simulasikan user mengisi nilai komponen titleBook.
       controller.updateValue('titleBook', 'The Goblet of Fire');
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(
           result,
@@ -139,7 +139,7 @@ void main() {
 
       final controller = buildController();
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result,
           equals('https://potterapi-fedeperin.vercel.app/en/books?title='));
@@ -162,7 +162,7 @@ void main() {
         },
       );
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(
           result,
@@ -178,7 +178,7 @@ void main() {
 
       final controller = buildController(); // dsForm = null
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result,
           equals('https://potterapi-fedeperin.vercel.app/en/books?title='));
@@ -195,7 +195,7 @@ void main() {
 
       final controller = buildController();
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result, contains(DateTime.now().year.toString()));
     });
@@ -205,7 +205,7 @@ void main() {
         () {
       const url = 'https://example.com/api?month={{var.static.current_month}}';
       final controller = buildController();
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
       final month = DateTime.now().month.toString().padLeft(2, '0');
       expect(result, contains(month));
     });
@@ -214,7 +214,7 @@ void main() {
         () {
       const url = 'https://example.com/api?date={{var.static.current_date}}';
       final controller = buildController();
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
       final now = DateTime.now();
       final expected =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
@@ -233,7 +233,7 @@ void main() {
         },
       );
 
-      final result = DataSourceService.interpolateUrl(url, controller);
+      final result = DatasourceService.interpolateUrl(url, controller);
 
       expect(result, contains(DateTime.now().year.toString()));
       expect(result, contains('magic'));
@@ -246,34 +246,34 @@ void main() {
   group('DataSourceService.extractDependentKeys', () {
     test('URL tanpa placeholder: tidak ada dependent keys', () {
       const url = 'https://potterapi-fedeperin.vercel.app/en/books';
-      expect(DataSourceService.extractDependentKeys(url), isEmpty);
+      expect(DatasourceService.extractDependentKeys(url), isEmpty);
     });
 
     test('URL dengan static value hardcoded: tidak ada dependent keys', () {
       const url = 'https://potterapi-fedeperin.vercel.app/en/books?index=1';
-      expect(DataSourceService.extractDependentKeys(url), isEmpty);
+      expect(DatasourceService.extractDependentKeys(url), isEmpty);
     });
 
     test('URL dengan {{var.static.*}}: tidak dianggap dependent key', () {
       const url = 'https://example.com/api?year={{var.static.current_year}}';
-      expect(DataSourceService.extractDependentKeys(url), isEmpty);
+      expect(DatasourceService.extractDependentKeys(url), isEmpty);
     });
 
     test('URL dengan {{ds_form.*}}: tidak dianggap dependent key', () {
       const url = 'https://example.com/api?filter={{ds_form.task.lcs.key}}';
-      expect(DataSourceService.extractDependentKeys(url), isEmpty);
+      expect(DatasourceService.extractDependentKeys(url), isEmpty);
     });
 
     test('URL dengan {{component_key}}: dianggap dependent key', () {
       const url =
           'https://potterapi-fedeperin.vercel.app/en/books?title={{titleBook}}';
-      expect(DataSourceService.extractDependentKeys(url), {'titleBook'});
+      expect(DatasourceService.extractDependentKeys(url), {'titleBook'});
     });
 
     test('URL dengan multiple component keys: semua terdeteksi', () {
       const url =
           'https://example.com/api?province={{province_id}}&city={{city_id}}&year={{var.static.current_year}}';
-      expect(DataSourceService.extractDependentKeys(url),
+      expect(DatasourceService.extractDependentKeys(url),
           {'province_id', 'city_id'});
     });
   });
@@ -301,7 +301,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DataSourceService.fetchOptions(
+      final options = await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -333,7 +333,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DataSourceService.fetchOptions(
+      final options = await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -375,7 +375,7 @@ void main() {
 
       controller.updateValue('titleBook', 'The Chamber of Secrets');
 
-      await DataSourceService.fetchOptions(
+      await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -412,7 +412,7 @@ void main() {
         valuePath: 'index',
       );
 
-      await DataSourceService.fetchOptions(
+      await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -444,7 +444,7 @@ void main() {
         valuePath: 'index',
       );
 
-      await DataSourceService.fetchOptions(
+      await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -470,7 +470,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DataSourceService.fetchOptions(
+      final options = await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -500,7 +500,7 @@ void main() {
         valuePath: 'index',
       );
 
-      await DataSourceService.fetchOptions(
+      await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -537,7 +537,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DataSourceService.fetchOptions(
+      final options = await DatasourceService.fetchOptions(
         api: api,
         controller: controller,
       );

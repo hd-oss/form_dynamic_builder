@@ -1,4 +1,5 @@
 import '../form_component.dart';
+import '../upload_config.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
@@ -6,6 +7,8 @@ class SignatureComponent extends FormComponent {
   final double? width;
   final double? height;
   final String uploadUrl;
+  final String uploadType;
+  final OtherUploadConfig? uploadConfig;
   final String uploadTiming;
 
   SignatureComponent({
@@ -27,6 +30,8 @@ class SignatureComponent extends FormComponent {
     this.width,
     this.height,
     this.uploadUrl = '',
+    this.uploadType = 'callback',
+    this.uploadConfig,
     this.uploadTiming = 'onSubmit',
   });
 
@@ -53,6 +58,11 @@ class SignatureComponent extends FormComponent {
       width: (json['width'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
       uploadUrl: json['uploadUrl'] ?? '',
+      uploadType: json['uploadType'] as String? ?? 'callback',
+      uploadConfig: json['otherUploadConfig'] != null
+          ? OtherUploadConfig.fromJson(
+              json['otherUploadConfig'] as Map<String, dynamic>)
+          : null,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
     );
   }
@@ -62,6 +72,10 @@ class SignatureComponent extends FormComponent {
     if (width != null) json['width'] = width;
     if (height != null) json['height'] = height;
     json['uploadUrl'] = uploadUrl;
+    json['uploadType'] = uploadType;
+    if (uploadConfig != null) {
+      json['otherUploadConfig'] = uploadConfig!.toJson();
+    }
     json['uploadTiming'] = uploadTiming;
     return json;
   }

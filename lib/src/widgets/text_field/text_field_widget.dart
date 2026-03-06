@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import '../../controller/form_controller.dart';
 import '../../models/form_component.dart';
 import '../../utils/form_constants.dart';
+import '../../services/mixins/datasource_mixin.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import 'text_field_logic.dart';
 
 class DynamicTextField extends StatefulWidget {
@@ -60,14 +60,37 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DataSourceStateBuilder(
-        logic: logic,
-        component: widget.component,
-        builder: (context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FieldLabel(component: widget.component),
+      child: ListenableBuilder(
+        listenable: Listenable.merge([widget.controller, logic]),
+        builder: (context, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FieldLabel(component: widget.component),
+            if (widget.component.dataSource != null &&
+                logic.dsState == DataSourceState.loading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator.adaptive(strokeWidth: 4),
+                  ),
+                ),
+              )
+            else if (widget.component.dataSource != null &&
+                logic.dsState == DataSourceState.error)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Center(
+                  child: Text(
+                    logic.dsError ?? 'Failed to load data',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+              )
+            else
               TextFormField(
                 focusNode: widget.controller.getFocusNode(widget.component.key),
                 controller: logic.textController,
@@ -100,9 +123,8 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                 ],
                 onChanged: logic.onChanged,
               ),
-            ],
-          );
-        },
+          ],
+        ),
       ),
     );
   }

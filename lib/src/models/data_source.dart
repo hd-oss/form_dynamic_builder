@@ -94,6 +94,7 @@ class DataSource {
 
   bool get isApi => type == 'api' && api != null;
   bool get isDatabase => type == 'database' && database != null;
+  bool get isDynamic => isApi || isDatabase;
 
   factory DataSource.fromJson(Map<String, dynamic> json) {
     return DataSource(

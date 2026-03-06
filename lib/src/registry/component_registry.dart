@@ -7,7 +7,7 @@ import '../utils/form_constants.dart';
 import '../widgets/camera/camera_field_widget.dart';
 import '../widgets/date_time/date_time_widget.dart';
 import '../widgets/checkbox/checkbox_widget.dart';
-import '../widgets/file/file_widget.dart';
+import '../widgets/file_upload/file_upload_widget.dart';
 import '../widgets/radio/radio_widget.dart';
 import '../widgets/select_boxes/select_boxes_widget.dart';
 import '../widgets/select/select_widget.dart';
@@ -107,8 +107,8 @@ class ComponentRegistry {
             ));
     register(
         FormConstants.typeFile,
-        (c, ctrl) => DynamicFile(
-              component: c as FileComponent,
+        (c, ctrl) => DynamicFileUpload(
+              component: c as FileUploadComponent,
               controller: ctrl,
             ));
     register(

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/select_boxes_component.dart';
+import '../../services/mixins/datasource_mixin.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import 'select_boxes_logic.dart';
 
 class SelectBoxesWidget extends StatefulWidget {
@@ -44,60 +44,70 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
         builder: (context, _) {
           final currentValues = logic.currentValues;
 
-          return DataSourceStateBuilder(
-            logic: logic,
-            component: widget.component,
-            builder: (context) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FieldLabel(component: widget.component),
-                  if (widget.component.description.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(
-                        widget.component.description,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FieldLabel(component: widget.component),
+              if (widget.component.dataSource != null &&
+                  logic.dsState == DataSourceState.loading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator.adaptive(strokeWidth: 4),
                     ),
-                  ...logic.allOptions.map((option) {
-                    final isSelected = currentValues.contains(option.value);
-                    return ListTile(
-                      leading: Checkbox.adaptive(
-                        value: isSelected,
-                        onChanged: widget.component.disabled
-                            ? null
-                            : (bool? checked) {
-                                logic.updateValue(
-                                    option.value, checked ?? false);
-                              },
-                      ),
-                      title: Text(option.label),
-                      onTap: widget.component.disabled
-                          ? null
-                          : () {
-                              logic.updateValue(option.value, !isSelected);
-                            },
-                      contentPadding: EdgeInsets.zero,
-                      minTileHeight: 0,
-                      horizontalTitleGap: 0,
-                    );
-                  }),
-                  if (widget.controller.errors
-                      .containsKey(widget.component.key))
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        widget.controller.errors[widget.component.key]!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                          fontSize: 12,
-                        ),
-                      ),
+                  ),
+                )
+              else if (widget.component.dataSource != null &&
+                  logic.dsState == DataSourceState.error)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Center(
+                    child: Text(
+                      logic.dsError ?? 'Failed to load data',
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
-                ],
-              );
-            },
+                  ),
+                )
+              else
+                InputDecorator(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    errorText: widget.controller.errors[widget.component.key],
+                  ),
+                  child: Focus(
+                    focusNode: widget.controller.getFocusNode(
+                      widget.component.key,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: logic.allOptions.map((option) {
+                        final isSelected = currentValues.contains(option.value);
+                        return ListTile(
+                            leading: Checkbox.adaptive(
+                                value: isSelected,
+                                onChanged: widget.component.disabled
+                                    ? null
+                                    : (bool? checked) => logic.updateValue(
+                                          option.value,
+                                          checked ?? false,
+                                        )),
+                            title: Text(option.label),
+                            onTap: widget.component.disabled
+                                ? null
+                                : () => logic.updateValue(
+                                    option.value, !isSelected),
+                            contentPadding: EdgeInsets.zero,
+                            minTileHeight: 0,
+                            horizontalTitleGap: 0);
+                      }).toList(),
+                    ),
+                  ),
+                ),
+            ],
           );
         },
       ),

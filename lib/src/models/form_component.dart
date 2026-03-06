@@ -66,7 +66,7 @@ abstract class FormComponent {
       case FormConstants.typeCurrency:
         return CurrencyComponent.fromJson(json);
       case FormConstants.typeFile:
-        return FileComponent.fromJson(json);
+        return FileUploadComponent.fromJson(json);
       case FormConstants.typeSignature:
         return SignatureComponent.fromJson(json);
       case FormConstants.typeTags:

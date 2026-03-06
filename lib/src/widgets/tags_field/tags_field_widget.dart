@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../../services/mixins/datasource_mixin.dart';
 import '../field_label.dart';
-import '../common/data_source_state_builder.dart';
 import '../common/dropdown_overlay.dart';
 import 'tags_field_logic.dart';
 
@@ -52,59 +52,83 @@ class _TagsFieldWidgetState extends State<TagsFieldWidget> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FieldLabel(component: widget.component),
-          DataSourceStateBuilder(
-            logic: logic,
-            component: widget.component,
-            builder: (context) {
-              final focusNode =
-                  widget.controller.getFocusNode(widget.component.key);
-              final isShowing =
-                  logic.suggestions.isNotEmpty && focusNode.hasFocus;
-
-              return DropdownOverlay<SelectOption>(
-                isShowing: isShowing,
-                items: logic.suggestions,
-                onItemSelected: (option) => logic.selectSuggestion(option),
-                itemBuilder: (context, option) =>
-                    ListTile(title: Text(option.label), minTileHeight: 0),
-                child: TextFormField(
-                  focusNode: focusNode,
-                  controller: logic.textController,
-                  decoration: InputDecoration(
-                    hintText: widget.component.placeholder ??
-                        'Type and press enter...',
-                    border: const OutlineInputBorder(),
-                    errorText: widget.controller.errors[widget.component.key],
+      child: ListenableBuilder(
+        listenable: Listenable.merge([widget.controller, logic]),
+        builder: (context, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FieldLabel(component: widget.component),
+            if (widget.component.dataSource != null &&
+                logic.dsState == DataSourceState.loading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator.adaptive(strokeWidth: 4),
                   ),
-                  enabled: !widget.component.disabled,
-                  onChanged: (value) => logic.fetchSuggestions(value),
-                  onFieldSubmitted: (value) {
-                    logic.addTag(value.trim());
-                    FocusScope.of(context).requestFocus(focusNode);
-                  },
                 ),
-              );
-            },
-          ),
-          if (logic.tags.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: logic.tags
-                    .map((tag) => Chip(
-                          label: Text(tag),
-                          onDeleted: widget.component.disabled
-                              ? null
-                              : () => logic.removeTag(tag),
-                        ))
-                    .toList()),
-          ]
-        ],
+              )
+            else if (widget.component.dataSource != null &&
+                logic.dsState == DataSourceState.error)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Center(
+                  child: Text(
+                    logic.dsError ?? 'Failed to load data',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+              )
+            else
+              Builder(builder: (context) {
+                final focusNode =
+                    widget.controller.getFocusNode(widget.component.key);
+                final isShowing =
+                    logic.suggestions.isNotEmpty && focusNode.hasFocus;
+
+                return DropdownOverlay<SelectOption>(
+                  isShowing: isShowing,
+                  items: logic.suggestions,
+                  onItemSelected: (option) => logic.selectSuggestion(option),
+                  itemBuilder: (context, option) =>
+                      ListTile(title: Text(option.label), minTileHeight: 0),
+                  child: TextFormField(
+                    focusNode: focusNode,
+                    controller: logic.textController,
+                    decoration: InputDecoration(
+                      hintText: widget.component.placeholder ??
+                          'Type and press enter...',
+                      border: const OutlineInputBorder(),
+                      errorText: widget.controller.errors[widget.component.key],
+                    ),
+                    enabled: !widget.component.disabled,
+                    onChanged: (value) => logic.fetchSuggestions(value),
+                    onFieldSubmitted: (value) {
+                      logic.addTag(value.trim());
+                      FocusScope.of(context).requestFocus(focusNode);
+                    },
+                  ),
+                );
+              }),
+            if (logic.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: logic.tags
+                      .map((tag) => Chip(
+                            label: Text(tag),
+                            onDeleted: widget.component.disabled
+                                ? null
+                                : () => logic.removeTag(tag),
+                          ))
+                      .toList()),
+            ]
+          ],
+        ),
       ),
     );
   }

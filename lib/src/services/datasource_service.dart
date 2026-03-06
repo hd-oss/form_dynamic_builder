@@ -6,7 +6,7 @@ import '../controller/form_controller.dart';
 import '../models/components/select_option.dart';
 import '../models/data_source.dart';
 
-class DataSourceService {
+class DatasourceService {
   /// Interpolates placeholders in the URL.
   ///
   /// Supports:
@@ -85,8 +85,7 @@ class DataSourceService {
     final matches = RegExp(r'\{\{(.+?)\}\}').allMatches(url);
     for (final match in matches) {
       final key = match.group(1)!;
-      if (!key.startsWith('var.static.') &&
-          !key.startsWith('ds_form.')) {
+      if (!key.startsWith('var.static.') && !key.startsWith('ds_form.')) {
         keys.add(key);
       }
     }

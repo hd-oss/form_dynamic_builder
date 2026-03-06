@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../../services/mixins/datasource_mixin.dart';
 
 class RadioLogic extends ChangeNotifier with DataSourceMixin {
   final RadioComponent component;
@@ -25,7 +25,7 @@ class RadioLogic extends ChangeNotifier with DataSourceMixin {
 
   /// Returns dynamic options if dataSource is API, otherwise static options.
   List<SelectOption> get allOptions {
-    if (component.dataSource != null && component.dataSource!.isApi) {
+    if (component.dataSource != null && component.dataSource!.isDynamic) {
       return dynamicOptions;
     }
     return component.options;

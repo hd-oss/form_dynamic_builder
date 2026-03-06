@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_boxes_component.dart';
 import '../../models/components/select_option.dart';
-import '../../services/mixins/data_source_mixin.dart';
+import '../../services/mixins/datasource_mixin.dart';
 
 class SelectBoxesLogic extends ChangeNotifier with DataSourceMixin {
   final SelectBoxesComponent component;
@@ -29,7 +29,7 @@ class SelectBoxesLogic extends ChangeNotifier with DataSourceMixin {
 
   /// Returns dynamic options if dataSource is API, otherwise static options.
   List<SelectOption> get allOptions {
-    if (component.dataSource != null && component.dataSource!.isApi) {
+    if (component.dataSource != null && component.dataSource!.isDynamic) {
       return dynamicOptions;
     }
     return component.options;

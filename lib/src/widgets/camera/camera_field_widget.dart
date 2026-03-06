@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import '../../controller/form_controller.dart';
+import '../../services/mixins/upload_mixin.dart';
 import '../../models/components/all_components.dart';
 import '../field_label.dart';
 import 'camera_field_logic.dart';
@@ -94,22 +94,21 @@ class _DynamicCameraState extends State<DynamicCamera> {
   // UI BUILDERS
   // ==========================================================================
 
-  Widget _buildPreview(String filePath) {
+  Widget _buildPreview(dynamic value) {
     return GestureDetector(
-      onTap: () => _openPreviewDialog(filePath),
+      onTap: () => _openPreviewDialog(value),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
-        child: Image.file(
-          File(filePath),
+        child: SizedBox(
           height: 200,
           width: double.infinity,
-          fit: BoxFit.cover,
+          child: logic.buildImageFromValue(value),
         ),
       ),
     );
   }
 
-  void _openPreviewDialog(String filePath) {
+  void _openPreviewDialog(dynamic value) {
     showDialog(
       context: context,
       builder: (context) => Dialog.fullscreen(
@@ -117,7 +116,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.file(File(filePath), fit: BoxFit.contain),
+              child: logic.buildImageFromValue(value),
             ),
             Positioned(
               top: 16,
@@ -152,27 +151,6 @@ class _DynamicCameraState extends State<DynamicCamera> {
     );
   }
 
-  Widget _buildProcessingPlaceholder() {
-    return Container(
-      height: 150,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: const Center(child: CircularProgressIndicator.adaptive()),
-    );
-  }
-
-  Widget _buildRemoveButton() {
-    return OutlinedButton.icon(
-      onPressed: logic.clearPhoto,
-      icon: const Icon(Icons.delete),
-      label: const Text('Remove Photo'),
-      style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-    );
-  }
-
   // ==========================================================================
   // MAIN BUILD
   // ==========================================================================
@@ -181,10 +159,10 @@ class _DynamicCameraState extends State<DynamicCamera> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Builder(
-        builder: (context) {
-          final value =
-              widget.controller.getValue(widget.component.key) as String?;
+      child: ListenableBuilder(
+        listenable: Listenable.merge([widget.controller, logic]),
+        builder: (context, _) {
+          final value = widget.controller.getValue(widget.component.key);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,12 +179,55 @@ class _DynamicCameraState extends State<DynamicCamera> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (logic.isProcessing)
-                        _buildProcessingPlaceholder()
-                      else if (value != null && value.isNotEmpty) ...[
-                        _buildPreview(value),
-                        const SizedBox(height: 8),
-                        if (!widget.component.disabled) _buildRemoveButton(),
+                      if (logic.uploadStatus == UploadStatus.uploading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator.adaptive(
+                                  strokeWidth: 4),
+                            ),
+                          ),
+                        ),
+                      if (logic.uploadStatus == UploadStatus.error)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded,
+                                  color: Colors.orange, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  logic.uploadError ?? 'Upload failed',
+                                  style: TextStyle(
+                                      color: Colors.orange[800],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (value != null &&
+                          (value is! String || value.isNotEmpty)) ...[
+                        Stack(children: [
+                          _buildPreview(value),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                                icon:
+                                    const Icon(Icons.close, color: Colors.red),
+                                onPressed: logic.clearPhoto,
+                                style: IconButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.5),
+                                )),
+                          ),
+                        ]),
                       ] else
                         _buildTakePhotoButton(),
                     ],
