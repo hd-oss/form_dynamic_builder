@@ -9,6 +9,7 @@ import 'package:form_dynamic_builder/src/models/components/select_component.dart
 import 'package:form_dynamic_builder/src/models/data_source.dart';
 import 'package:form_dynamic_builder/src/models/form_config.dart';
 import 'package:form_dynamic_builder/src/models/form_settings.dart';
+import 'package:form_dynamic_builder/src/services/datasource_api_service.dart';
 import 'package:form_dynamic_builder/src/services/datasource_service.dart';
 
 // ---------------------------------------------------------------------------
@@ -54,7 +55,6 @@ FormConfig buildConfig({
 FormController buildController({
   Map<String, dynamic>? dsForm,
   List<Map<String, dynamic>> components = const [],
-  Map<String, String> authHeaders = const {},
   ApiQueryCallback? onApiQuery,
 }) {
   return FormController(
@@ -63,7 +63,6 @@ FormController buildController({
       components: components,
       onApiQuery: onApiQuery,
     ),
-    authHeaders: authHeaders,
   );
 }
 
@@ -301,7 +300,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DatasourceService.fetchOptions(
+      final options = await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -333,7 +332,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DatasourceService.fetchOptions(
+      final options = await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -375,7 +374,7 @@ void main() {
 
       controller.updateValue('titleBook', 'The Chamber of Secrets');
 
-      await DatasourceService.fetchOptions(
+      await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -412,7 +411,7 @@ void main() {
         valuePath: 'index',
       );
 
-      await DatasourceService.fetchOptions(
+      await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -444,7 +443,7 @@ void main() {
         valuePath: 'index',
       );
 
-      await DatasourceService.fetchOptions(
+      await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -470,7 +469,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DatasourceService.fetchOptions(
+      final options = await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );
@@ -479,34 +478,6 @@ void main() {
     });
 
     // ... removing unused test 'Network error...' because they overlap now with the exception test
-
-    // -----------------------------------------------------------------------
-    // Auth headers
-    // -----------------------------------------------------------------------
-    test('Auth headers dari FormController dikirim dalam request', () async {
-      Map<String, String>? capturedHeaders;
-
-      final controller = buildController(
-        authHeaders: {'Authorization': 'Bearer test_token_123'},
-        onApiQuery: (url, method, headers, body) async {
-          capturedHeaders = headers;
-          return _potterBooksResponse;
-        },
-      );
-
-      final api = DataSourceApi(
-        url: 'https://potterapi-fedeperin.vercel.app/en/books',
-        labelPath: 'title',
-        valuePath: 'index',
-      );
-
-      await DatasourceService.fetchOptions(
-        api: api,
-        controller: controller,
-      );
-
-      expect(capturedHeaders?['Authorization'], 'Bearer test_token_123');
-    });
 
     // -----------------------------------------------------------------------
     // dataKey (nested response)
@@ -537,7 +508,7 @@ void main() {
         valuePath: 'index',
       );
 
-      final options = await DatasourceService.fetchOptions(
+      final options = await DatasourceApiService.fetchOptions(
         api: api,
         controller: controller,
       );

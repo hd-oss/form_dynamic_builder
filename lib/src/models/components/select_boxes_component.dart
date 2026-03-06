@@ -24,6 +24,8 @@ class SelectBoxesComponent extends FormComponent {
     super.defaultValue,
     super.platforms,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.options = const [],
     this.inline = false,
   });
@@ -54,6 +56,8 @@ class SelectBoxesComponent extends FormComponent {
               .toList() ??
           const [],
       inline: json['inline'] ?? false,
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

@@ -24,6 +24,8 @@ class CurrencyComponent extends FormComponent {
     super.defaultValue,
     super.platforms,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.currency = 'IDR',
     this.decimalPlaces = 0,
     this.calculateValue,
@@ -53,6 +55,8 @@ class CurrencyComponent extends FormComponent {
       decimalPlaces: json['decimalPlaces'] ?? 0,
       dataSource: parseDataSource(json),
       calculateValue: json['calculateValue'],
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

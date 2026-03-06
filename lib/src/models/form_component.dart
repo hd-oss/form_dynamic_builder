@@ -22,6 +22,12 @@ abstract class FormComponent {
   final Map<String, dynamic>? platforms;
   final DataSource? dataSource;
 
+  /// Target database table for mapping this component's value.
+  final String? destinationTable;
+
+  /// Target database column for mapping this component's value.
+  final String? destinationColumn;
+
   FormComponent({
     required this.id,
     required this.type,
@@ -39,6 +45,8 @@ abstract class FormComponent {
     this.defaultValue,
     this.platforms,
     this.dataSource,
+    this.destinationTable,
+    this.destinationColumn,
   });
 
   factory FormComponent.fromJson(Map<String, dynamic> json) {
@@ -75,6 +83,8 @@ abstract class FormComponent {
         return CameraComponent.fromJson(json);
       case FormConstants.typeLocation:
         return LocationComponent.fromJson(json);
+      case FormConstants.typePanel:
+        return PanelComponent.fromJson(json);
       default:
         return UnknownComponent.fromJson(json);
     }
@@ -98,6 +108,8 @@ abstract class FormComponent {
       if (defaultValue != null) 'defaultValue': defaultValue,
       if (platforms != null) 'platforms': platforms,
       if (dataSource != null) 'dataSource': dataSource!.toJson(),
+      if (destinationTable != null) 'destinationTable': destinationTable,
+      if (destinationColumn != null) 'destinationColumn': destinationColumn,
     };
   }
 }

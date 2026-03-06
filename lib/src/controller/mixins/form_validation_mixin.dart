@@ -29,6 +29,16 @@ mixin FormValidationMixin on ChangeNotifier {
     for (var node in _focusNodes.values) {
       node.dispose();
     }
+    _focusNodes.clear();
+  }
+
+  /// Disposes and clears all existing FocusNodes.
+  /// Call this during form reset so stale nodes don't block input.
+  void clearFocusNodes() {
+    for (var node in _focusNodes.values) {
+      node.dispose();
+    }
+    _focusNodes.clear();
   }
 
   bool validate() {

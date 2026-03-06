@@ -2,10 +2,11 @@ import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
 
-class TextFieldComponent extends FormComponent {
-  final String? calculateValue;
+class PanelComponent extends FormComponent {
+  final List<FormComponent> components;
+  final String theme;
 
-  TextFieldComponent({
+  PanelComponent({
     required super.id,
     required super.type,
     required super.key,
@@ -24,11 +25,12 @@ class TextFieldComponent extends FormComponent {
     super.dataSource,
     super.destinationTable,
     super.destinationColumn,
-    this.calculateValue,
+    this.components = const [],
+    this.theme = 'default',
   });
 
-  factory TextFieldComponent.fromJson(Map<String, dynamic> json) {
-    return TextFieldComponent(
+  factory PanelComponent.fromJson(Map<String, dynamic> json) {
+    return PanelComponent(
       id: json['id'] ?? '',
       type: json['type'] ?? '',
       key: json['key'] ?? '',
@@ -50,14 +52,19 @@ class TextFieldComponent extends FormComponent {
       dataSource: parseDataSource(json),
       destinationTable: json['destinationTable'],
       destinationColumn: json['destinationColumn'],
-      calculateValue: json['calculateValue'],
+      components: (json['components'] as List?)
+              ?.map((e) => FormComponent.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      theme: json['theme'] ?? 'default',
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    if (calculateValue != null) json['calculateValue'] = calculateValue;
+    json['components'] = components.map((e) => e.toJson()).toList();
+    json['theme'] = theme;
     return json;
   }
 }

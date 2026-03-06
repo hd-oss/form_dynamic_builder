@@ -30,6 +30,8 @@ class FileUploadComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.multiple = false,
     this.accept = '',
     this.maxSize = 0,
@@ -73,6 +75,8 @@ class FileUploadComponent extends FormComponent {
       compressFile: json['compressFile'] ?? false,
       compressPercentage: json['compressPercentage'] ?? 80,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

@@ -92,14 +92,13 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(children: [
               Icon(
-                entry.isUploaded
-                    ? Icons.cloud_done
-                    : Icons.insert_drive_file_rounded,
-                color: entry.isUploaded
-                    ? Colors.green
-                    : Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
+                  entry.isUploaded
+                      ? Icons.cloud_done
+                      : Icons.insert_drive_file_rounded,
+                  color: entry.isUploaded
+                      ? Colors.green
+                      : Theme.of(context).colorScheme.primary,
+                  size: 24),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -109,15 +108,10 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
                 ),
               ),
               if (!widget.component.disabled)
-                IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _logic.removeFile(
-                          _getSelectedFiles(),
-                          entry,
-                        )),
+                InkWell(
+                    borderRadius: BorderRadius.circular(100),
+                    onTap: () => _logic.removeFile(_getSelectedFiles(), entry),
+                    child: const Icon(Icons.close, size: 18)),
             ]),
           );
         }),

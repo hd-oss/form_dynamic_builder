@@ -19,7 +19,13 @@ class SelectLogic extends ChangeNotifier with DataSourceMixin {
 
   void updateValue(String? newValue) {
     if (!component.disabled) {
-      formController.updateValue(component.key, newValue);
+      final label = allOptions
+          .firstWhere(
+            (e) => e.value == newValue,
+            orElse: () => SelectOption(label: '', value: ''),
+          )
+          .label;
+      formController.updateValueWithLabel(component.key, newValue, label);
     }
   }
 

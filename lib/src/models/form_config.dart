@@ -2,6 +2,7 @@ import '../utils/form_constants.dart';
 import 'form_component.dart';
 import 'form_settings.dart';
 import 'form_step.dart';
+import 'upload_config.dart';
 
 typedef DatabaseQueryCallback = Future<List<Map<String, dynamic>>> Function(
   String connectionString,
@@ -19,6 +20,7 @@ typedef ApiQueryCallback = Future<dynamic> Function(
 typedef FileUploadCallback = Future<dynamic> Function(
   List<String> localPath,
   String uploadUrl,
+  OtherUploadConfig? uploadConfig,
 );
 
 class FormConfig {

@@ -24,6 +24,8 @@ class SelectComponent extends FormComponent {
     super.defaultValue,
     super.platforms,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.options = const [],
     this.calculateValue,
   });
@@ -54,6 +56,8 @@ class SelectComponent extends FormComponent {
           const [],
       dataSource: parseDataSource(json),
       calculateValue: json['calculateValue'],
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

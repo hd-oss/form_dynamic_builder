@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/select_option.dart';
 import '../../models/data_source.dart';
+import '../datasource_api_service.dart';
+import '../datasource_db_service.dart';
 import '../datasource_service.dart';
 
 enum DataSourceState {
@@ -198,12 +200,12 @@ mixin DataSourceMixin on ChangeNotifier {
     try {
       List<SelectOption> options = [];
       if (_dsApi != null) {
-        options = await DatasourceService.fetchOptions(
+        options = await DatasourceApiService.fetchOptions(
           api: _dsApi!,
           controller: controller,
         );
       } else if (_dsDatabase != null) {
-        options = await DatasourceService.fetchDatabaseOptions(
+        options = await DatasourceDbService.fetchDatabaseOptions(
           database: _dsDatabase!,
           controller: controller,
         );
@@ -236,12 +238,12 @@ mixin DataSourceMixin on ChangeNotifier {
     try {
       dynamic value;
       if (_dsApi != null) {
-        value = await DatasourceService.fetchDefaultValue(
+        value = await DatasourceApiService.fetchDefaultValue(
           api: _dsApi!,
           controller: controller,
         );
       } else if (_dsDatabase != null) {
-        value = await DatasourceService.fetchDatabaseDefaultValue(
+        value = await DatasourceDbService.fetchDatabaseDefaultValue(
           database: _dsDatabase!,
           controller: controller,
         );

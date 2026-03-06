@@ -19,6 +19,8 @@ class CheckboxComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
   });
 
   factory CheckboxComponent.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,8 @@ class CheckboxComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'] ?? false,
       dataSource: parseDataSource(json),
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
   @override

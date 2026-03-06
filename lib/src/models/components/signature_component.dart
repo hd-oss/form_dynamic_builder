@@ -27,6 +27,8 @@ class SignatureComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.width,
     this.height,
     this.uploadUrl = '',
@@ -64,6 +66,8 @@ class SignatureComponent extends FormComponent {
               json['otherUploadConfig'] as Map<String, dynamic>)
           : null,
       uploadTiming: json['uploadTiming'] ?? 'onSubmit',
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
   @override

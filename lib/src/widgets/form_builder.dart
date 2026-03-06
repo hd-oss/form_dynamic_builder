@@ -104,11 +104,20 @@ class _FormDynamicBuilderState extends State<FormDynamicBuilder> {
 
   List<Widget> _buildComponents(List components) {
     // NOTE: kalau kamu punya tipe model component spesifik, ganti `List` jadi `List<FormComponentConfig>` dll.
+    //
+    // Key combines: component key + controller identity + reset generation.
+    // This forces a full widget teardown & rebuild when:
+    //   (a) a brand-new FormController is passed for the same form, or
+    //   (b) controller.reset() is called (resetGeneration increments).
+    // Without this, StatefulWidgets with `late final` logic (file upload,
+    // location, signature, text field) reuse stale State objects.
+    final generation = _controller.resetGeneration;
+    final ctrlId = _controller.hashCode;
     return components
         .where((c) => _controller.isComponentVisible(c))
         .map<Widget>(
           (c) => KeyedSubtree(
-            key: ValueKey(c.key),
+            key: ValueKey('${c.key}_${ctrlId}_$generation'),
             child: _registry.build(c, _controller),
           ),
         )

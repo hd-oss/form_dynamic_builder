@@ -17,6 +17,7 @@ class FormConstants {
   static const String typeFile = 'file';
   static const String typeSignature = 'signature';
   static const String typeButton = 'button';
+  static const String typePanel = 'panel';
   static const String typeTags = 'tags';
   static const String typeCamera = 'camera';
   static const String typeLocation = 'location';
@@ -60,6 +61,14 @@ class FormConstants {
 
   static const String logicAnd = 'and';
   static const String logicOr = 'or';
+
+  // ── Conditional When/Value Sources ───────────────────────────────────
+  static const String whenSourceField = 'field';
+  static const String whenSourceApi = 'api';
+
+  static const String valueSourceManual = 'manual';
+  static const String valueSourceApi = 'api';
+  static const String valueSourceField = 'field';
 
   // ── UI Constants ─────────────────────────────────────────────────────
   static const String requiredSuffix = ' *';

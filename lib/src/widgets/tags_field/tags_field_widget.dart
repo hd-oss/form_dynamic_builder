@@ -88,9 +88,11 @@ class _TagsFieldWidgetState extends State<TagsFieldWidget> {
                     widget.controller.getFocusNode(widget.component.key);
                 final isShowing =
                     logic.suggestions.isNotEmpty && focusNode.hasFocus;
+                final isLimitReached = widget.component.maxTags != null &&
+                    logic.tags.length >= widget.component.maxTags!;
 
                 return DropdownOverlay<SelectOption>(
-                  isShowing: isShowing,
+                  isShowing: isShowing && !isLimitReached,
                   items: logic.suggestions,
                   onItemSelected: (option) => logic.selectSuggestion(option),
                   itemBuilder: (context, option) =>
@@ -99,12 +101,14 @@ class _TagsFieldWidgetState extends State<TagsFieldWidget> {
                     focusNode: focusNode,
                     controller: logic.textController,
                     decoration: InputDecoration(
-                      hintText: widget.component.placeholder ??
-                          'Type and press enter...',
+                      hintText: isLimitReached
+                          ? 'Tag limit reached (${widget.component.maxTags})'
+                          : (widget.component.placeholder ??
+                              'Type and press enter...'),
                       border: const OutlineInputBorder(),
                       errorText: widget.controller.errors[widget.component.key],
                     ),
-                    enabled: !widget.component.disabled,
+                    enabled: !widget.component.disabled && !isLimitReached,
                     onChanged: (value) => logic.fetchSuggestions(value),
                     onFieldSubmitted: (value) {
                       logic.addTag(value.trim());

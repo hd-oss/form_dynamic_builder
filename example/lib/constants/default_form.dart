@@ -107,6 +107,93 @@ Map<String, dynamic> defaultForm() {
           "extraBodyFields": []
         },
         "accept": ".pdf"
+      },
+
+      // ────────────────────────────────────────────────
+      // Conditional Logic Tests
+      // ────────────────────────────────────────────────
+      {
+        "type": "textfield",
+        "key": "firstname",
+        "label": "Test Field (for Conditional 3)",
+        "placeholder": "Type '1' to trigger Conditional 3"
+      },
+      {
+        "type": "textfield",
+        "key": "cond_1",
+        "label": "Conditional 1 (API vs Manual: eq 1)",
+        "description": "Shows because API returns index=1 and manual value=1",
+        "conditional": {
+          "show": true,
+          "conditions": [
+            {
+              "whenSource": "api",
+              "whenApi": {
+                "url":
+                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
+                "method": "GET",
+                "valuePath": "index"
+              },
+              "operator": "eq",
+              "value": "1",
+              "valueSource": "manual",
+              "logicWithPrevious": "and"
+            }
+          ]
+        }
+      },
+      {
+        "type": "textfield",
+        "key": "cond_2",
+        "label": "Conditional 2 (API vs API: eq index)",
+        "description": "Shows because both APIs return index=1",
+        "conditional": {
+          "show": true,
+          "conditions": [
+            {
+              "whenSource": "api",
+              "whenApi": {
+                "url":
+                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
+                "method": "GET",
+                "valuePath": "index"
+              },
+              "operator": "eq",
+              "valueSource": "api",
+              "valueApi": {
+                "url":
+                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
+                "method": "GET",
+                "valuePath": "index"
+              },
+              "logicWithPrevious": "and"
+            }
+          ]
+        }
+      },
+      {
+        "type": "textfield",
+        "key": "cond_3",
+        "label": "Conditional 3 (API vs Field: eq firstname)",
+        "description": "Shows when 'Test Field' contains '1'",
+        "conditional": {
+          "show": true,
+          "conditions": [
+            {
+              "whenSource": "api",
+              "whenApi": {
+                "url":
+                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
+                "method": "GET",
+                "valuePath": "index"
+              },
+              "operator": "eq",
+              "valueSource": "field",
+              "valueFieldKey": "cond_1",
+              "logicWithPrevious": "and"
+            }
+          ]
+        }
       }
     ]
   };

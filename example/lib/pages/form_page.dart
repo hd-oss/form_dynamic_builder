@@ -79,7 +79,7 @@ class _FormPageState extends State<FormPage> {
 
   void _submitForm() {
     if (_formController!.validate()) {
-      print(_formController!.visibleValues);
+      print(_formController!.resultMap);
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -87,7 +87,7 @@ class _FormPageState extends State<FormPage> {
           content: SingleChildScrollView(
             child: Text(
               const JsonEncoder.withIndent('  ')
-                  .convert(_formController!.visibleValues),
+                  .convert(_formController!.resultMap),
             ),
           ),
           actions: [

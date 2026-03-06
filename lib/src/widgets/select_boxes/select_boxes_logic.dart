@@ -44,7 +44,17 @@ class SelectBoxesLogic extends ChangeNotifier with DataSourceMixin {
     } else {
       vals.remove(optionValue);
     }
-    formController.updateValue(component.key, vals);
+
+    // Build joined label string for answerText
+    final labels = vals.map((v) {
+      final opt = allOptions.firstWhere(
+        (o) => o.value == v,
+        orElse: () => SelectOption(label: v, value: v),
+      );
+      return opt.label;
+    }).toList();
+
+    formController.updateValueWithLabel(component.key, vals, labels.join(', '));
   }
 
   @override

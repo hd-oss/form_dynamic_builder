@@ -15,6 +15,7 @@ import '../widgets/location/location_widget.dart';
 import '../widgets/signature/signature_widget.dart';
 import '../widgets/tags_field/tags_field_widget.dart';
 import '../widgets/text_field/text_field_widget.dart';
+import '../widgets/panel/panel_widget.dart';
 
 typedef WidgetBuilderFunc = Widget Function(
     FormComponent component, FormController controller);
@@ -134,6 +135,13 @@ class ComponentRegistry {
         (c, ctrl) => DynamicLocation(
               component: c as LocationComponent,
               controller: ctrl,
+            ));
+    register(
+        FormConstants.typePanel,
+        (c, ctrl) => PanelWidget(
+              component: c as PanelComponent,
+              controller: ctrl,
+              componentBuilder: (childComp) => build(childComp, ctrl),
             ));
   }
 }

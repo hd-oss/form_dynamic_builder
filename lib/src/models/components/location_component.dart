@@ -29,6 +29,8 @@ class LocationComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.enableMapPicker = false,
     this.defaultCurrentLocation = false,
     this.autoZoomLocation = false,
@@ -57,6 +59,8 @@ class LocationComponent extends FormComponent {
       enableMapPicker: json['enableMapPicker'] ?? false,
       defaultCurrentLocation: json['defaultCurrentLocation'] ?? false,
       autoZoomLocation: json['autoZoomLocation'] ?? false,
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

@@ -35,6 +35,7 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
 
     expect(find.byIcon(Icons.calendar_today), findsOneWidget);
     expect(find.byIcon(Icons.access_time), findsNothing);
@@ -72,6 +73,7 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
 
     // Prefix icon should be time
     expect(find.byIcon(Icons.access_time), findsOneWidget);
@@ -112,10 +114,68 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
 
     // Prefix calendar
     expect(find.byIcon(Icons.calendar_today), findsOneWidget);
     // Suffix time (as per logic: suffixIcon: (enableTime && !timeOnly) ? access_time : null)
     expect(find.byIcon(Icons.access_time), findsOneWidget);
+  });
+
+  testWidgets('DateTimeWidget handles dynamic API limits loading state',
+      (WidgetTester tester) async {
+    final component = DateTimeComponent(
+      id: 'dt-api',
+      type: 'datetime',
+      key: 'api_date',
+      label: 'API Date',
+      setBefore: DateLimitConfig(
+        type: 'api',
+        unit: 'days',
+        api: DataSourceApi(url: 'https://api.example.com/limit'),
+      ),
+    );
+
+    final config = FormConfig(
+      id: 'form-api',
+      title: 'T',
+      description: 'D',
+      settings: FormSettings(),
+      components: [component],
+      onApiQuery: (url, method, headers, body) async {
+        // Add a small delay to test loading state
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (url == 'https://api.example.com/limit') {
+          return 5;
+        }
+        return null;
+      },
+    );
+    final controller = FormController(config: config);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Material(
+            child: DynamicDateTime(
+              component: component,
+              controller: controller,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Initial frame: should show loading indicator in suffixIcon
+    // Since _initLimits is called in logic constructor (initState), it sets isLoadingLimits = true
+    // Before any await, it notifies listeners.
+    await tester.pump(); // trigger the first frame after notifyListeners()
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    // Wait for the API call to complete
+    await tester.pump(const Duration(milliseconds: 200));
+
+    // Loading should be gone
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }

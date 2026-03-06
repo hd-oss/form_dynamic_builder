@@ -51,6 +51,8 @@ class CameraComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.cameraFacing = 'both',
     this.showTimestamp = false,
     this.timestampFormat = 'yyyy-MM-dd HH:mm:ss',
@@ -98,6 +100,8 @@ class CameraComponent extends FormComponent {
           ? OtherUploadConfig.fromJson(
               json['otherUploadConfig'] as Map<String, dynamic>)
           : null,
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 

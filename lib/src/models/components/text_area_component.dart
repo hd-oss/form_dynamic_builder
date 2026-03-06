@@ -22,6 +22,8 @@ class TextAreaComponent extends FormComponent {
     super.defaultValue,
     super.platforms,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.rows = 3,
   });
 
@@ -46,6 +48,8 @@ class TextAreaComponent extends FormComponent {
       defaultValue: json['defaultValue'],
       platforms: json['platforms'],
       dataSource: parseDataSource(json),
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
       rows: json['rows'] ?? 3,
     );
   }

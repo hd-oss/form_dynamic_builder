@@ -1,6 +1,7 @@
 import '../form_component.dart';
 import '../validation_rule.dart';
 import 'component_utils.dart';
+import 'date_limit_config.dart';
 
 class DateTimeComponent extends FormComponent {
   final bool enableTime;
@@ -8,8 +9,8 @@ class DateTimeComponent extends FormComponent {
   final int? timeHourStep;
   final int? timeMinuteStep;
   final bool timeUse24Hour;
-  final Map<String, dynamic>? setBefore;
-  final Map<String, dynamic>? setAfter;
+  final DateLimitConfig? setBefore;
+  final DateLimitConfig? setAfter;
   final String? format;
 
   DateTimeComponent({
@@ -28,6 +29,8 @@ class DateTimeComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.enableTime = false,
     this.timeOnly = false,
     this.timeHourStep,
@@ -58,13 +61,19 @@ class DateTimeComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       dataSource: parseDataSource(json),
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
       enableTime: json['enableTime'] ?? false,
       timeOnly: json['timeOnly'] ?? false,
       timeHourStep: json['timeHourStep'],
       timeMinuteStep: json['timeMinuteStep'],
       timeUse24Hour: json['timeUse24Hour'] ?? false,
-      setBefore: json['setBefore'],
-      setAfter: json['setAfter'],
+      setBefore: json['setBefore'] != null
+          ? DateLimitConfig.fromJson(json['setBefore'] as Map<String, dynamic>)
+          : null,
+      setAfter: json['setAfter'] != null
+          ? DateLimitConfig.fromJson(json['setAfter'] as Map<String, dynamic>)
+          : null,
       format: json['format'],
     );
   }
@@ -77,8 +86,8 @@ class DateTimeComponent extends FormComponent {
     if (timeHourStep != null) json['timeHourStep'] = timeHourStep;
     if (timeMinuteStep != null) json['timeMinuteStep'] = timeMinuteStep;
     json['timeUse24Hour'] = timeUse24Hour;
-    if (setBefore != null) json['setBefore'] = setBefore;
-    if (setAfter != null) json['setAfter'] = setAfter;
+    if (setBefore != null) json['setBefore'] = setBefore!.toJson();
+    if (setAfter != null) json['setAfter'] = setAfter!.toJson();
     if (format != null) json['format'] = format;
     return json;
   }

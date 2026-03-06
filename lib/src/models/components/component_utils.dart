@@ -26,6 +26,20 @@ DataSource? parseDataSource(Map<String, dynamic> json) {
   return null;
 }
 
+/// Returns the shared destination fields parsed from [json].
+/// Spread this result into sub-component constructors:
+/// ```dart
+/// ...parseDestination(json),
+/// ```
+Map<String, dynamic> parseDestination(Map<String, dynamic> json) {
+  return {
+    if (json['destinationTable'] != null)
+      'destinationTable': json['destinationTable'] as String,
+    if (json['destinationColumn'] != null)
+      'destinationColumn': json['destinationColumn'] as String,
+  };
+}
+
 String formatDate(DateTime date, String format) {
   return DateFormat(format).format(date);
 }

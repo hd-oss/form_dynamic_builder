@@ -57,11 +57,30 @@ class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
     } else {
       valueToStore = List<String>.from(tags);
     }
-    formController.updateValue(component.key, valueToStore);
+
+    // Build joined label for answerText
+    final labels = tags.map((tag) {
+      final opt = dynamicOptions.isNotEmpty
+          ? dynamicOptions.firstWhere(
+              (o) => o.value == tag,
+              orElse: () => SelectOption(label: tag, value: tag),
+            )
+          : SelectOption(label: tag, value: tag);
+      return opt.label;
+    }).toList();
+
+    formController.updateValueWithLabel(
+        component.key, valueToStore, labels.join(', '));
   }
 
   void addTag(String tag) {
     if (tag.isNotEmpty && !tags.contains(tag)) {
+      if (component.maxTags != null && tags.length >= component.maxTags!) {
+        // Limit reached, do not add
+        textController.clear();
+        clearSuggestions();
+        return;
+      }
       tags.add(tag);
       _updateController();
       notifyListeners();

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:form_dynamic_builder/form_dynamic_builder.dart';
 
 class ApiHandler {
   static Future<dynamic> onApiQuery(
@@ -36,12 +37,31 @@ class ApiHandler {
   static Future<dynamic> onFileUpload(
     List<String> localPaths,
     String uploadUrl,
+    OtherUploadConfig? uploadConfig,
   ) async {
     debugPrint('File Upload (Dio): ${localPaths.length} files to $uploadUrl');
 
     final dio = Dio();
     try {
       final List<dynamic> results = [];
+
+      // Parse OtherUploadConfig if provided
+      Map<String, String> extraHeaders = {};
+      Map<String, dynamic> extraBody = {};
+      String method = 'POST';
+      String fileFieldName = 'file';
+
+      if (uploadConfig != null) {
+        method = uploadConfig.method;
+        fileFieldName = uploadConfig.fileFieldName;
+
+        for (final header in uploadConfig.headers) {
+          extraHeaders[header.key] = header.value;
+        }
+        for (final field in uploadConfig.extraBodyFields) {
+          extraBody[field.key] = field.value;
+        }
+      }
 
       for (final localPath in localPaths) {
         // MOCK: Simulate failure for specific paths
@@ -52,12 +72,21 @@ class ApiHandler {
 
         final fileName = localPath.split(Platform.pathSeparator).last;
         final formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(localPath, filename: fileName),
+          ...extraBody,
+          fileFieldName:
+              await MultipartFile.fromFile(localPath, filename: fileName),
         });
 
-        final response = await dio.post(uploadUrl, data: formData);
+        final response = await dio.request(
+          uploadUrl,
+          data: formData,
+          options: Options(
+            method: method,
+            headers: extraHeaders.isNotEmpty ? extraHeaders : null,
+          ),
+        );
 
-        if (response.statusCode == 200) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
           // Server returns full object — store as-is
           results.add(response.data);
         }

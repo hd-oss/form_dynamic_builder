@@ -34,8 +34,9 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Builder(
-        builder: (context) {
+      child: ListenableBuilder(
+        listenable: logic,
+        builder: (context, _) {
           final value = widget.controller.getValue(widget.component.key);
           String displayText = '';
           if (value != null) {
@@ -110,13 +111,22 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
                   prefixIcon: widget.component.timeOnly
                       ? const Icon(Icons.access_time)
                       : const Icon(Icons.calendar_today),
-                  suffixIcon: (widget.component.enableTime &&
-                          !widget.component.timeOnly)
-                      ? const Icon(Icons.access_time)
-                      : null,
+                  suffixIcon: logic.isLoadingLimits
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : (widget.component.enableTime &&
+                              !widget.component.timeOnly)
+                          ? const Icon(Icons.access_time)
+                          : null,
                 ),
                 readOnly: true,
-                onTap: widget.component.disabled
+                onTap: (widget.component.disabled || logic.isLoadingLimits)
                     ? null
                     : () => _handlePicker(context),
               ),

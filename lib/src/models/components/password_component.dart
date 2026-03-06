@@ -22,6 +22,8 @@ class PasswordComponent extends FormComponent {
     super.conditional,
     super.defaultValue,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.showToggle = true,
     this.calculateValue,
   });
@@ -46,6 +48,8 @@ class PasswordComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       dataSource: parseDataSource(json),
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
       showToggle: json['showToggle'] ?? true,
       calculateValue: json['calculateValue'],
     );

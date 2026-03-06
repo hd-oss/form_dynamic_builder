@@ -5,6 +5,7 @@ import 'component_utils.dart';
 class TagsComponent extends FormComponent {
   final String? placeholderTags;
   final String storeAs;
+  final int? maxTags;
 
   TagsComponent({
     required super.id,
@@ -23,8 +24,11 @@ class TagsComponent extends FormComponent {
     super.defaultValue,
     super.platforms,
     super.dataSource,
+    super.destinationTable,
+    super.destinationColumn,
     this.storeAs = 'string',
     this.placeholderTags,
+    this.maxTags,
   });
 
   factory TagsComponent.fromJson(Map<String, dynamic> json) {
@@ -49,7 +53,10 @@ class TagsComponent extends FormComponent {
       platforms: json['platforms'],
       storeAs: json['storeAs'] ?? 'string',
       placeholderTags: json['placeholderTags'],
+      maxTags: json['maxTags'],
       dataSource: parseDataSource(json),
+      destinationTable: json['destinationTable'],
+      destinationColumn: json['destinationColumn'],
     );
   }
 
@@ -58,6 +65,7 @@ class TagsComponent extends FormComponent {
     final json = super.toJson();
     json['storeAs'] = storeAs;
     if (placeholderTags != null) json['placeholderTags'] = placeholderTags;
+    if (maxTags != null) json['maxTags'] = maxTags;
     return json;
   }
 }

@@ -42,10 +42,20 @@ However, if a component is configured with `uploadTiming: "immediate"`, the form
 ```dart
 final config = FormConfig.fromJson(
   formJson,
-  onFileUpload: (String localPath, String uploadUrl) async {
-    // Example: Use Dio or http to upload the file to `uploadUrl`
+  onFileUpload: (List<String> localPaths, String uploadUrl, OtherUploadConfig? uploadConfig) async {
+    // Example: Use Dio or http to upload the first file to `uploadUrl`
+    if (localPaths.isEmpty) return null;
+    
     final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
-    request.files.add(await http.MultipartFile.fromPath('file', localPath));
+    
+    // If uploadConfig is provided (from uploadType: "other"), apply custom headers
+    if (uploadConfig != null) {
+      for (final header in uploadConfig.headers) {
+        request.headers[header.key] = header.value; // e.g., Bearer token
+      }
+    }
+    
+    request.files.add(await http.MultipartFile.fromPath('file', localPaths.first));
     
     final response = await request.send();
     if (response.statusCode == 200) {
@@ -53,7 +63,7 @@ final config = FormConfig.fromJson(
       final data = jsonDecode(responseBody);
       return data['url']; // Return the remote URL of the uploaded file
     }
-    return null; // Return null on failure (will fallback to storing local path)
+    return null; // Return null on failure (will fallback to storing local paths)
   },
 );
 ```
@@ -166,14 +176,16 @@ Uses the `file_picker` package. No extra permissions needed on Android 13+ or iO
 
 ## Usage
 
+Here is a complete example of how to initialize the form builder and inject your own networking/database logic using the **Inversion of Control (IoC)** pattern.
+
 ```dart
 import 'package:form_dynamic_builder/form_dynamic_builder.dart';
 import 'package:flutter/material.dart';
 
+// 1. Define your form schema (JSON)
 final formJson = {
   "id": "form_1",
-  "title": "My Form",
-  "type": "form",
+  "title": "Employee Onboarding",
   "components": [
     {
       "id": "c1",
@@ -186,34 +198,108 @@ final formJson = {
       "id": "c2",
       "type": "camera",
       "key": "photo",
-      "label": "Photo",
-      "cameraFacing": "rear",
-      "showTimestamp": true,
-      "timestampFormat": "yyyy-MM-dd HH:mm:ss",
-      "showCoordinates": true,
-      "showDeviceInfo": true,
+      "label": "Photo Profile",
       "uploadTiming": "onSubmit"
     }
-  ],
-  "settings": {
-    "submitLabel": "Submit"
-  }
+  ]
 };
 
-final config = FormConfig.fromJson(formJson);
+// 2. Initialize the Config and inject your App's logic
+final config = FormConfig.fromJson(
+  formJson,
+  
+  // Delegate File Uploads to the Host App
+  onFileUpload: (localPaths, uploadUrl, uploadConfig) async {
+    // Write your Dio / http upload logic here
+    return "https://my-server.com/uploads/fileName.jpg"; 
+  },
+  
+  // Delegate API GET Requests to the Host App
+  onApiQuery: (url, method, headers, body) async {
+    // Write your http.get / Dio request here
+    final response = await http.get(Uri.parse(url), headers: headers);
+    return response.body; 
+  },
+  
+  // Delegate Local Database Queries to the Host App
+  onDatabaseQuery: (connectionString, dbName, query) async {
+    // Write your sqflite rawQuery here
+    final db = await openDatabase('\$dbName.db');
+    return await db.rawQuery(query);
+  },
+);
+
+// 3. Create the controller
 final controller = FormController(config: config);
 
-// In your widget tree:
-FormDynamicBuilder(controller: controller)
+// 4. Render the form in your Widget Tree
+@override
+Widget build(BuildContext context) {
+  return FormDynamicBuilder(controller: controller);
+}
 
-// On submit:
-if (controller.validate()) {
-  final values = controller.values;
-  print(values); // { "name": "John", "photo": "/tmp/photo_annotated_xxx.png" }
+// 5. Handle submission
+void submitForm() {
+  if (controller.validate()) {
+    final values = controller.resultMap; // Map<String, FormResultModel>
+    final jsonPayload = jsonEncode(values);
+    print("Payload Ready: $jsonPayload");
+  }
 }
 ```
 
+---
+
+## Drafting & Serialization (Save/Restore)
+
+The form builder is designed to support drafting (saving and restoring incomplete forms). Instead of saving raw flat values, the `resultMap` outputs a structured payload (modeled by `FormResultModel`) that captures both the raw value and its display-ready text label.
+
+This is especially helpful for API-driven select fields or dates, because when you restore the draft, the form immediately knows what label to display without having to re-fetch the API or re-run formatters.
+
+### Expected JSON Output from `resultMap`
+
+```json
+{
+  "department_id": {
+    "answerText": "Engineering", // Label shown to the user
+    "answerValue": "dept_001",   // Actual ID to submit
+    "resultMapper": {
+      "destinationTbl": "users",
+      "destinationColl": "department"
+    }
+  },
+  "join_date": {
+    "answerText": "12 Jan 2026",
+    "answerValue": "2026-01-12",
+    "resultMapper": { ... }
+  }
 }
+```
+
+*Note: Upload-type components (Camera, File, Signature) currently omit `resultMapper` as their structure differs.*
+
+### Saving a Draft
+
+```dart
+// 1. Get the structured map
+final draftData = controller.resultMap;
+
+// 2. Encode to JSON and save to your local DB or Server
+final jsonString = jsonEncode(draftData);
+await db.saveDraft(formId, jsonString);
+```
+
+### Restoring a Draft
+
+When the host application reopens the form, simply inject the parsed JSON back into the controller:
+
+```dart
+// 1. Read JSON from DB
+final savedJson = await db.getDraft(formId);
+final parsedDraft = jsonDecode(savedJson);
+
+// 2. Load it into the controller
+controller.loadDraft(parsedDraft);
 ```
 
 ---

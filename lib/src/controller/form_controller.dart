@@ -15,21 +15,25 @@ class FormController extends ChangeNotifier
   @override
   final FormConfig config;
 
-  final Map<String, String> authHeaders;
-
   final Map<String, dynamic> _dsForm = {};
 
   /// Access dynamic data provided by the application.
   Map<String, dynamic> get dsForm => _dsForm;
 
+  /// Incremented on every [reset] call.
+  /// Used by the form builder to force-rebuild all component widgets.
+  int _resetGeneration = 0;
+  int get resetGeneration => _resetGeneration;
+
   FormController({
     required this.config,
-    this.authHeaders = const {},
   }) {
     if (config.dsForm != null) {
       _dsForm.addAll(config.dsForm!);
     }
     initializeValues();
+    // Prime the API cache for conditional logic
+    refreshConditionalApiValues().then((_) => notifyListeners());
   }
 
   /// Updates manually provided dynamic data.
@@ -38,20 +42,13 @@ class FormController extends ChangeNotifier
     notifyListeners();
   }
 
-  /// Clears all values, errors, and resets navigation.
+  /// Clears all values, errors, focus nodes, and resets navigation.
   void reset() {
-    // _values is in StateMixin (private there, but we have initializeValues)
-    // _currentStep is in NavigationMixin
-    // _errors is in ValidationMixin
-
-    // Usage of mixin methods:
-    initializeValues(); // StateMixin (clears and reinits)
-    // Actually StateMixin.initializeValues clears _values.
-
-    // We need to clear errors.
-    errors.clear(); // ValidationMixin exposes errors map.
-
-    resetNavigation(); // NavigationMixin
+    _resetGeneration++;
+    clearFocusNodes(); // Dispose stale FocusNodes so inputs work again
+    initializeValues();
+    errors.clear();
+    resetNavigation();
     notifyListeners();
   }
 

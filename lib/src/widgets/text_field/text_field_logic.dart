@@ -122,12 +122,24 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
 
   void onChanged(String value) {
     dynamic valueToStore = value;
+    String displayText = value;
+
     if (component.inputMask.isNotEmpty && maskFormatter != null) {
       valueToStore = maskFormatter!.getUnmaskedText();
+      displayText = maskFormatter!.getMaskedText();
     } else if (currencyFormatter != null) {
       valueToStore = value.replaceAll(RegExp(r'[^0-9.]'), '');
+      displayText =
+          textController.text; // already formatted by CurrencyInputFormatter
     }
-    formController.updateValue(component.key, valueToStore);
+
+    if (displayText != value) {
+      // Has a formatter: store display text in answerText
+      formController.updateValueWithLabel(
+          component.key, valueToStore, displayText);
+    } else {
+      formController.updateValue(component.key, valueToStore);
+    }
   }
 
   bool isCurrencyField() {
