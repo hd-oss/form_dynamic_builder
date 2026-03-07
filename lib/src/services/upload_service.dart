@@ -18,7 +18,7 @@ class UploadService {
     required FormController formController,
     required String uploadUrl,
     required String uploadTiming,
-    String uploadType = 'callback',
+    String uploadType = 'other',
     OtherUploadConfig? uploadConfig,
     bool compressFile = false,
     int compressPercentage = 80,

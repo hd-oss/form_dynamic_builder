@@ -7,6 +7,7 @@ import 'package:signature/signature.dart';
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
 import '../../models/file_data.dart';
+import '../../utils/file_utils.dart';
 
 import '../../services/mixins/upload_mixin.dart';
 import '../../services/upload_service.dart';
@@ -65,8 +66,14 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
             '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.png');
         await tempFile.writeAsBytes(data);
 
+        // Move to persistent storage
+        final persistentPath = await FileStorageUtils.moveToSupportDirectory(
+          tempFile.path,
+          subDir: 'signatures',
+        );
+
         final uploadResult = await UploadService.processAndUpload(
-          localPaths: [tempFile.path],
+          localPaths: [persistentPath],
           formController: formController,
           uploadUrl: component.uploadUrl,
           uploadTiming: component.uploadTiming,
@@ -78,12 +85,17 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
 
         if (uploadResult.isSuccess) {
           final resultValue = uploadResult.values.first;
-          final size = tempFile.existsSync() ? tempFile.lengthSync() : null;
+          final size = File(persistentPath).existsSync()
+              ? File(persistentPath).lengthSync()
+              : null;
           final fileData = FileData.fromUpload(
-            localPath: tempFile.path,
+            localPath: persistentPath,
             size: size,
-            uploadedUrl: resultValue is String ? resultValue : null,
-            uploadResponse: resultValue is! String ? resultValue : null,
+            uploadedUrl: component.uploadUrl,
+            uploadResponse: extractValueFromPath(
+              resultValue,
+              component.uploadConfig?.responseFileUrlPath ?? '',
+            ),
           );
           formController.updateValue(component.key, fileData);
           updateUploadStatus(UploadStatus.success);
@@ -103,7 +115,18 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
     }
   }
 
-  void clearSignature() {
+  Future<void> clearSignature() async {
+    final value = formController.getValue(component.key);
+    if (value is FileData && value.localPath != null) {
+      if (await FileStorageUtils.isSafeToDelete(value.localPath!)) {
+        try {
+          final file = File(value.localPath!);
+          if (file.existsSync()) {
+            await file.delete();
+          }
+        } catch (_) {}
+      }
+    }
     signatureController.clear();
     formController.updateValue(component.key, null);
   }
@@ -112,38 +135,20 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
   // IMAGE HELPERS (Moved from Widget)
   // ==========================================================================
 
-  bool isExternalImage(dynamic value) {
+  bool isExternalImage(FileData? value) {
     if (value == null) return false;
-    if (value is FileData) {
-      return (value.url != null || value.localPath != null) &&
-          signatureController.isEmpty;
-    }
-    return value is String && value.isNotEmpty && signatureController.isEmpty;
+    return (value.localPath != null) && signatureController.isEmpty;
   }
 
-  Widget buildImageFromValue(BuildContext context, dynamic value,
+  Widget buildImageFromValue(BuildContext context, FileData? value,
       {double? height, double? width}) {
-    String? val;
-    if (value is FileData) {
-      val = value.url ?? value.localPath;
-    } else if (value is String) {
-      val = value;
-    }
+    String? val = value?.localPath;
 
     if (val == null || val.isEmpty) {
       return const Center(child: Icon(Icons.broken_image));
     }
 
     try {
-      if (val.startsWith('http://') || val.startsWith('https://')) {
-        return Image.network(
-          val,
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) =>
-              const Center(child: Icon(Icons.broken_image)),
-        );
-      }
-
       if (val.contains(',')) {
         final base64Str = val.split(',').last;
         return Image.memory(

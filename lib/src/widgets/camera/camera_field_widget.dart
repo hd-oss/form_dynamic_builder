@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../controller/form_controller.dart';
 import '../../services/mixins/upload_mixin.dart';
 import '../../models/components/all_components.dart';
+import '../../models/file_data.dart';
 import '../field_label.dart';
 import 'camera_field_logic.dart';
 import 'camera_screen_widget.dart';
@@ -94,7 +95,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
   // UI BUILDERS
   // ==========================================================================
 
-  Widget _buildPreview(dynamic value) {
+  Widget _buildPreview(FileData? value) {
     return GestureDetector(
       onTap: () => _openPreviewDialog(value),
       child: ClipRRect(
@@ -108,7 +109,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
     );
   }
 
-  void _openPreviewDialog(dynamic value) {
+  void _openPreviewDialog(FileData? value) {
     showDialog(
       context: context,
       builder: (context) => Dialog.fullscreen(
@@ -211,17 +212,32 @@ class _DynamicCameraState extends State<DynamicCamera> {
                             ],
                           ),
                         ),
-                      if (value != null &&
-                          (value is! String || value.isNotEmpty)) ...[
+                      if (value is FileData) ...[
                         Stack(children: [
                           _buildPreview(value),
+                          if (value.isUploaded)
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.cloud_done,
+                                    color: Colors.green, size: 24),
+                              ),
+                            ),
                           Positioned(
                             top: 0,
                             right: 0,
                             child: IconButton(
                                 icon:
                                     const Icon(Icons.close, color: Colors.red),
-                                onPressed: logic.clearPhoto,
+                                onPressed: widget.component.disabled
+                                    ? null
+                                    : logic.clearPhoto,
                                 style: IconButton.styleFrom(
                                   backgroundColor:
                                       Colors.white.withOpacity(0.5),

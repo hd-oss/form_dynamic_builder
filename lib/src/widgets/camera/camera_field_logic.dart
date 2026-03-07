@@ -10,6 +10,7 @@ import '../../models/components/all_components.dart';
 import '../../models/file_data.dart';
 
 import '../../utils/image_compressor.dart';
+import '../../utils/file_utils.dart';
 
 import '../../services/mixins/upload_mixin.dart';
 import '../../services/upload_service.dart';
@@ -37,7 +38,7 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
     super.dispose();
   }
 
-  void clearPhoto() {
+  Future<void> clearPhoto() async {
     final value = formController.getValue(component.key);
     String? currentPath;
     if (value is FileData) {
@@ -48,8 +49,7 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
 
     if (currentPath != null) {
       try {
-        if (!currentPath.startsWith('http') &&
-            !currentPath.startsWith('https')) {
+        if (await FileStorageUtils.isSafeToDelete(currentPath)) {
           final file = File(currentPath);
           if (file.existsSync()) {
             file.deleteSync();
@@ -84,8 +84,14 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
       );
       if (_isDisposed) return;
 
+      // Move to persistent storage
+      final persistentPath = await FileStorageUtils.moveToSupportDirectory(
+        finalPath,
+        subDir: 'camera',
+      );
+
       final uploadResult = await UploadService.processAndUpload(
-        localPaths: [finalPath],
+        localPaths: [persistentPath],
         formController: formController,
         uploadUrl: component.uploadUrl,
         uploadTiming: component.uploadTiming,
@@ -97,22 +103,27 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
 
       if (uploadResult.isSuccess) {
         final resultValue = uploadResult.values.first;
-        final size =
-            File(finalPath).existsSync() ? File(finalPath).lengthSync() : null;
+        final size = File(persistentPath).existsSync()
+            ? File(persistentPath).lengthSync()
+            : null;
         final fileData = FileData.fromUpload(
-          localPath: finalPath,
+          localPath: persistentPath,
           size: size,
-          uploadedUrl: resultValue is String ? resultValue : null,
-          uploadResponse: resultValue is! String ? resultValue : null,
+          uploadedUrl: component.uploadUrl,
+          uploadResponse: extractValueFromPath(
+            resultValue,
+            component.uploadConfig?.responseFileUrlPath ?? '',
+          ),
         );
         formController.updateValue(component.key, fileData);
         updateUploadStatus(UploadStatus.success);
       } else {
         // Fallback: keep local file wrapped in FileData
-        final size =
-            File(finalPath).existsSync() ? File(finalPath).lengthSync() : null;
+        final size = File(persistentPath).existsSync()
+            ? File(persistentPath).lengthSync()
+            : null;
         formController.updateValue(
-            component.key, FileData.fromLocalPath(finalPath, size: size));
+            component.key, FileData.fromLocalPath(persistentPath, size: size));
         updateUploadStatus(UploadStatus.error,
             error: uploadResult.errorMessage);
       }
@@ -250,28 +261,13 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
     }
   }
 
-  Widget buildImageFromValue(dynamic value) {
-    String? path;
-    if (value is FileData) {
-      path = value.url ?? value.localPath;
-    } else if (value is String) {
-      path = value;
-    }
-
-    if (path == null || path.isEmpty) {
+  Widget buildImageFromValue(FileData? value) {
+    if (value == null || value.localPath == null || value.localPath!.isEmpty) {
       return const Center(child: Icon(Icons.broken_image));
     }
 
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return Image.network(
-        path,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            const Center(child: Icon(Icons.broken_image)),
-      );
-    }
     return Image.file(
-      File(path),
+      File(value.localPath!),
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) =>
           const Center(child: Icon(Icons.broken_image)),

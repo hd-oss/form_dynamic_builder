@@ -44,12 +44,11 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
       return value.map((e) {
         if (e is FileData) return e;
         if (e is Map<String, dynamic>) return FileData.fromJson(e);
-        // Legacy: plain string path/URL
         return FileData(
           name: e.toString().split('/').last,
-          localPath: e.toString().startsWith('http') ? null : e.toString(),
-          uploadedUrl: e.toString().startsWith('http') ? e.toString() : null,
-          status: e.toString().startsWith('http') ? 'success' : 'local',
+          localPath: e.toString(),
+          uploadedUrl: null,
+          status: 'local',
         );
       }).toList();
     }
@@ -60,9 +59,9 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
       return [
         FileData(
           name: str.split('/').last,
-          localPath: str.startsWith('http') ? null : str,
-          uploadedUrl: str.startsWith('http') ? str : null,
-          status: str.startsWith('http') ? 'success' : 'local',
+          localPath: str,
+          uploadedUrl: null,
+          status: 'local',
         )
       ];
     }

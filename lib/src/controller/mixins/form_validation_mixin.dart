@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/components/all_components.dart';
+import '../../models/file_data.dart';
 import '../../models/form_component.dart';
 import '../../models/form_config.dart';
 import '../../models/validation_rule.dart';
@@ -115,9 +116,23 @@ mixin FormValidationMixin on ChangeNotifier {
       FormComponent component, dynamic value, String stringValue) {
     _errors.remove(component.key);
 
-    final bool isValueEmpty = value == null ||
-        (value is String && value.trim().isEmpty) ||
-        (value is Iterable && value.isEmpty);
+    bool isValueEmpty = false;
+
+    if (value == null) {
+      isValueEmpty = true;
+    } else if (value is String && value.trim().isEmpty) {
+      isValueEmpty = true;
+    } else if (value is Iterable) {
+      if (value.isEmpty) {
+        isValueEmpty = true;
+      } else if (value.every((e) => e is FileData)) {
+        // For multiple files, all must be successfully uploaded
+        isValueEmpty = value.any((e) => !(e as FileData).isUploaded);
+      }
+    } else if (value is FileData) {
+      // For single file, it must be successfully uploaded
+      isValueEmpty = !value.isUploaded;
+    }
 
     ValidationRule? requiredRule;
     try {

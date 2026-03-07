@@ -30,22 +30,6 @@ class FileData {
     this.uploadResponse,
   });
 
-  /// Returns the best available URL for this file, or `null`.
-  String? get url {
-    if (uploadedUrl != null) return uploadedUrl;
-    if (uploadResponse is Map) {
-      final m = uploadResponse as Map;
-      return (m['url'] ?? m['location'] ?? m['path'])?.toString();
-    }
-    return null;
-  }
-
-  /// Returns the raw value for form submission.
-  /// Prioritizes remote data over local paths.
-  dynamic get submissionValue {
-    return uploadedUrl ?? uploadResponse ?? localPath;
-  }
-
   /// Whether this file has been successfully uploaded to a remote server.
   bool get isUploaded => status == 'success';
 
@@ -121,7 +105,4 @@ class FileData {
         if (uploadedUrl != null) 'uploadedUrl': uploadedUrl,
         if (uploadResponse != null) 'uploadResponse': uploadResponse,
       };
-
-  @override
-  String toString() => 'FileData(name: $name, status: $status, url: $url)';
 }

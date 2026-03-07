@@ -8,6 +8,7 @@ import '../../models/components/all_components.dart';
 import '../../models/file_data.dart';
 import '../../services/mixins/upload_mixin.dart';
 import '../../services/upload_service.dart';
+import '../../utils/file_utils.dart';
 
 class FileUploadLogic extends ChangeNotifier with UploadMixin {
   final FileUploadComponent component;
@@ -102,17 +103,38 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
           final newEntries = <FileData>[];
           final values = uploadResult.values;
           for (int i = 0; i < selectedLocalPaths.length; i++) {
-            final localPath = selectedLocalPaths[i];
-            final size = File(localPath).existsSync()
-                ? File(localPath).lengthSync()
-                : null;
+            final originalPath = selectedLocalPaths[i];
+
             // Match upload result value to this file (values may be fewer if batch)
             final resultValue = i < values.length ? values[i] : null;
+
+            String finalLocalPath = originalPath;
+
+            if (resultValue is String && resultValue.isNotEmpty) {
+              finalLocalPath = resultValue;
+            }
+
+            // Move to persistent storage if it was in temp (e.g. compressed)
+            if (File(finalLocalPath).existsSync() &&
+                finalLocalPath.contains(Directory.systemTemp.path)) {
+              finalLocalPath = await FileStorageUtils.moveToSupportDirectory(
+                finalLocalPath,
+                subDir: 'uploads',
+              );
+            }
+
+            final size = File(finalLocalPath).existsSync()
+                ? File(finalLocalPath).lengthSync()
+                : null;
+
             final fileData = FileData.fromUpload(
-              localPath: localPath,
+              localPath: finalLocalPath,
               size: size,
-              uploadedUrl: resultValue is String ? resultValue : null,
-              uploadResponse: resultValue is! String ? resultValue : null,
+              uploadedUrl: component.uploadUrl,
+              uploadResponse: extractValueFromPath(
+                resultValue,
+                component.uploadConfig?.responseFileUrlPath ?? '',
+              ),
             );
             newEntries.add(fileData);
           }
@@ -127,20 +149,45 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
           }
           updateUploadStatus(UploadStatus.success);
         } else {
-          // Failure: keep local file as-is with status 'local'
+          // Failure: keep local file as-is or keep processed fallback paths
           final fallbackPaths = uploadResult.localPaths ?? selectedLocalPaths;
-          final newEntries = fallbackPaths.map((p) {
-            final size = File(p).existsSync() ? File(p).lengthSync() : null;
-            return FileData.fromLocalPath(p, size: size);
+
+          final entriesFuture = fallbackPaths.map((p) async {
+            String finalLocalPath = p;
+
+            if (p.isNotEmpty) {
+              finalLocalPath = p;
+            }
+
+            // Move to persistent storage if in temp
+            if (File(finalLocalPath).existsSync() &&
+                finalLocalPath.contains(Directory.systemTemp.path)) {
+              finalLocalPath = await FileStorageUtils.moveToSupportDirectory(
+                finalLocalPath,
+                subDir: 'uploads',
+              );
+            }
+
+            final size = File(finalLocalPath).existsSync()
+                ? File(finalLocalPath).lengthSync()
+                : null;
+            return FileData.fromLocalPath(
+              finalLocalPath,
+              size: size,
+            ).copyWith(
+                uploadedUrl: component.uploadUrl); // Always use component URL
           }).toList();
+
+          // Wait for all moves
+          final resolvedEntries = await Future.wait(entriesFuture);
 
           if (component.multiple) {
             final merged = List<FileData>.from(
               current.whereType<FileData>(),
-            )..addAll(newEntries);
+            )..addAll(resolvedEntries);
             formController.updateValue(component.key, merged);
           } else {
-            formController.updateValue(component.key, newEntries.first);
+            formController.updateValue(component.key, resolvedEntries.first);
           }
           updateUploadStatus(UploadStatus.error,
               error: uploadResult.errorMessage);
@@ -157,12 +204,19 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
     }
   }
 
-  void _deleteFile(String path) {
+  Future<void> _deleteFile(String path) async {
     try {
-      if (path.startsWith('http') || path.startsWith('https')) return;
+      if (!(await FileStorageUtils.isSafeToDelete(path))) {
+        if (kDebugMode) {
+          print(
+              'Skipping deletion of non-temp/non-support physical file: $path');
+        }
+        return;
+      }
+
       final file = File(path);
       if (file.existsSync()) {
-        file.deleteSync();
+        await file.delete();
         if (kDebugMode) print('Deleted physical file: $path');
       }
     } catch (e) {
@@ -170,12 +224,10 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
     }
   }
 
-  void removeFile(List<dynamic> current, dynamic entry) {
+  Future<void> removeFile(List<dynamic> current, FileData entry) async {
     // Physical delete only for local files
-    if (entry is FileData && entry.localPath != null) {
-      _deleteFile(entry.localPath!);
-    } else if (entry is String) {
-      _deleteFile(entry);
+    if (entry.localPath != null) {
+      await _deleteFile(entry.localPath!);
     }
     final updated = List<dynamic>.from(current)..remove(entry);
     formController.updateValue(

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ImageCompressor {
   /// Compresses an image and saves it to a persistent drafted directory.
@@ -27,26 +26,15 @@ class ImageCompressor {
         return imagePath;
       }
 
-      // Get persistent directory
-      final Directory docDir = await getApplicationSupportDirectory();
-
-      // Create a drafts folder if it doesn't exist
-      final Directory draftsDir = Directory(docDir.path);
-      if (!draftsDir.existsSync()) {
-        draftsDir.createSync(recursive: true);
-      }
-
-      // Define target path
+      // Define target path in system temp
       final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final String targetPath = '${draftsDir.path}/compressed_$timestamp.jpg';
+      final String targetPath =
+          '${Directory.systemTemp.path}/compressed_$timestamp.jpg';
 
       // Compress and get file
       final XFile? compressedFile =
-          await FlutterImageCompress.compressAndGetFile(
-        imagePath,
-        targetPath,
-        quality: quality,
-      );
+          await FlutterImageCompress.compressAndGetFile(imagePath, targetPath,
+              quality: quality);
 
       if (compressedFile != null) {
         if (kDebugMode) {

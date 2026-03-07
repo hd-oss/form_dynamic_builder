@@ -3,6 +3,7 @@ import 'package:signature/signature.dart';
 
 import '../../controller/form_controller.dart';
 import '../../models/components/all_components.dart';
+import '../../models/file_data.dart';
 import '../../services/mixins/upload_mixin.dart';
 import '../field_label.dart';
 import 'signature_logic.dart';
@@ -36,7 +37,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
     super.dispose();
   }
 
-  Widget _buildExternalImage(dynamic value) {
+  Widget _buildExternalImage(FileData? value) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -143,9 +144,23 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                       ),
                     Stack(
                       children: [
-                        logic.isExternalImage(value)
+                        logic.isExternalImage(value as FileData?)
                             ? _buildExternalImage(value)
                             : _buildSignatureCanvas(),
+                        if (value is FileData && value.isUploaded)
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.cloud_done,
+                                  color: Colors.green, size: 24),
+                            ),
+                          ),
                         Align(
                           alignment: Alignment.topRight,
                           child: IconButton(

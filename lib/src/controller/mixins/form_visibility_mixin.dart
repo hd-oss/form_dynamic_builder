@@ -328,13 +328,28 @@ mixin FormVisibilityMixin {
         return !_contains(fieldValue, comparisonValue);
       case FormConstants.opNotEmpty:
         if (fieldValue == null) return false;
-        if (fieldValue is String) return fieldValue.isNotEmpty;
-        if (fieldValue is List) return fieldValue.isNotEmpty;
+        if (fieldValue is String) return fieldValue.trim().isNotEmpty;
+        if (fieldValue is Iterable) {
+          if (fieldValue.isEmpty) return false;
+          // For multiple files, all must be successfully uploaded
+          if (fieldValue.every((e) => e is FileData)) {
+            return !fieldValue.any((e) => !(e as FileData).isUploaded);
+          }
+          return true;
+        }
+        if (fieldValue is FileData) return fieldValue.isUploaded;
         return true;
       case FormConstants.opIsEmpty:
         if (fieldValue == null) return true;
-        if (fieldValue is String) return fieldValue.isEmpty;
-        if (fieldValue is List) return fieldValue.isEmpty;
+        if (fieldValue is String) return fieldValue.trim().isEmpty;
+        if (fieldValue is Iterable) {
+          if (fieldValue.isEmpty) return true;
+          if (fieldValue.every((e) => e is FileData)) {
+            return fieldValue.any((e) => !(e as FileData).isUploaded);
+          }
+          return false;
+        }
+        if (fieldValue is FileData) return !fieldValue.isUploaded;
         return false;
       default:
         return true;
@@ -410,9 +425,9 @@ mixin FormVisibilityMixin {
 
   /// Unwraps FileData objects to their submission values.
   dynamic _unwrapValue(dynamic value) {
-    if (value is FileData) return value.submissionValue;
+    if (value is FileData) return value.uploadResponse;
     if (value is List) {
-      return value.map((e) => e is FileData ? e.submissionValue : e).toList();
+      return value.map((e) => e is FileData ? e.uploadResponse : e).toList();
     }
     return value;
   }
