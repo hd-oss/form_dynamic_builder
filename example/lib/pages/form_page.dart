@@ -82,20 +82,50 @@ class _FormPageState extends State<FormPage> {
       print(_formController!.resultMap);
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Submitted Values'),
-          content: SingleChildScrollView(
-            child: Text(
-              const JsonEncoder.withIndent('  ')
-                  .convert(_formController!.resultMap),
+        builder: (context) => Dialog(
+          insetPadding: const EdgeInsets.all(16),
+          child: IntrinsicHeight(
+            child: Column(
+              children: [
+                const Text(
+                  'Submitted Values',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  child: Scrollbar(
+                      child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: IntrinsicWidth(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minWidth:
+                                MediaQuery.of(context).size.width * 0.8 - 64),
+                        child: Text(
+                          const JsonEncoder.withIndent('  ')
+                              .convert(_formController!.resultMap),
+                          style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontFamilyFallback: [
+                                'Courier',
+                                'Menlo',
+                                'Monaco'
+                              ],
+                              fontSize: 13,
+                              height: 1.5),
+                        ),
+                      ),
+                    ),
+                  )),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
         ),
       );
     }

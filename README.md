@@ -2,24 +2,33 @@
 
 A Flutter package for rendering dynamic forms from a JSON schema. Supports a rich set of field types including text, number, date, file upload, camera capture, signature, and more.
 
----
+## Table of Contents
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Data Source Configuration](#data-source-configuration)
+- [File Uploads (IoC)](#file-uploads-ioc)
+- [Drafting & Serialization](#drafting--serialization)
+- [Component Configurations](#component-configurations)
+  - [Camera Configuration](#camera-configuration)
+  - [File Upload Configuration](#file-upload-configuration)
+- [Permissions](#permissions)
+- [Additional Information](#additional-information)
 
 ## Features
 
-- 📋 Render forms dynamically from a JSON configuration
-- 📷 Camera capture with metadata annotation (timestamp, GPS, device info) burned onto the photo
-- 📁 File upload with size validation and compression metadata
-- 🗓️ Date & time pickers
-- ✍️ Signature pad
-- ☑️ Checkbox, radio, select, tags, select-boxes
-- 🔢 Number and currency fields
-- 🔒 Validation rules (required, minLength, maxLength, etc.)
-- 🪄 Conditional visibility logic
-- 🧙 Wizard (multi-step) form support
+- 📋 **Dynamic Rendering**: Render forms dynamically from a JSON configuration.
+- 📷 **Camera**: Camera capture with metadata annotation (timestamp, GPS, device info) burned onto the photo.
+- 📁 **File Upload**: File upload with size validation and compression metadata.
+- 🗓️ **Date & Time**: Date and time pickers.
+- ✍️ **Signature**: Signature pad.
+- ☑️ **Selections**: Checkbox, radio, select, tags, select-boxes.
+- 🔢 **Numbers**: Number and currency fields.
+- 🔒 **Validation**: Built-in validation rules (required, minLength, maxLength, etc.).
+- 🪄 **Logic**: Conditional visibility logic.
+- 🧙 **Wizard**: Wizard (multi-step) form support.
 
----
-
-## Getting started
+## Getting Started
 
 Add this package to your `pubspec.yaml`:
 
@@ -28,151 +37,6 @@ dependencies:
   form_dynamic_builder:
     path: ../form_dynamic_builder  # or your pub.dev version
 ```
-
----
-
-## File Uploads (IoC)
-
-For components like `Camera`, `File`, and `Signature`, the form builder delegates file uploads back to the Host Application using the `onFileUpload` callback. 
-
-By default, these components use `uploadTiming: "onSubmit"`, meaning they will only store the **local file path** in the form's state. It is up to the host application to upload these files when the entire form is submitted.
-
-However, if a component is configured with `uploadTiming: "immediate"`, the form builder will attempt to upload the file right after it is selected/captured. To support this, you must provide the `onFileUpload` callback:
-
-```dart
-final config = FormConfig.fromJson(
-  formJson,
-  onFileUpload: (List<String> localPaths, String uploadUrl, OtherUploadConfig? uploadConfig) async {
-    // Example: Use Dio or http to upload the first file to `uploadUrl`
-    if (localPaths.isEmpty) return null;
-    
-    final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
-    
-    // If uploadConfig is provided (from uploadType: "other"), apply custom headers
-    if (uploadConfig != null) {
-      for (final header in uploadConfig.headers) {
-        request.headers[header.key] = header.value; // e.g., Bearer token
-      }
-    }
-    
-    request.files.add(await http.MultipartFile.fromPath('file', localPaths.first));
-    
-    final response = await request.send();
-    if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody);
-      return data['url']; // Return the remote URL of the uploaded file
-    }
-    return null; // Return null on failure (will fallback to storing local paths)
-  },
-);
-```
-
-If `onFileUpload` is successful and returns a String (the remote URL), the form will store this remote URL in its state instead of the local path.
-
----
-
-## Permissions
-
-Some field types require platform permissions to be declared in your app. Follow the setup below based on which components you use.
-
----
-
-### 📷 Camera (`type: "camera"`)
-
-Uses the `camera` package to take photos.
-
-#### Android
-
-In `android/app/src/main/AndroidManifest.xml`, add inside `<manifest>`:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA"/>
-```
-
-#### iOS
-
-In `ios/Runner/Info.plist`, add inside `<dict>`:
-
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Dibutuhkan untuk mengambil foto pada form.</string>
-```
-
----
-
-### 📍 GPS Coordinates on Photo (`showCoordinates: true`)
-
-When the camera component is configured with `showCoordinates: true`, the app will fetch GPS coordinates and burn them onto the captured photo. This uses the `geolocator` package.
-
-#### Android
-
-In `android/app/src/main/AndroidManifest.xml`, add inside `<manifest>`:
-
-```xml
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-```
-
-#### iOS
-
-In `ios/Runner/Info.plist`, add inside `<dict>`:
-
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
-<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
-```
-
----
-
-### 📁 File Upload (`type: "file"`)
-
-Uses the `file_picker` package. No extra permissions needed on Android 13+ or iOS. For older Android (< API 33), add:
-
-```xml
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-```
-
----
-
-### Full `AndroidManifest.xml` example
-
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Camera -->
-    <uses-permission android:name="android.permission.CAMERA"/>
-
-    <!-- GPS (for camera showCoordinates) -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
-    <application ...>
-        ...
-    </application>
-</manifest>
-```
-
-### Full `Info.plist` example
-
-```xml
-<dict>
-    <!-- Camera -->
-    <key>NSCameraUsageDescription</key>
-    <string>Dibutuhkan untuk mengambil foto pada form.</string>
-
-    <!-- GPS (for camera showCoordinates) -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
-</dict>
-```
-
----
 
 ## Usage
 
@@ -209,7 +73,7 @@ final config = FormConfig.fromJson(
   formJson,
   
   // Delegate File Uploads to the Host App
-  onFileUpload: (localPaths, uploadUrl, uploadConfig) async {
+  onFileUpload: (localPath, uploadUrl, uploadConfig) async {
     // Write your Dio / http upload logic here
     return "https://my-server.com/uploads/fileName.jpg"; 
   },
@@ -224,7 +88,7 @@ final config = FormConfig.fromJson(
   // Delegate Local Database Queries to the Host App
   onDatabaseQuery: (connectionString, dbName, query) async {
     // Write your sqflite rawQuery here
-    final db = await openDatabase('\$dbName.db');
+    final db = await openDatabase('$dbName.db');
     return await db.rawQuery(query);
   },
 );
@@ -247,62 +111,6 @@ void submitForm() {
   }
 }
 ```
-
----
-
-## Drafting & Serialization (Save/Restore)
-
-The form builder is designed to support drafting (saving and restoring incomplete forms). Instead of saving raw flat values, the `resultMap` outputs a structured payload (modeled by `FormResultModel`) that captures both the raw value and its display-ready text label.
-
-This is especially helpful for API-driven select fields or dates, because when you restore the draft, the form immediately knows what label to display without having to re-fetch the API or re-run formatters.
-
-### Expected JSON Output from `resultMap`
-
-```json
-{
-  "department_id": {
-    "answerText": "Engineering", // Label shown to the user
-    "answerValue": "dept_001",   // Actual ID to submit
-    "resultMapper": {
-      "destinationTbl": "users",
-      "destinationColl": "department"
-    }
-  },
-  "join_date": {
-    "answerText": "12 Jan 2026",
-    "answerValue": "2026-01-12",
-    "resultMapper": { ... }
-  }
-}
-```
-
-*Note: Upload-type components (Camera, File, Signature) currently omit `resultMapper` as their structure differs.*
-
-### Saving a Draft
-
-```dart
-// 1. Get the structured map
-final draftData = controller.resultMap;
-
-// 2. Encode to JSON and save to your local DB or Server
-final jsonString = jsonEncode(draftData);
-await db.saveDraft(formId, jsonString);
-```
-
-### Restoring a Draft
-
-When the host application reopens the form, simply inject the parsed JSON back into the controller:
-
-```dart
-// 1. Read JSON from DB
-final savedJson = await db.getDraft(formId);
-final parsedDraft = jsonDecode(savedJson);
-
-// 2. Load it into the controller
-controller.loadDraft(parsedDraft);
-```
-
----
 
 ## Data Source Configuration
 
@@ -370,15 +178,108 @@ final config = FormConfig.fromJson(
 );
 ```
 
-**Placeholders:**
+### Placeholders
 Both `api.url` and `database.query` support placeholders for interpolation:
 - `{{componentKey}}`: Injects the current value of another field.
 - `{{ds_form.xxx}}`: Injects dynamic data passed via `dsForm`.
 - `{{var.static.current_year}}`: Injects static variables (e.g. `current_date`, `current_month`).
 
----
+## File Uploads (IoC)
 
-## Camera Component — Configuration
+For components like `Camera`, `File`, and `Signature`, the form builder delegates file uploads back to the Host Application using the `onFileUpload` callback. 
+
+By default, these components use `uploadTiming: "onSubmit"`, meaning they will only store the **local file path** in the form's state. It is up to the host application to upload these files when the entire form is submitted.
+
+However, if a component is configured with `uploadTiming: "immediate"`, the form builder will attempt to upload the file right after it is selected/captured. To support this, you must provide the `onFileUpload` callback:
+
+```dart
+final config = FormConfig.fromJson(
+  formJson,
+  onFileUpload: (List<String> localPath, String uploadUrl, OtherUploadConfig? uploadConfig) async {
+    // Example: Use Dio or http to upload the first file to `uploadUrl`
+    if (localPath.isEmpty) return null;
+    
+    final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
+    
+    // If uploadConfig is provided (from uploadType: "other"), apply custom headers
+    if (uploadConfig != null) {
+      for (final header in uploadConfig.headers) {
+        request.headers[header.key] = header.value; // e.g., Bearer token
+      }
+    }
+    
+    request.files.add(await http.MultipartFile.fromPath('file', localPath.first));
+    
+    final response = await request.send();
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody);
+      // You can return a String URL, or the decoded JSON Map.
+      // If a Map is returned, the component will use `uploadConfig.responseFileUrlPath` to extract the URL.
+      return data; 
+    }
+    return null; // Return null on failure (will fallback to storing local paths)
+  },
+);
+```
+
+If `onFileUpload` is successful and returns a String (the remote URL) or a `Map` that contains the URL, the form will store this remote URL in its state instead of the local path.
+
+## Drafting & Serialization
+
+The form builder is designed to support drafting (saving and restoring incomplete forms). Instead of saving raw flat values, the `resultMap` outputs a structured payload (modeled by `FormResultModel`) that captures both the raw value and its display-ready text label.
+
+This is especially helpful for API-driven select fields or dates, because when you restore the draft, the form immediately knows what label to display without having to re-fetch the API or re-run formatters.
+
+### Expected JSON Output from `resultMap`
+
+```json
+{
+  "department_id": {
+    "answerText": "Engineering", // Label shown to the user
+    "answerValue": "dept_001",   // Actual ID to submit
+    "resultMapper": {
+      "destinationTbl": "users",
+      "destinationColl": "department"
+    }
+  },
+  "join_date": {
+    "answerText": "12 Jan 2026",
+    "answerValue": "2026-01-12",
+    "resultMapper": { ... }
+  }
+}
+```
+
+*Note: Upload-type components (Camera, File, Signature) currently omit `resultMapper` as their structure differs.*
+
+### Saving a Draft
+
+```dart
+// 1. Get the structured map
+final draftData = controller.resultMap;
+
+// 2. Encode to JSON and save to your local DB or Server
+final jsonString = jsonEncode(draftData);
+await db.saveDraft(formId, jsonString);
+```
+
+### Restoring a Draft
+
+When the host application reopens the form, simply inject the parsed JSON back into the controller:
+
+```dart
+// 1. Read JSON from DB
+final savedJson = await db.getDraft(formId);
+final parsedDraft = jsonDecode(savedJson);
+
+// 2. Load it into the controller
+controller.loadDraft(parsedDraft);
+```
+
+## Component Configurations
+
+### Camera Configuration
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -390,9 +291,7 @@ Both `api.url` and `database.query` support placeholders for interpolation:
 | `compressFile` | `bool` | `false` | Flag for the consuming app to compress before upload |
 | `uploadTiming` | `String` | `"onSubmit"` | `"immediate"` or `"onSubmit"` |
 
----
-
-## File Upload Component — Configuration
+### File Upload Configuration
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -404,9 +303,95 @@ Both `api.url` and `database.query` support placeholders for interpolation:
 | `compressPercentage` | `int` | `80` | Compression quality 0–100% |
 | `uploadTiming` | `String` | `"onSubmit"` | `"immediate"` or `"onSubmit"` |
 
----
+## Permissions
 
-## Additional information
+Some field types require platform permissions to be declared in your app. Follow the setup below based on which components you use.
 
-- File issues at the project repository
-- Contributions are welcome via pull request
+### 📷 Camera (`type: "camera"`)
+
+Uses the `camera` package to take photos.
+
+**Android** (`android/app/src/main/AndroidManifest.xml`):
+```xml
+<uses-permission android:name="android.permission.CAMERA"/>
+```
+
+**iOS** (`ios/Runner/Info.plist`):
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Dibutuhkan untuk mengambil foto pada form.</string>
+```
+
+### 📍 GPS Coordinates on Photo (`showCoordinates: true`)
+
+When the camera component is configured with `showCoordinates: true`, the app will fetch GPS coordinates and burn them onto the captured photo. This uses the `geolocator` package.
+
+**Android** (`android/app/src/main/AndroidManifest.xml`):
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+```
+
+**iOS** (`ios/Runner/Info.plist`):
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
+```
+
+### 📁 File Upload (`type: "file"`)
+
+Uses the `file_picker` package. No extra permissions needed on Android 13+ or iOS. For older Android (< API 33), add:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+```
+
+### Full Manifest Examples
+
+<details>
+<summary><b>Android (`AndroidManifest.xml`)</b></summary>
+<br>
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- GPS (for camera showCoordinates) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <application ...>
+        ...
+    </application>
+</manifest>
+```
+</details>
+
+<details>
+<summary><b>iOS (`Info.plist`)</b></summary>
+<br>
+
+```xml
+<dict>
+    <!-- Camera -->
+    <key>NSCameraUsageDescription</key>
+    <string>Dibutuhkan untuk mengambil foto pada form.</string>
+
+    <!-- GPS (for camera showCoordinates) -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Dibutuhkan untuk menampilkan koordinat GPS pada foto.</string>
+</dict>
+```
+</details>
+
+## Additional Information
+
+- File issues at the project repository.
+- Contributions are welcome via pull request.
