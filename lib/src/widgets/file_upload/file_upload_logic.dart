@@ -131,10 +131,7 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
               localPath: finalLocalPath,
               size: size,
               uploadedUrl: component.uploadUrl,
-              uploadResponse: extractValueFromPath(
-                resultValue,
-                component.uploadConfig?.responseFileUrlPath ?? '',
-              ),
+              uploadResponse: resultValue,
             );
             newEntries.add(fileData);
           }

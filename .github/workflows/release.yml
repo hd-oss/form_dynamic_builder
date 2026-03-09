@@ -37,11 +37,12 @@ jobs:
         run: |
           cd example
           flutter build apk --release
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/form_example_${{ github.ref_name }}.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: example/build/app/outputs/flutter-apk/app-release.apk
+          files: example/build/app/outputs/flutter-apk/form_example_${{ github.ref_name }}.apk
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           draft: false

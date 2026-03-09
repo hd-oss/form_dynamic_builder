@@ -2,6 +2,12 @@
 
 A Flutter package for rendering dynamic forms from a JSON schema. Supports a rich set of field types including text, number, date, file upload, camera capture, signature, and more.
 
+## 📱 Try the Example App
+
+You can download the latest pre-compiled APK of the example app to see the library in action:
+
+👉 **[Download Latest APK](https://github.com/hd-oss/form_dynamic_builder/releases/latest)**
+
 ## Table of Contents
 - [Features](#features)
 - [Getting Started](#getting-started)
@@ -214,11 +220,10 @@ final config = FormConfig.fromJson(
     if (response.statusCode == 200) {
       final responseBody = await response.stream.bytesToString();
       final data = jsonDecode(responseBody);
-      // You can return a String URL, or the decoded JSON Map.
-      // If a Map is returned, the component will use `uploadConfig.responseFileUrlPath` to extract the URL.
+      // Return the full API response object/Map
       return data; 
     }
-    return null; // Return null on failure (will fallback to storing local paths)
+    return null; // Return null on failure
   },
 );
 ```
@@ -231,37 +236,43 @@ The form builder is designed to support drafting (saving and restoring incomplet
 
 This is especially helpful for API-driven select fields or dates, because when you restore the draft, the form immediately knows what label to display without having to re-fetch the API or re-run formatters.
 
-### Expected JSON Output from `resultMap`
+### Expected JSON Output from `resultMap` (Submission)
 
 ```json
 {
   "department_id": {
-    "answerText": "Engineering", // Label shown to the user
-    "answerValue": "dept_001",   // Actual ID to submit
+    "answerText": "Engineering",
+    "answerValue": "dept_001",
     "resultMapper": {
       "destinationTbl": "users",
       "destinationColl": "department"
     }
   },
-  "join_date": {
-    "answerText": "12 Jan 2026",
-    "answerValue": "2026-01-12",
+  "photo_profile": {
+    "answerText": "",
+    "answerValue": "",
+    "answerFile": [
+      {
+        "url": "https://server.com/image.jpg",
+        "id": "abc-123"
+      }
+    ],
     "resultMapper": { ... }
   }
 }
 ```
 
-*Note: Upload-type components (Camera, File, Signature) currently omit `resultMapper` as their structure differs.*
-
 ### Saving a Draft
 
-```dart
-// 1. Get the structured map
-final draftData = controller.resultMap;
+For local storage (drafting), use the `draftMap` getter. It preserves internal state like local file paths and upload status, which the `resultMap` omits for privacy/cleanliness.
 
-// 2. Encode to JSON and save to your local DB or Server
+```dart
+// 1. Get the draft-optimized map
+final draftData = controller.draftMap;
+
+// 2. Encode and save locally
 final jsonString = jsonEncode(draftData);
-await db.saveDraft(formId, jsonString);
+await localStorage.save("draft_1", jsonString);
 ```
 
 ### Restoring a Draft

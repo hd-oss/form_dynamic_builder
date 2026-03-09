@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/file_data.dart';
 import '../../models/form_component.dart';
 import '../../models/form_config.dart';
+import '../../models/components/file_upload_component.dart';
 import '../../utils/form_constants.dart';
 
 mixin FormStateMixin on ChangeNotifier {
@@ -16,6 +17,27 @@ mixin FormStateMixin on ChangeNotifier {
   /// Stores display text (labels) for components that have id/value pairs (e.g. select from API).
   final Map<String, String> _displayTexts = {};
   Map<String, String> get displayTexts => _displayTexts;
+
+  /// Returns a snapshot of the current form state optimized for local storage/drafting.
+  /// This captures full [FileData] objects (including local paths and status)
+  /// so that the form can be fully restored exactly as it was.
+  Map<String, dynamic> get draftMap {
+    final draft = <String, dynamic>{};
+    _values.forEach((key, value) {
+      dynamic serializedValue = value;
+      if (value is FileData) {
+        serializedValue = value.toJson();
+      } else if (value is List<FileData>) {
+        serializedValue = value.map((e) => e.toJson()).toList();
+      }
+
+      draft[key] = {
+        'answerText': _displayTexts[key] ?? '',
+        'answerValue': serializedValue,
+      };
+    });
+    return draft;
+  }
 
   void initializeValues() {
     _values.clear();
@@ -75,14 +97,14 @@ mixin FormStateMixin on ChangeNotifier {
   }
 
   /// Loads previously saved draft data into the form state.
-  /// Expects the draftData to be the parsed JSON object produced by `resultMap`.
+  /// Handles both the full state from `draftMap` and the submission format from `resultMap`.
   void loadDraft(Map<String, dynamic> draftData) {
     draftData.forEach((key, value) {
       final component = findComponent(key);
       if (component == null) return;
 
-      if (value is Map<String, dynamic> && value.containsKey('answerValue')) {
-        // Value is a FormResultModel-like JSON structure
+      if (value is Map<String, dynamic>) {
+        final answerFile = value['answerFile'];
         var answerVal = value['answerValue'];
         final answerText = value['answerText'];
 
@@ -90,17 +112,59 @@ mixin FormStateMixin on ChangeNotifier {
         if (component.type == FormConstants.typeFile ||
             component.type == FormConstants.typeCamera ||
             component.type == FormConstants.typeSignature) {
-          if (answerVal is List) {
-            answerVal = answerVal
-                .whereType<Map<String, dynamic>>()
-                .map((e) => FileData.fromJson(e))
-                .toList();
-          } else if (answerVal is Map<String, dynamic>) {
-            answerVal = FileData.fromJson(answerVal);
+          // Priority 1: Check answerFile (Submission format)
+          if (answerFile is List && answerFile.isNotEmpty) {
+            final paths = answerText?.toString().split(', ') ?? [];
+            final resList = <FileData>[];
+            for (int i = 0; i < answerFile.length; i++) {
+              final response = answerFile[i];
+              // If it's already a FileData JSON (from draftMap), use it directly
+              if (response is Map<String, dynamic> &&
+                  response.containsKey('status')) {
+                resList.add(FileData.fromJson(response));
+              } else {
+                // Otherwise reconstruct from response (localPath might be missing if from resultMap)
+                final path = i < paths.length ? paths[i] : '';
+                resList.add(FileData.fromUpload(
+                  localPath: path,
+                  uploadedUrl: response is String ? response : null,
+                  uploadResponse: response is Map ? response : null,
+                ));
+              }
+            }
+            final bool isMultiple =
+                component is FileUploadComponent && component.multiple;
+            answerVal = isMultiple ? resList : resList.first;
+          }
+          // Priority 2: Check answerValue (Draft format or old resultMap)
+          else if (answerVal != null) {
+            if (answerVal is List) {
+              answerVal = answerVal.map((e) {
+                if (e is Map<String, dynamic> && e.containsKey('status')) {
+                  return FileData.fromJson(e);
+                }
+                return e;
+              }).toList();
+            } else if (answerVal is Map<String, dynamic> &&
+                answerVal.containsKey('status')) {
+              answerVal = FileData.fromJson(answerVal);
+            } else if (answerVal != null ||
+                (answerText != null && answerText.toString().isNotEmpty)) {
+              // Backward compatibility for the brief localPath-as-answerText phase
+              answerVal = FileData.fromUpload(
+                localPath: answerText?.toString() ?? '',
+                uploadedUrl: answerVal is String ? answerVal : null,
+                uploadResponse: answerVal is Map ? answerVal : null,
+              );
+            }
           }
         }
 
-        if (answerText != null && answerText.toString().isNotEmpty) {
+        if (answerText != null &&
+            answerText.toString().isNotEmpty &&
+            !(component.type == FormConstants.typeFile ||
+                component.type == FormConstants.typeCamera ||
+                component.type == FormConstants.typeSignature)) {
           updateValueWithLabel(key, answerVal, answerText.toString());
         } else {
           updateValue(key, answerVal);

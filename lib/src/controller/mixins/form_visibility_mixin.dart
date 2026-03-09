@@ -66,27 +66,26 @@ mixin FormVisibilityMixin {
                 destinationTbl: component.destinationTable ?? '',
                 destinationColl: component.destinationColumn ?? ''));
       } else {
-        dynamic serializedFile;
-        String text = '';
+        final List<dynamic> answerFile = [];
 
         if (rawValue is List) {
-          serializedFile =
-              rawValue.map((e) => e is FileData ? e.toJson() : e).toList();
-          text = rawValue
-              .map((e) => e is FileData ? e.name : e.toString())
-              .join(', ');
+          answerFile.addAll(
+            rawValue.map((e) => e is FileData ? e.uploadResponse : e),
+          );
         } else if (rawValue is FileData) {
-          serializedFile = rawValue.toJson();
-          text = rawValue.name;
-        } else {
-          serializedFile = rawValue;
-          text = rawValue?.toString() ?? '';
+          answerFile.add(rawValue.uploadResponse);
+        } else if (rawValue != null) {
+          answerFile.add(rawValue);
         }
 
         result[component.key] = FormResultModel(
-          answerText: text,
-          answerValue: serializedFile,
-          resultMapper: null,
+          answerText: '',
+          answerValue: '',
+          answerFile: answerFile.isEmpty ? null : answerFile,
+          resultMapper: ResultMapper(
+            destinationTbl: component.destinationTable ?? '',
+            destinationColl: component.destinationColumn ?? '',
+          ),
         );
       }
     }

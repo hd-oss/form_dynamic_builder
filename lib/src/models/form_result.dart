@@ -1,11 +1,13 @@
 class FormResultModel {
   final String answerText;
   final dynamic answerValue;
+  final List<dynamic>? answerFile;
   final ResultMapper? resultMapper;
 
   FormResultModel({
     required this.answerText,
     this.answerValue,
+    this.answerFile,
     this.resultMapper,
   });
 
@@ -13,6 +15,7 @@ class FormResultModel {
     return FormResultModel(
       answerText: json['answerText'] ?? '',
       answerValue: json['answerValue'],
+      answerFile: json['answerFile'] as List<dynamic>?,
       resultMapper: json['resultMapper'] != null
           ? ResultMapper.fromJson(json['resultMapper'])
           : null,
@@ -24,6 +27,9 @@ class FormResultModel {
       'answerText': answerText,
       'answerValue': answerValue,
     };
+    if (answerFile != null) {
+      data['answerFile'] = answerFile;
+    }
     if (resultMapper != null) {
       data['resultMapper'] = resultMapper!.toJson();
     }

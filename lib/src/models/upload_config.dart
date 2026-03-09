@@ -19,8 +19,6 @@ class OtherUploadConfig {
 
   final List<UploadKeyValue> headers;
 
-  final String responseFileUrlPath;
-
   final List<UploadKeyValue> extraBodyFields;
 
   final String fileFieldName;
@@ -28,7 +26,6 @@ class OtherUploadConfig {
   const OtherUploadConfig({
     this.method = 'POST',
     this.headers = const [],
-    this.responseFileUrlPath = '',
     this.extraBodyFields = const [],
     this.fileFieldName = 'file',
   });
@@ -40,7 +37,6 @@ class OtherUploadConfig {
               ?.map((e) => UploadKeyValue.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      responseFileUrlPath: json['responseFileUrlPath'] as String? ?? '',
       extraBodyFields: (json['extraBodyFields'] as List<dynamic>?)
               ?.map((e) => UploadKeyValue.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -52,7 +48,6 @@ class OtherUploadConfig {
   Map<String, dynamic> toJson() => {
         'method': method,
         'headers': headers.map((e) => e.toJson()).toList(),
-        'responseFileUrlPath': responseFileUrlPath,
         'extraBodyFields': extraBodyFields.map((e) => e.toJson()).toList(),
         'fileFieldName': fileFieldName,
       };

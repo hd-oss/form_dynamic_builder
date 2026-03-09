@@ -110,10 +110,7 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
           localPath: persistentPath,
           size: size,
           uploadedUrl: component.uploadUrl,
-          uploadResponse: extractValueFromPath(
-            resultValue,
-            component.uploadConfig?.responseFileUrlPath ?? '',
-          ),
+          uploadResponse: resultValue,
         );
         formController.updateValue(component.key, fileData);
         updateUploadStatus(UploadStatus.success);
