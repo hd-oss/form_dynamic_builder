@@ -12,6 +12,7 @@ You can download the latest pre-compiled APK of the example app to see the libra
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
+- [Styling & Theming](#styling--theming)
 - [Data Source Configuration](#data-source-configuration)
 - [File Uploads (IoC)](#file-uploads-ioc)
 - [Drafting & Serialization](#drafting--serialization)
@@ -116,6 +117,46 @@ void submitForm() {
     print("Payload Ready: $jsonPayload");
   }
 }
+```
+
+## Styling & Theming
+
+The form builder is designed to naturally inherit your Host Application's `ThemeData`, but if you want to isolate or customize the form's design without affecting your whole application, you can pass a `themeData` directly to the builder.
+
+This is highly recommended to customize input borders, primary colors (for checkboxes/radios), and typography.
+
+```dart
+FormDynamicBuilder(
+  controller: controller, // Wajib
+  
+  themeData: Theme.of(context).copyWith(
+     // Customize Main Colors
+     colorScheme: Theme.of(context).colorScheme.copyWith(
+       primary: Colors.indigo, // e.g. changes active color for radio/checkbox
+     ),
+     
+     // Customize Input Box Appearance
+     inputDecorationTheme: InputDecorationTheme(
+       filled: true,
+       fillColor: Colors.grey.shade50,
+       
+       // Note: The library uses OutlineInputBorder by default.
+       // You MUST define these state borders to override the shape/color.
+       enabledBorder: OutlineInputBorder(
+         borderRadius: BorderRadius.circular(12),
+         borderSide: BorderSide(color: Colors.grey.shade300),
+       ),
+       focusedBorder: OutlineInputBorder(
+         borderRadius: BorderRadius.circular(12),
+         borderSide: const BorderSide(color: Colors.indigo, width: 2),
+       ),
+       errorBorder: OutlineInputBorder(
+         borderRadius: BorderRadius.circular(12),
+         borderSide: const BorderSide(color: Colors.red),
+       ),
+     ),
+  ),
+);
 ```
 
 ## Data Source Configuration

@@ -111,6 +111,6 @@ class DateTimeLogic extends ChangeNotifier {
     }
     // answerValue = ISO string for machine processing, answerText = formatted for display/drafting
     formController.updateValueWithLabel(
-        component.key, displayText, displayText);
+        component.key, finalDateTime.toIso8601String(), displayText);
   }
 }

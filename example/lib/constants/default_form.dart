@@ -1,19 +1,118 @@
 Map<String, dynamic> defaultForm() {
   return {
     "type": "single",
-    "title": "Welcome",
+    "title": "Comprehensive Components Form",
     "components": [
       {
         "type": "textfield",
         "key": "welcome",
         "label": "Welcome to Dynamic Builder",
-        "placeholder": "Paste your custom JSON to begin!",
+        "placeholder": "This form demonstrates all available components.",
         "disabled": true
+      },
+      {
+        "type": "textfield",
+        "key": "text_input",
+        "label": "Text Input",
+        "description": "Standard text input field",
+        "placeholder": "Enter some text"
+      },
+      {
+        "type": "select",
+        "key": "select_input",
+        "label": "Select Dropdown",
+        "description": "Choose an option from the list",
+        "options": [
+          {"label": "Option A", "value": "A"},
+          {"label": "Option B", "value": "B"}
+        ]
+      },
+      {
+        "type": "radio",
+        "key": "radio_input",
+        "label": "Radio Buttons",
+        "description": "Select exactly one option",
+        "options": [
+          {"label": "Choice 1", "value": "1"},
+          {"label": "Choice 2", "value": "2"}
+        ]
+      },
+      {
+        "type": "checkbox",
+        "key": "checkbox_input",
+        "label": "Checkbox",
+        "description": "Check to confirm"
+      },
+      {
+        "type": "selectboxes",
+        "key": "selectboxes_input",
+        "label": "Select Boxes",
+        "description": "Select multiple options",
+        "options": [
+          {"label": "Item X", "value": "X"},
+          {"label": "Item Y", "value": "Y"}
+        ]
+      },
+      {
+        "type": "tags",
+        "key": "tags_input",
+        "label": "Tags Field",
+        "description": "Type and press enter to add tags",
+        "placeholder": "Add tags..."
+      },
+      {
+        "type": "datetime",
+        "key": "date_input",
+        "label": "Date & Time Picker",
+        "description": "Select a date",
+        "enableDate": true,
+        "enableTime": true
+      },
+      {
+        "type": "location",
+        "key": "location_input",
+        "label": "Location Detection",
+        "description": "Detect your current GPS coordinates"
+      },
+      {
+        "type": "file",
+        "key": "file_upload",
+        "label": "File Upload",
+        "description": "Upload a document or photo",
+        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload"
+      },
+      {
+        "type": "camera",
+        "key": "camera_input",
+        "label": "Camera Field",
+        "description": "Take a photo directly from browser",
+        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload"
+      },
+      {
+        "type": "signature",
+        "key": "signature_input",
+        "label": "Signature Pad",
+        "description": "Sign using your mouse or touch screen"
+      },
+      {
+        "type": "panel",
+        "key": "panel_input",
+        "label": "Collapsible Panel",
+        "description": "This panel groups related fields",
+        "components": [
+          {
+            "type": "textfield",
+            "key": "panel_text",
+            "label": "Text inside Panel",
+            "placeholder": "Nested text field"
+          }
+        ]
       },
       {
         "type": "select",
         "key": "api_test",
         "label": "Test API Data Source",
+        "description": "Values fetched from remote API",
         "dataSource": {
           "type": "api",
           "api": {
@@ -25,157 +124,17 @@ Map<String, dynamic> defaultForm() {
         }
       },
       {
-        "type": "select",
-        "key": "db_test",
-        "label": "Test DB Data Source",
-        "dataSource": {
-          "type": "database",
-          "database": {
-            "query": "SELECT id, name FROM items",
-            "labelPath": "name",
-            "valuePath": "id"
-          }
-        }
-      },
-
-      // ────────────────────────────────────────────────
-      // uploadType: other — simpan URL saja (location)
-      // Response: { originalname, filename, location }
-      // ────────────────────────────────────────────────
-      {
-        "id": "comp_test_other_url",
-        "type": "file",
-        "key": "file_other_url",
-        "label": "File (uploadType: other — URL only)",
-        "description":
-            "responseFileUrlPath: location → form menyimpan URL string saja",
-        "uploadTiming": "immediate",
-        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload",
-        "uploadType": "other",
-        "otherUploadConfig": {
-          "method": "POST",
-          "headers": [],
-          "responseFileUrlPath": "location",
-          "fileFieldName": "file",
-          "extraBodyFields": []
-        },
-        "accept": ".pdf"
-      },
-
-      // ────────────────────────────────────────────────
-      // uploadType: other — simpan full response object
-      // Response: { originalname, filename, location }
-      // ────────────────────────────────────────────────
-      {
-        "id": "comp_test_other_full",
-        "type": "file",
-        "key": "file_other_full",
-        "label": "File (uploadType: other — full object)",
-        "description":
-            "responseFileUrlPath kosong → simpan seluruh object {originalname, filename, location}",
-        "uploadTiming": "immediate",
-        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload",
-        "uploadType": "other",
-        "otherUploadConfig": {
-          "method": "POST",
-          "headers": [],
-          "responseFileUrlPath": "",
-          "fileFieldName": "file",
-          "extraBodyFields": []
-        },
-        "accept": ".pdf"
-      },
-
-      // ────────────────────────────────────────────────
-      // uploadType: other — multiple files
-      // ────────────────────────────────────────────────
-      {
-        "id": "comp_test_other_multi",
-        "type": "file",
-        "key": "file_other_multi",
-        "label": "File (uploadType: other — multiple)",
-        "description": "Multiple files, tiap file → seluruh response object",
-        "uploadTiming": "immediate",
-        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload",
-        "uploadType": "other",
-        "multiple": true,
-        "otherUploadConfig": {
-          "method": "POST",
-          "headers": [],
-          "responseFileUrlPath": "",
-          "fileFieldName": "file",
-          "extraBodyFields": []
-        },
-        "accept": ".pdf"
-      },
-
-      // ────────────────────────────────────────────────
-      // Conditional Logic Tests
-      // ────────────────────────────────────────────────
-      {
         "type": "textfield",
-        "key": "firstname",
-        "label": "Test Field (for Conditional 3)",
-        "placeholder": "Type '1' to trigger Conditional 3"
+        "key": "cond_trigger",
+        "label": "Conditional Trigger",
+        "description": "Type '1' to show the conditional field below",
+        "placeholder": "Type '1' here"
       },
       {
         "type": "textfield",
-        "key": "cond_1",
-        "label": "Conditional 1 (API vs Manual: eq 1)",
-        "description": "Shows because API returns index=1 and manual value=1",
-        "conditional": {
-          "show": true,
-          "conditions": [
-            {
-              "whenSource": "api",
-              "whenApi": {
-                "url":
-                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
-                "method": "GET",
-                "valuePath": "index"
-              },
-              "operator": "eq",
-              "value": "1",
-              "valueSource": "manual",
-              "logicWithPrevious": "and"
-            }
-          ]
-        }
-      },
-      {
-        "type": "textfield",
-        "key": "cond_2",
-        "label": "Conditional 2 (API vs API: eq index)",
-        "description": "Shows because both APIs return index=1",
-        "conditional": {
-          "show": true,
-          "conditions": [
-            {
-              "whenSource": "api",
-              "whenApi": {
-                "url":
-                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
-                "method": "GET",
-                "valuePath": "index"
-              },
-              "operator": "eq",
-              "valueSource": "api",
-              "valueApi": {
-                "url":
-                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
-                "method": "GET",
-                "valuePath": "index"
-              },
-              "logicWithPrevious": "and"
-            }
-          ]
-        }
-      },
-      {
-        "type": "textfield",
-        "key": "cond_3",
-        "label": "Conditional 3 (API vs Field: eq firstname)",
-        "description": "Shows when 'Test Field' contains '1'",
+        "key": "cond_target",
+        "label": "Conditional Field (Target)",
+        "description": "Shows because you typed '1'",
         "conditional": {
           "show": true,
           "conditions": [
@@ -189,7 +148,7 @@ Map<String, dynamic> defaultForm() {
               },
               "operator": "eq",
               "valueSource": "field",
-              "valueFieldKey": "cond_1",
+              "valueFieldKey": "cond_trigger",
               "logicWithPrevious": "and"
             }
           ]

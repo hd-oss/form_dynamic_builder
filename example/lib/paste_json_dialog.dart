@@ -10,53 +10,142 @@ class PasteJsonDialog extends StatefulWidget {
 
 class _PasteJsonDialogState extends State<PasteJsonDialog> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _dsFormController = TextEditingController();
   String? _errorText;
+  String? _dsFormError;
 
   @override
   void dispose() {
     _controller.dispose();
+    _dsFormController.dispose();
     super.dispose();
   }
 
   void _formatJson() {
-    final text = _controller.text;
-    if (text.isEmpty) return;
+    _formatField(_controller, false);
+    _formatField(_dsFormController, true);
+  }
+
+  void _formatField(TextEditingController controller, bool isDsForm) {
+    if (controller.text.isEmpty) return;
     try {
-      final obj = json.decode(text);
+      final obj = json.decode(controller.text);
       final prettyString = const JsonEncoder.withIndent('  ').convert(obj);
       setState(() {
-        _controller.text = prettyString;
-        _errorText = null;
+        controller.text = prettyString;
+        if (isDsForm) {
+          _dsFormError = null;
+        } else {
+          _errorText = null;
+        }
       });
     } catch (e) {
       setState(() {
-        _errorText = 'Cannot format: Invalid JSON';
+        if (isDsForm) {
+          _dsFormError = 'Cannot format: Invalid JSON';
+        } else {
+          _errorText = 'Cannot format: Invalid JSON';
+        }
       });
     }
   }
 
   void _validateAndSubmit() {
     final text = _controller.text;
+    final dsText = _dsFormController.text;
+
     if (text.isEmpty) {
       setState(() {
-        _errorText = 'Please enter some JSON';
+        _errorText = 'Please enter some JSON for the Schema';
       });
       return;
     }
+
     try {
       final map = json.decode(text);
       if (map is! Map<String, dynamic>) {
         setState(() {
-          _errorText = 'Expected a JSON object';
+          _errorText = 'Schema must be a JSON object';
         });
         return;
       }
+      _errorText = null;
+
+      if (dsText.isNotEmpty) {
+        final dsMap = json.decode(dsText);
+        if (dsMap is! Map<String, dynamic>) {
+          setState(() {
+            _dsFormError = 'DS Form must be a JSON object';
+          });
+          return;
+        }
+        map['ds_form'] = dsMap;
+      }
+      _dsFormError = null;
+
       Navigator.of(context).pop(map);
     } catch (e) {
       setState(() {
         _errorText = 'Invalid JSON: $e';
       });
     }
+  }
+
+  Widget _buildEditor(BuildContext context, TextEditingController controller,
+      String hint, String? error) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+      ),
+      child: ClipRRect(
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: IntrinsicWidth(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: MediaQuery.of(context).size.width * 0.8 - 64,
+                ),
+                child: TextField(
+                  controller: controller,
+                  maxLines: 15,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontFamilyFallback: ['Courier', 'Menlo', 'Monaco'],
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: TextStyle(
+                      fontFamily:
+                          Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                      color: Colors.grey[400],
+                    ),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    errorText: error,
+                    contentPadding: const EdgeInsets.all(20),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -67,21 +156,21 @@ class _PasteJsonDialogState extends State<PasteJsonDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 8,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 600,
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+        child: DefaultTabController(
+          length: 2,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+                padding: const EdgeInsets.fromLTRB(20, 16, 16, 4),
                 child: Row(
                   children: [
                     Icon(Icons.edit_note_rounded,
@@ -89,7 +178,7 @@ class _PasteJsonDialogState extends State<PasteJsonDialog> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Paste JSON Form',
+                        'Paste Data',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colorScheme.onSurface,
@@ -127,70 +216,39 @@ class _PasteJsonDialogState extends State<PasteJsonDialog> {
                   ],
                 ),
               ),
+
+              TabBar(
+                labelColor: colorScheme.primary,
+                unselectedLabelColor: colorScheme.onSurfaceVariant,
+                indicatorColor: colorScheme.primary,
+                tabs: const [
+                  Tab(text: 'Form Schema'),
+                  Tab(text: 'DS Form (Optional)'),
+                ],
+              ),
               const Divider(height: 1),
 
               // Content / Text Area
               Flexible(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ClipRRect(
-                    child: Scrollbar(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: IntrinsicWidth(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth:
-                                  MediaQuery.of(context).size.width * 0.8 - 64,
-                            ),
-                            child: TextField(
-                              controller: _controller,
-                              maxLines: 15,
-                              autocorrect: false,
-                              enableSuggestions: false,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontFamilyFallback: [
-                                  'Courier',
-                                  'Menlo',
-                                  'Monaco'
-                                ],
-                                fontSize: 13,
-                                height: 1.5,
-                              ),
-                              decoration: InputDecoration(
-                                hintText:
-                                    'Paste your form configuration JSON here...',
-                                hintStyle: TextStyle(
-                                  fontFamily: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.fontFamily,
-                                  color: Colors.grey[400],
-                                ),
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                errorText: _errorText,
-                                contentPadding: const EdgeInsets.all(20),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                child: TabBarView(
+                  children: [
+                    _buildEditor(
+                        context,
+                        _controller,
+                        'Paste your form configuration JSON here...',
+                        _errorText),
+                    _buildEditor(
+                        context,
+                        _dsFormController,
+                        'Paste your ds_form JSON map here (e.g. {"user": {"role": "admin"}})...',
+                        _dsFormError),
+                  ],
                 ),
               ),
 
               // Actions
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [

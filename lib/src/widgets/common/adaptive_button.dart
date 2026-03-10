@@ -19,24 +19,6 @@ class AdaptiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Theme.of(context).platform == TargetPlatform.iOS ||
-        Theme.of(context).platform == TargetPlatform.macOS) {
-      return CupertinoButton.filled(
-        onPressed: onPressed,
-        padding: padding,
-        child: icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  icon!,
-                  const SizedBox(width: 8),
-                  child,
-                ],
-              )
-            : child,
-      );
-    }
-
     if (icon != null) {
       return ElevatedButton.icon(
         onPressed: onPressed,
