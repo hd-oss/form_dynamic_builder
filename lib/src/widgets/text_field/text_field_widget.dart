@@ -99,6 +99,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                   prefixText: logic.getPrefixText(),
+                  suffixText: logic.getSuffixText(),
                   suffixIcon: _buildSuffixIcon(),
                 ),
                 obscureText: logic.obscureText,

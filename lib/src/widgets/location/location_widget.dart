@@ -63,12 +63,10 @@ class _DynamicLocationState extends State<DynamicLocation> {
 
     logic.updateLocation(result);
 
-    if (widget.component.autoZoomLocation) {
-      _miniMapController.move(
-        LatLng(result['lat']!, result['lng']!),
-        15,
-      );
-    }
+    _miniMapController.move(
+      LatLng(result['lat']!, result['lng']!),
+      15,
+    );
   }
 
   // ==========================================================================
@@ -183,10 +181,10 @@ class _DynamicLocationState extends State<DynamicLocation> {
             child: Text(logic.isLoading ? 'Detecting...' : 'Detect Location'),
           ),
           if (widget.component.enableMapPicker)
-            OutlinedButton.icon(
-              onPressed: _openMapPicker,
+            AdaptiveButton(
+              onPressed: widget.component.disabled ? null : _openMapPicker,
               icon: const Icon(Icons.map, size: 16),
-              label: Text(loc == null ? 'Pick on Map' : 'Change on Map'),
+              child: Text(loc == null ? 'Pick on Map' : 'Change on Map'),
             ),
         ],
       ),
@@ -199,15 +197,15 @@ class _DynamicLocationState extends State<DynamicLocation> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = logic.parseLocation(
-      widget.controller.getValue(widget.component.key),
-    );
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListenableBuilder(
         listenable: Listenable.merge([widget.controller, logic]),
         builder: (_, __) {
+          final loc = logic.parseLocation(
+            widget.controller.getValue(widget.component.key),
+          );
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -5,13 +5,15 @@ import 'mixins/form_navigation_mixin.dart';
 import 'mixins/form_state_mixin.dart';
 import 'mixins/form_validation_mixin.dart';
 import 'mixins/form_visibility_mixin.dart';
+import 'mixins/form_calculation_mixin.dart';
 
 class FormController extends ChangeNotifier
     with
         FormStateMixin,
         FormVisibilityMixin,
         FormValidationMixin,
-        FormNavigationMixin {
+        FormNavigationMixin,
+        FormCalculationMixin {
   @override
   final FormConfig config;
 
@@ -40,6 +42,12 @@ class FormController extends ChangeNotifier
   void updateDsForm(Map<String, dynamic> data) {
     _dsForm.addAll(data);
     notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    recalculateValues();
   }
 
   /// Clears all values, errors, focus nodes, and resets navigation.

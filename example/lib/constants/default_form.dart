@@ -4,11 +4,68 @@ Map<String, dynamic> defaultForm() {
     "title": "Comprehensive Components Form",
     "components": [
       {
+        "type": "number",
+        "key": "price",
+        "label": "Price",
+        "defaultValue": 1000
+      },
+      {
+        "type": "number",
+        "key": "quantity",
+        "label": "Quantity",
+        "defaultValue": 2
+      },
+      {
+        "type": "number",
+        "key": "total",
+        "label": "Total (Calculated)",
+        "calculation": "{{ price }} * {{ quantity }}",
+        "disabled": true
+      },
+      {
+        "type": "textfield",
+        "key": "hidden_test",
+        "label": "This should be hidden",
+        "hidden": true
+      },
+      {
+        "type": "textfield",
+        "key": "disabled_test",
+        "label": "This should be disabled",
+        "disabled": true,
+        "defaultValue": "Read-only value"
+      },
+      {
+        "type": "checkbox",
+        "key": "disabled_checkbox",
+        "label": "Disabled Checkbox",
+        "disabled": true
+      },
+      {
+        "type": "radio",
+        "key": "disabled_radio",
+        "label": "Disabled Radio",
+        "disabled": true,
+        "options": [
+          {"label": "Option 1", "value": "1"}
+        ]
+      },
+      {
         "type": "textfield",
         "key": "welcome",
         "label": "Welcome to Dynamic Builder",
         "placeholder": "This form demonstrates all available components.",
         "disabled": true
+      },
+      {
+        "type": "textfield",
+        "key": "prefix_suffix_test",
+        "label": "Prefix, Suffix & Mask Test",
+        "description": "Rp. prefix, gr suffix, and complex mask",
+        "placeholder": "Enter value",
+        "prefix": "Rp. ",
+        "suffix": " gr",
+        "inputMask": "9999_9999.(999)"
       },
       {
         "type": "textfield",

@@ -143,9 +143,8 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
   }
 
   Widget _buildUploadButton(List<FileData> selectedFiles, bool isUploading) {
-    final canUpload = !widget.component.disabled &&
-        !isUploading &&
-        (widget.component.multiple || selectedFiles.isEmpty);
+    final canUpload =
+        !isUploading && (widget.component.multiple || selectedFiles.isEmpty);
 
     if (!canUpload) return const SizedBox();
 
@@ -154,7 +153,9 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
           ? const EdgeInsets.only(top: 8.0)
           : EdgeInsets.zero,
       child: AdaptiveButton(
-          onPressed: () => _handlePickFiles(selectedFiles),
+          onPressed: widget.component.disabled
+              ? null
+              : () => _handlePickFiles(selectedFiles),
           icon: const Icon(Icons.upload_file),
           child: Text(
             widget.component.multiple ? 'Add File' : 'Upload File',

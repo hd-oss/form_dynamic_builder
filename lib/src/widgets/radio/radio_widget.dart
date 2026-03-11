@@ -82,12 +82,18 @@ class _DynamicRadioState extends State<DynamicRadio> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: logic.allOptions.map((option) {
                       return ListTile(
+                        enabled: !widget.component.disabled,
                         leading: Radio<String>(
                           value: option.value,
                           groupValue: logic.groupValue,
-                          onChanged: logic.onChanged,
+                          onChanged: widget.component.disabled
+                              ? null
+                              : logic.onChanged,
                         ),
                         title: Text(option.label),
+                        onTap: widget.component.disabled
+                            ? null
+                            : () => logic.onChanged(option.value),
                         contentPadding: EdgeInsets.zero,
                         minTileHeight: 0,
                         horizontalTitleGap: 0,

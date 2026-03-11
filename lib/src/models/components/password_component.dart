@@ -4,7 +4,7 @@ import 'component_utils.dart';
 
 class PasswordComponent extends FormComponent {
   final bool showToggle;
-  final String? calculateValue;
+  final String? calculation;
 
   PasswordComponent({
     required super.id,
@@ -25,7 +25,7 @@ class PasswordComponent extends FormComponent {
     super.destinationTable,
     super.destinationColumn,
     this.showToggle = true,
-    this.calculateValue,
+    this.calculation,
   });
 
   factory PasswordComponent.fromJson(Map<String, dynamic> json) {
@@ -51,14 +51,14 @@ class PasswordComponent extends FormComponent {
       destinationTable: json['destinationTable'],
       destinationColumn: json['destinationColumn'],
       showToggle: json['showToggle'] ?? true,
-      calculateValue: json['calculateValue'],
+      calculation: json['calculation'],
     );
   }
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
     json['showToggle'] = showToggle;
-    if (calculateValue != null) json['calculateValue'] = calculateValue;
+    if (calculation != null) json['calculation'] = calculation;
     return json;
   }
 }

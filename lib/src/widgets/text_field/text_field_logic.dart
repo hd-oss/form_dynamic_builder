@@ -35,7 +35,7 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
           FormConstants.maskAlpha: RegExp(r'[a-zA-Z]'),
           FormConstants.maskAlphaNum: RegExp(r'[a-zA-Z0-9]'),
         },
-        type: MaskAutoCompletionType.lazy,
+        type: MaskAutoCompletionType.eager,
       );
     }
 
@@ -150,8 +150,9 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
   }
 
   String? getPrefixText() {
-    String? currencyCode;
+    if (component.prefix != null) return component.prefix;
 
+    String? currencyCode;
     if (component is NumberComponent) {
       final numberComponent = component as NumberComponent;
       if (numberComponent.enableCurrency &&
@@ -176,6 +177,10 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
       }
     }
     return null;
+  }
+
+  String? getSuffixText() {
+    return component.suffix;
   }
 }
 

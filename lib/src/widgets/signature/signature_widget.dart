@@ -144,7 +144,7 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                       ),
                     Stack(
                       children: [
-                        logic.isExternalImage(value as FileData?)
+                        logic.isExternalImage(value is FileData ? value : null)
                             ? _buildExternalImage(value)
                             : _buildSignatureCanvas(),
                         if (value is FileData && value.isUploaded)

@@ -8,7 +8,7 @@ class NumberComponent extends FormComponent {
   final bool enableCurrency;
   final String? currency;
   final int? decimalPlaces;
-  final String? calculateValue;
+  final String? calculation;
 
   NumberComponent({
     required super.id,
@@ -34,7 +34,7 @@ class NumberComponent extends FormComponent {
     this.enableCurrency = false,
     this.currency,
     this.decimalPlaces,
-    this.calculateValue,
+    this.calculation,
   });
 
   factory NumberComponent.fromJson(Map<String, dynamic> json) {
@@ -65,7 +65,7 @@ class NumberComponent extends FormComponent {
       currency: json['currency'],
       decimalPlaces: json['decimalPlaces'],
       dataSource: parseDataSource(json),
-      calculateValue: json['calculateValue'],
+      calculation: json['calculation'],
     );
   }
 
@@ -77,7 +77,7 @@ class NumberComponent extends FormComponent {
     json['enableCurrency'] = enableCurrency;
     if (currency != null) json['currency'] = currency;
     if (decimalPlaces != null) json['decimalPlaces'] = decimalPlaces;
-    if (calculateValue != null) json['calculateValue'] = calculateValue;
+    if (calculation != null) json['calculation'] = calculation;
     return json;
   }
 }

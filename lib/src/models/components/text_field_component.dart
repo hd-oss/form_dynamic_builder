@@ -3,7 +3,7 @@ import '../validation_rule.dart';
 import 'component_utils.dart';
 
 class TextFieldComponent extends FormComponent {
-  final String? calculateValue;
+  final String? calculation;
 
   TextFieldComponent({
     required super.id,
@@ -24,7 +24,9 @@ class TextFieldComponent extends FormComponent {
     super.dataSource,
     super.destinationTable,
     super.destinationColumn,
-    this.calculateValue,
+    super.prefix,
+    super.suffix,
+    this.calculation,
   });
 
   factory TextFieldComponent.fromJson(Map<String, dynamic> json) {
@@ -47,17 +49,19 @@ class TextFieldComponent extends FormComponent {
       conditional: parseConditional(json),
       defaultValue: json['defaultValue'],
       platforms: json['platforms'],
+      prefix: json['prefix'],
+      suffix: json['suffix'],
       dataSource: parseDataSource(json),
       destinationTable: json['destinationTable'],
       destinationColumn: json['destinationColumn'],
-      calculateValue: json['calculateValue'],
+      calculation: json['calculation'],
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    if (calculateValue != null) json['calculateValue'] = calculateValue;
+    if (calculation != null) json['calculation'] = calculation;
     return json;
   }
 }

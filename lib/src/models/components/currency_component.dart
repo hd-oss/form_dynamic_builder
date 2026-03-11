@@ -5,7 +5,7 @@ import 'component_utils.dart';
 class CurrencyComponent extends FormComponent {
   final String currency;
   final int decimalPlaces;
-  final String? calculateValue;
+  final String? calculation;
 
   CurrencyComponent({
     required super.id,
@@ -28,7 +28,7 @@ class CurrencyComponent extends FormComponent {
     super.destinationColumn,
     this.currency = 'IDR',
     this.decimalPlaces = 0,
-    this.calculateValue,
+    this.calculation,
   });
 
   factory CurrencyComponent.fromJson(Map<String, dynamic> json) {
@@ -54,7 +54,7 @@ class CurrencyComponent extends FormComponent {
       currency: json['currency'] ?? 'IDR',
       decimalPlaces: json['decimalPlaces'] ?? 0,
       dataSource: parseDataSource(json),
-      calculateValue: json['calculateValue'],
+      calculation: json['calculation'],
       destinationTable: json['destinationTable'],
       destinationColumn: json['destinationColumn'],
     );
@@ -65,7 +65,7 @@ class CurrencyComponent extends FormComponent {
     final json = super.toJson();
     json['currency'] = currency;
     json['decimalPlaces'] = decimalPlaces;
-    if (calculateValue != null) json['calculateValue'] = calculateValue;
+    if (calculation != null) json['calculation'] = calculation;
     return json;
   }
 }

@@ -79,44 +79,55 @@ class _FormPageState extends State<FormPage> {
 
   void _submitForm() {
     if (_formController!.validate()) {
-      print(_formController!.resultMap);
+      print(
+        const JsonEncoder.withIndent('  ').convert(_formController!.resultMap),
+      );
       showDialog(
         context: context,
         builder: (context) => Dialog(
           insetPadding: const EdgeInsets.all(16),
-          child: IntrinsicHeight(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   'Submitted Values',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                ClipRRect(
-                  child: Scrollbar(
-                      child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: IntrinsicWidth(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            minWidth:
-                                MediaQuery.of(context).size.width * 0.8 - 64),
-                        child: Text(
-                          const JsonEncoder.withIndent('  ')
-                              .convert(_formController!.resultMap),
-                          style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontFamilyFallback: [
-                                'Courier',
-                                'Menlo',
-                                'Monaco'
-                              ],
-                              fontSize: 13,
-                              height: 1.5),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: ClipRRect(
+                      child: Scrollbar(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: IntrinsicWidth(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  minWidth:
+                                      MediaQuery.of(context).size.width * 0.8 -
+                                          64),
+                              child: Text(
+                                const JsonEncoder.withIndent('  ')
+                                    .convert(_formController!.resultMap),
+                                style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontFamilyFallback: [
+                                      'Courier',
+                                      'Menlo',
+                                      'Monaco'
+                                    ],
+                                    fontSize: 13,
+                                    height: 1.5),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  )),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(

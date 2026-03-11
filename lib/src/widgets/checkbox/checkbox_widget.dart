@@ -48,9 +48,10 @@ class _DynamicCheckboxState extends State<DynamicCheckbox> {
               errorText: widget.controller.errors[widget.component.key],
             ),
             child: ListTile(
+              enabled: !widget.component.disabled,
               leading: Checkbox.adaptive(
                 value: logic.value,
-                onChanged: logic.onChanged,
+                onChanged: widget.component.disabled ? null : logic.onChanged,
               ),
               title: Text(widget.component.label),
               contentPadding: EdgeInsets.zero,

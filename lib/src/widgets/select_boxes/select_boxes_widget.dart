@@ -87,6 +87,7 @@ class _SelectBoxesWidgetState extends State<SelectBoxesWidget> {
                       children: logic.allOptions.map((option) {
                         final isSelected = currentValues.contains(option.value);
                         return ListTile(
+                            enabled: !widget.component.disabled,
                             leading: Checkbox.adaptive(
                                 value: isSelected,
                                 onChanged: widget.component.disabled

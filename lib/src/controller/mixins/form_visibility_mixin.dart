@@ -44,7 +44,7 @@ mixin FormVisibilityMixin {
 
     final visibleComponents = allComponents
         .where(
-            (c) => c.type != FormConstants.typeButton && isComponentVisible(c))
+            (c) => c.type != FormConstants.typeButton && isComponentRelevant(c))
         .toList();
 
     final result = <String, FormResultModel>{};
@@ -187,12 +187,23 @@ mixin FormVisibilityMixin {
     return _isComponentVisible(component, {});
   }
 
-  bool _isComponentVisible(FormComponent component, Set<String> visited) {
-    if (!_isComponentSelfVisible(component, visited)) return false;
+  /// Returns true if the component should be included in submission and validation.
+  /// Ignores static [FormComponent.hidden] but respects [FormComponent.conditional].
+  bool isComponentRelevant(FormComponent component) {
+    return _isComponentRelevant(component, {});
+  }
 
-    // Check if any parent panel is hidden. If so, this component is also hidden.
+  bool _isComponentVisible(FormComponent component, Set<String> visited) {
+    if (component.hidden) return false;
+    return _isComponentRelevant(component, visited);
+  }
+
+  bool _isComponentRelevant(FormComponent component, Set<String> visited) {
+    if (!_evaluateConditions(component, visited)) return false;
+
+    // Check if any parent panel is irrelevant. If so, this component is also irrelevant.
     final parent = _findParentPanelOf(component);
-    if (parent != null && !_isComponentVisible(parent, visited)) {
+    if (parent != null && !_isComponentRelevant(parent, visited)) {
       return false;
     }
 
@@ -224,11 +235,10 @@ mixin FormVisibilityMixin {
     return null;
   }
 
-  bool _isComponentSelfVisible(FormComponent component, Set<String> visited) {
+  bool _evaluateConditions(FormComponent component, Set<String> visited) {
     if (visited.contains(component.key)) return true;
     visited.add(component.key);
 
-    if (component.hidden) return false;
     final cond = component.conditional;
     if (cond == null || cond.conditions.isEmpty) return true;
 

@@ -20,6 +20,8 @@ abstract class FormComponent {
   final ConditionalConfig? conditional;
   final dynamic defaultValue;
   final Map<String, dynamic>? platforms;
+  final String? prefix;
+  final String? suffix;
   final DataSource? dataSource;
 
   /// Target database table for mapping this component's value.
@@ -44,6 +46,8 @@ abstract class FormComponent {
     this.conditional,
     this.defaultValue,
     this.platforms,
+    this.prefix,
+    this.suffix,
     this.dataSource,
     this.destinationTable,
     this.destinationColumn,
@@ -107,6 +111,8 @@ abstract class FormComponent {
       if (conditional != null) 'conditional': conditional!.toJson(),
       if (defaultValue != null) 'defaultValue': defaultValue,
       if (platforms != null) 'platforms': platforms,
+      if (prefix != null) 'prefix': prefix,
+      if (suffix != null) 'suffix': suffix,
       if (dataSource != null) 'dataSource': dataSource!.toJson(),
       if (destinationTable != null) 'destinationTable': destinationTable,
       if (destinationColumn != null) 'destinationColumn': destinationColumn,

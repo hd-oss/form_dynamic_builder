@@ -93,19 +93,14 @@ class _DynamicDateTimeState extends State<DynamicDateTime> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FieldLabel(component: widget.component),
-              if (widget.component.description.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    widget.component.description,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
               TextFormField(
                 focusNode: widget.controller.getFocusNode(widget.component.key),
                 controller: textController,
                 decoration: InputDecoration(
-                  hintText: widget.component.placeholder,
+                  hintText: (widget.component.placeholder != null &&
+                          widget.component.placeholder!.isNotEmpty)
+                      ? widget.component.placeholder
+                      : widget.component.format,
                   border: const OutlineInputBorder(),
                   errorText: widget.controller.errors[widget.component.key],
                   prefixIcon: widget.component.timeOnly

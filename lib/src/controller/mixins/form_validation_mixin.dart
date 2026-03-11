@@ -12,6 +12,7 @@ mixin FormValidationMixin on ChangeNotifier {
   FormConfig get config;
   Map<String, dynamic> get values;
   bool isComponentVisible(FormComponent component);
+  bool isComponentRelevant(FormComponent component);
 
   // State managed by this mixin
   final Map<String, String> _errors = {};
@@ -50,7 +51,7 @@ mixin FormValidationMixin on ChangeNotifier {
 
     for (var component in allComponents) {
       if (component.type == FormConstants.typeButton) continue;
-      if (!isComponentVisible(component)) continue;
+      if (!isComponentRelevant(component)) continue;
 
       final value = values[component.key];
       final stringValue = value?.toString() ?? '';
@@ -82,7 +83,7 @@ mixin FormValidationMixin on ChangeNotifier {
       }
 
       if (component.type == FormConstants.typeButton) continue;
-      if (!isComponentVisible(component)) continue;
+      if (!isComponentRelevant(component)) continue;
 
       final value = values[component.key];
       final stringValue = value?.toString() ?? '';

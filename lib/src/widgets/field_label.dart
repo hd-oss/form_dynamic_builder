@@ -26,7 +26,8 @@ class FieldLabel extends StatelessWidget {
                   ),
               children: [
                 if (component.required ||
-                    component.validation.any((r) => r.type == FormConstants.validationRequired))
+                    component.validation
+                        .any((r) => r.type == FormConstants.validationRequired))
                   const TextSpan(
                     text: FormConstants.requiredSuffix,
                     style: TextStyle(
@@ -41,6 +42,8 @@ class FieldLabel extends StatelessWidget {
             const SizedBox(width: 4),
             Tooltip(
                 message: component.description,
+                triggerMode: TooltipTriggerMode.tap,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 child: Icon(
                   Icons.info_outline,
                   size: 16,
