@@ -70,8 +70,6 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
       dataSource = (component as TextFieldComponent).dataSource;
     } else if (component is NumberComponent) {
       dataSource = (component as NumberComponent).dataSource;
-    } else if (component is CurrencyComponent) {
-      dataSource = (component as CurrencyComponent).dataSource;
     }
 
     initDefaultValue(
@@ -146,7 +144,7 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
     if (component is NumberComponent) {
       return (component as NumberComponent).enableCurrency;
     }
-    return component is CurrencyComponent;
+    return false;
   }
 
   String? getPrefixText() {
@@ -159,11 +157,6 @@ class TextFieldLogic extends ChangeNotifier with DataSourceMixin {
           numberComponent.currency != null &&
           numberComponent.currency!.isNotEmpty) {
         currencyCode = numberComponent.currency;
-      }
-    } else if (component is CurrencyComponent) {
-      final currencyComponent = component as CurrencyComponent;
-      if (currencyComponent.currency.isNotEmpty) {
-        currencyCode = currencyComponent.currency;
       }
     }
 

@@ -21,6 +21,7 @@ class _FormPageState extends State<FormPage> {
   FormConfig? _formConfig;
   FormController? _formController;
   bool _isLoading = true;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -77,51 +78,74 @@ class _FormPageState extends State<FormPage> {
     }
   }
 
-  void _submitForm() {
-    if (_formController!.validate()) {
-      print(
-        const JsonEncoder.withIndent('  ').convert(_formController!.resultMap),
+  Future<void> _submitForm() async {
+    if (_formController == null) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final results = await _formController!.submitAsync(
+        onProgress: (current, total) {
+          debugPrint('Uploading $current/$total...');
+        },
       );
-      showDialog(
-        context: context,
-        builder: (context) => Dialog(
-          insetPadding: const EdgeInsets.all(16),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Submitted Values',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: ClipRRect(
-                      child: Scrollbar(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: IntrinsicWidth(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  minWidth:
-                                      MediaQuery.of(context).size.width * 0.8 -
-                                          64),
-                              child: Text(
-                                const JsonEncoder.withIndent('  ')
-                                    .convert(_formController!.resultMap),
-                                style: const TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontFamilyFallback: [
-                                      'Courier',
-                                      'Menlo',
-                                      'Monaco'
-                                    ],
-                                    fontSize: 13,
-                                    height: 1.5),
-                              ),
+
+      if (results != null) {
+        if (!mounted) return;
+        _showResultsDialog(results);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Submission failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  void _showResultsDialog(Map<String, dynamic> results) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Submitted Values',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: ClipRRect(
+                    child: Scrollbar(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: IntrinsicWidth(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                                minWidth:
+                                    MediaQuery.of(context).size.width * 0.8 -
+                                        64),
+                            child: Text(
+                              const JsonEncoder.withIndent('  ')
+                                  .convert(results),
+                              style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontFamilyFallback: [
+                                    'Courier',
+                                    'Menlo',
+                                    'Monaco'
+                                  ],
+                                  fontSize: 13,
+                                  height: 1.5),
                             ),
                           ),
                         ),
@@ -129,17 +153,17 @@ class _FormPageState extends State<FormPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
   Future<void> _showPasteDialog() async {
@@ -316,14 +340,23 @@ class _FormPageState extends State<FormPage> {
                   if (!isWizard || controller.currentStep == lastStepIndex)
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _submitForm,
+                        onPressed: _isSubmitting ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor:
                               Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Submit Form'),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Submit Form'),
                       ),
                     ),
                 ],

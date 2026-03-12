@@ -88,7 +88,7 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
         // Completed files
         ...files.map((entry) {
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            padding: EdgeInsets.only(bottom: widget.component.multiple ? 8 : 0),
             child: Row(children: [
               Icon(
                   entry.isUploaded
@@ -149,9 +149,7 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
     if (!canUpload) return const SizedBox();
 
     return Padding(
-      padding: widget.component.multiple
-          ? const EdgeInsets.only(top: 8.0)
-          : EdgeInsets.zero,
+      padding: EdgeInsets.zero,
       child: AdaptiveButton(
           onPressed: widget.component.disabled
               ? null

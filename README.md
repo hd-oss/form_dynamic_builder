@@ -109,12 +109,20 @@ Widget build(BuildContext context) {
   return FormDynamicBuilder(controller: controller);
 }
 
-// 5. Handle submission
-void submitForm() {
-  if (controller.validate()) {
-    final values = controller.resultMap; // Map<String, FormResultModel>
-    final jsonPayload = jsonEncode(values);
+// 5. Handle submission (Asynchronous for deferred uploads)
+Future<void> submitForm() async {
+  // Use submitAsync to handle parallel file uploads before final validation
+  final results = await controller.submitAsync(
+    onProgress: (current, total) => print("Uploading $current/$total..."),
+  );
+  
+  if (results != null) {
+    // Submission successful, all files uploaded
+    final jsonPayload = jsonEncode(results);
     print("Payload Ready: $jsonPayload");
+  } else {
+    // Validation failed or upload error
+    print("Submission failed. Errors: ${controller.errors}");
   }
 }
 ```
@@ -232,42 +240,41 @@ Both `api.url` and `database.query` support placeholders for interpolation:
 - `{{var.static.current_year}}`: Injects static variables (e.g. `current_date`, `current_month`).
 
 ## File Uploads (IoC)
-
-For components like `Camera`, `File`, and `Signature`, the form builder delegates file uploads back to the Host Application using the `onFileUpload` callback. 
-
-By default, these components use `uploadTiming: "onSubmit"`, meaning they will only store the **local file path** in the form's state. It is up to the host application to upload these files when the entire form is submitted.
-
-However, if a component is configured with `uploadTiming: "immediate"`, the form builder will attempt to upload the file right after it is selected/captured. To support this, you must provide the `onFileUpload` callback:
-
-```dart
-final config = FormConfig.fromJson(
-  formJson,
-  onFileUpload: (List<String> localPath, String uploadUrl, OtherUploadConfig? uploadConfig) async {
-    // Example: Use Dio or http to upload the first file to `uploadUrl`
-    if (localPath.isEmpty) return null;
-    
-    final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
-    
-    // If uploadConfig is provided (from uploadType: "other"), apply custom headers
-    if (uploadConfig != null) {
-      for (final header in uploadConfig.headers) {
-        request.headers[header.key] = header.value; // e.g., Bearer token
-      }
-    }
-    
-    request.files.add(await http.MultipartFile.fromPath('file', localPath.first));
-    
-    final response = await request.send();
-    if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      final data = jsonDecode(responseBody);
-      // Return the full API response object/Map
-      return data; 
-    }
-    return null; // Return null on failure
-  },
-);
-```
+ 
+ For components like `Camera`, `File`, and `Signature`, the form builder delegates file uploads back to the Host Application using the `onFileUpload` callback. 
+ 
+ ### Upload Timing
+ 
+ You can control when files are uploaded using the `uploadTiming` property in the JSON schema:
+ 
+ 1.  **`onSubmit` (Default)**: Files are stored locally first. You MUST call `controller.submitAsync()` to trigger the upload of all pending files before final form submission.
+ 2.  **`immediate`**: Files are uploaded immediately after selection/capture.
+ 
+ **Handling Deferred Uploads (`onSubmit`):**
+ 
+ When using `onSubmit`, the form will be considered valid even if files are only stored locally. Calling `submitAsync()` will:
+ 1.  Validate the form.
+ 2.  Identify all local files that need to be uploaded.
+ 3.  Call `onFileUpload` in parallel for each component.
+ 4.  Update the file status and store the server response.
+ 5.  Return the final `resultMap` if all uploads succeed.
+ 
+ **Immediate Upload Configuration:**
+ 
+ If a component is configured with `uploadTiming: "immediate"`, the form builder will attempt to upload the file right after it is selected/captured. To support this, you must provide the `onFileUpload` callback:
+ 
+ ```dart
+ final config = FormConfig.fromJson(
+   formJson,
+   onFileUpload: (List<String> localPaths, String uploadUrl, OtherUploadConfig? uploadConfig) async {
+     // Example: Use Dio or http to upload files to `uploadUrl`
+     if (localPaths.isEmpty) return null;
+     
+     // Your upload logic here...
+     return {"url": "https://server.com/file.jpg", "id": 123}; 
+   },
+ );
+ ```
 
 If `onFileUpload` is successful and returns a String (the remote URL) or a `Map` that contains the URL, the form will store this remote URL in its state instead of the local path.
 

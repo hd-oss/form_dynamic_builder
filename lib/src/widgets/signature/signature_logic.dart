@@ -58,9 +58,11 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
     final data = await signatureController.toPngBytes();
     if (data != null) {
       updateUploadStatus(UploadStatus.uploading);
-      if (component.uploadTiming == 'immediate' &&
-          component.uploadUrl.isNotEmpty) {
-        // Save to temporary file for upload
+
+      // If we have an upload URL, we generally want to work with files,
+      // even if the timing is 'onSubmit'.
+      if (component.uploadUrl.isNotEmpty) {
+        // Save to temporary file for processing
         final tempDir = Directory.systemTemp;
         final tempFile = File(
             '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.png');
@@ -84,27 +86,34 @@ class SignatureLogic extends ChangeNotifier with UploadMixin {
         );
 
         if (uploadResult.isSuccess) {
-          final resultValue = uploadResult.values.first;
+          final resultValue =
+              uploadResult.values.isNotEmpty ? uploadResult.values.first : null;
           final size = File(persistentPath).existsSync()
               ? File(persistentPath).lengthSync()
               : null;
-          final fileData = FileData.fromUpload(
-            localPath: persistentPath,
-            size: size,
-            uploadedUrl: component.uploadUrl,
-            uploadResponse: resultValue,
-          );
+
+          final fileData = uploadResult.wasUploaded
+              ? FileData.fromUpload(
+                  localPath: persistentPath,
+                  size: size,
+                  uploadedUrl: component.uploadUrl,
+                  uploadResponse: resultValue,
+                )
+              : FileData.fromLocalPath(persistentPath, size: size)
+                  .copyWith(uploadedUrl: component.uploadUrl);
+
           formController.updateValue(component.key, fileData);
-          updateUploadStatus(UploadStatus.success);
+          updateUploadStatus(uploadResult.wasUploaded
+              ? UploadStatus.success
+              : UploadStatus.idle);
         } else {
-          // Fallback to base64 if upload fails
-          final base64String = base64Encode(data);
-          formController.updateValue(component.key, base64String);
+          // Fallback to base64 only if it's NOT an upload-configured component
+          // or if we really want to error out.
           updateUploadStatus(UploadStatus.error,
               error: uploadResult.errorMessage);
         }
       } else {
-        // Default behavior: save as base64 string
+        // Default behavior: save as base64 string (Legacy/No-upload mode)
         final base64String = base64Encode(data);
         formController.updateValue(component.key, base64String);
         updateUploadStatus(UploadStatus.success);

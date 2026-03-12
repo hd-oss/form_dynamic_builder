@@ -67,7 +67,6 @@ mixin FormCalculationMixin on ChangeNotifier {
     if (c is TextFieldComponent) return c.calculation;
     if (c is NumberComponent) return c.calculation;
     if (c is SelectComponent) return c.calculation;
-    if (c is CurrencyComponent) return c.calculation;
     return null;
   }
 

@@ -1,4 +1,3 @@
-
 import 'package:intl/intl.dart';
 
 import '../controller/form_controller.dart';
@@ -19,7 +18,7 @@ class DatasourceService {
   static String interpolateString(String text, FormController controller,
       [Map<String, String>? extraParams]) {
     return text.replaceAllMapped(RegExp(r'\{\{(.+?)\}\}'), (match) {
-      final key = match.group(1)!;
+      final key = match.group(1)!.trim();
 
       if (extraParams != null && extraParams.containsKey(key)) {
         return Uri.encodeComponent(extraParams[key]!);
@@ -81,7 +80,7 @@ class DatasourceService {
     final keys = <String>{};
     final matches = RegExp(r'\{\{(.+?)\}\}').allMatches(url);
     for (final match in matches) {
-      final key = match.group(1)!;
+      final key = match.group(1)!.trim();
       if (!key.startsWith('var.static.') && !key.startsWith('ds_form.')) {
         keys.add(key);
       }

@@ -75,8 +75,6 @@ abstract class FormComponent {
         return RadioComponent.fromJson(json);
       case FormConstants.typeDateTime:
         return DateTimeComponent.fromJson(json);
-      case FormConstants.typeCurrency:
-        return CurrencyComponent.fromJson(json);
       case FormConstants.typeFile:
         return FileUploadComponent.fromJson(json);
       case FormConstants.typeSignature:

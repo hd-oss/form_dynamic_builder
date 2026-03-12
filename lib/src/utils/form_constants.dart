@@ -8,7 +8,6 @@ class FormConstants {
   static const String typeTextArea = 'textarea';
   static const String typeNumber = 'number';
   static const String typePassword = 'password';
-  static const String typeCurrency = 'currency';
   static const String typeCheckbox = 'checkbox';
   static const String typeSelect = 'select';
   static const String typeSelectBoxes = 'selectboxes';

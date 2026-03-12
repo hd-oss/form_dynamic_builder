@@ -4,211 +4,26 @@ Map<String, dynamic> defaultForm() {
     "title": "Comprehensive Components Form",
     "components": [
       {
-        "type": "number",
-        "key": "price",
-        "label": "Price",
-        "defaultValue": 1000
-      },
-      {
-        "type": "number",
-        "key": "quantity",
-        "label": "Quantity",
-        "defaultValue": 2
-      },
-      {
-        "type": "number",
-        "key": "total",
-        "label": "Total (Calculated)",
-        "calculation": "{{ price }} * {{ quantity }}",
-        "disabled": true
+        "type": "textfield",
+        "key": "conditional_trigger",
+        "label": "Conditional Trigger",
+        "description":
+            "Type a book index (e.g., '1') to fetch into the HIDDEN field below",
+        "placeholder": "Enter book index"
       },
       {
         "type": "textfield",
-        "key": "hidden_test",
-        "label": "This should be hidden",
-        "hidden": true
-      },
-      {
-        "type": "textfield",
-        "key": "disabled_test",
-        "label": "This should be disabled",
-        "disabled": true,
-        "defaultValue": "Read-only value"
-      },
-      {
-        "type": "checkbox",
-        "key": "disabled_checkbox",
-        "label": "Disabled Checkbox",
-        "disabled": true
-      },
-      {
-        "type": "radio",
-        "key": "disabled_radio",
-        "label": "Disabled Radio",
-        "disabled": true,
-        "options": [
-          {"label": "Option 1", "value": "1"}
-        ]
-      },
-      {
-        "type": "textfield",
-        "key": "welcome",
-        "label": "Welcome to Dynamic Builder",
-        "placeholder": "This form demonstrates all available components.",
-        "disabled": true
-      },
-      {
-        "type": "textfield",
-        "key": "prefix_suffix_test",
-        "label": "Prefix, Suffix & Mask Test",
-        "description": "Rp. prefix, gr suffix, and complex mask",
-        "placeholder": "Enter value",
-        "prefix": "Rp. ",
-        "suffix": " gr",
-        "inputMask": "9999_9999.(999)"
-      },
-      {
-        "type": "textfield",
-        "key": "text_input",
-        "label": "Text Input",
-        "description": "Standard text input field",
-        "placeholder": "Enter some text"
-      },
-      {
-        "type": "select",
-        "key": "select_input",
-        "label": "Select Dropdown",
-        "description": "Choose an option from the list",
-        "options": [
-          {"label": "Option A", "value": "A"},
-          {"label": "Option B", "value": "B"}
-        ]
-      },
-      {
-        "type": "radio",
-        "key": "radio_input",
-        "label": "Radio Buttons",
-        "description": "Select exactly one option",
-        "options": [
-          {"label": "Choice 1", "value": "1"},
-          {"label": "Choice 2", "value": "2"}
-        ]
-      },
-      {
-        "type": "checkbox",
-        "key": "checkbox_input",
-        "label": "Checkbox",
-        "description": "Check to confirm"
-      },
-      {
-        "type": "selectboxes",
-        "key": "selectboxes_input",
-        "label": "Select Boxes",
-        "description": "Select multiple options",
-        "options": [
-          {"label": "Item X", "value": "X"},
-          {"label": "Item Y", "value": "Y"}
-        ]
-      },
-      {
-        "type": "tags",
-        "key": "tags_input",
-        "label": "Tags Field",
-        "description": "Type and press enter to add tags",
-        "placeholder": "Add tags..."
-      },
-      {
-        "type": "datetime",
-        "key": "date_input",
-        "label": "Date & Time Picker",
-        "description": "Select a date",
-        "enableDate": true,
-        "enableTime": true
-      },
-      {
-        "type": "location",
-        "key": "location_input",
-        "label": "Location Detection",
-        "description": "Detect your current GPS coordinates"
-      },
-      {
-        "type": "file",
-        "key": "file_upload",
-        "label": "File Upload",
-        "description": "Upload a document or photo",
-        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload"
-      },
-      {
-        "type": "camera",
-        "key": "camera_input",
-        "label": "Camera Field",
-        "description": "Take a photo directly from browser",
-        "uploadUrl": "https://api.escuelajs.co/api/v1/files/upload"
-      },
-      {
-        "type": "signature",
-        "key": "signature_input",
-        "label": "Signature Pad",
-        "description": "Sign using your mouse or touch screen"
-      },
-      {
-        "type": "panel",
-        "key": "panel_input",
-        "label": "Collapsible Panel",
-        "description": "This panel groups related fields",
-        "components": [
-          {
-            "type": "textfield",
-            "key": "panel_text",
-            "label": "Text inside Panel",
-            "placeholder": "Nested text field"
-          }
-        ]
-      },
-      {
-        "type": "select",
-        "key": "api_test",
-        "label": "Test API Data Source",
-        "description": "Values fetched from remote API",
+        "key": "fetch_target",
+        "label": "Hidden Fetch Target",
+        "hidden": true,
         "dataSource": {
           "type": "api",
           "api": {
-            "url": "https://potterapi-fedeperin.vercel.app/en/books",
+            "url":
+                "https://potterapi-fedeperin.vercel.app/en/books?index={{ conditional_trigger }}",
             "method": "GET",
-            "labelPath": "title",
-            "valuePath": "index"
+            "valuePath": "title"
           }
-        }
-      },
-      {
-        "type": "textfield",
-        "key": "cond_trigger",
-        "label": "Conditional Trigger",
-        "description": "Type '1' to show the conditional field below",
-        "placeholder": "Type '1' here"
-      },
-      {
-        "type": "textfield",
-        "key": "cond_target",
-        "label": "Conditional Field (Target)",
-        "description": "Shows because you typed '1'",
-        "conditional": {
-          "show": true,
-          "conditions": [
-            {
-              "whenSource": "api",
-              "whenApi": {
-                "url":
-                    "https://potterapi-fedeperin.vercel.app/en/books?index=1",
-                "method": "GET",
-                "valuePath": "index"
-              },
-              "operator": "eq",
-              "valueSource": "field",
-              "valueFieldKey": "cond_trigger",
-              "logicWithPrevious": "and"
-            }
-          ]
         }
       }
     ]

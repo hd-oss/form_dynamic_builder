@@ -116,8 +116,7 @@ class _DynamicTextFieldState extends State<DynamicTextField> {
                   if (widget.component.textTransform ==
                       FormConstants.transformLowercase)
                     LowerCaseTextFormatter(),
-                  if (widget.component.type == FormConstants.typeNumber ||
-                      widget.component.type == FormConstants.typeCurrency)
+                  if (widget.component.type == FormConstants.typeNumber)
                     FilteringTextInputFormatter.allow(
                         RegExp(FormConstants.numericFilterPattern)),
                   if (logic.currencyFormatter != null) logic.currencyFormatter!,

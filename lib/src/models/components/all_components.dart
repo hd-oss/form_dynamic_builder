@@ -2,7 +2,6 @@ export 'date_limit_config.dart';
 export 'camera_component.dart';
 export 'checkbox_component.dart';
 export 'component_utils.dart';
-export 'currency_component.dart';
 export 'date_time_component.dart';
 export 'file_upload_component.dart';
 export 'location_component.dart';

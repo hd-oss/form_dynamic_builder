@@ -71,12 +71,6 @@ class ComponentRegistry {
             controller: ctrl,
             obscureText: (c).showToggle));
     register(
-        FormConstants.typeCurrency,
-        (c, ctrl) => DynamicTextField(
-            component: c as CurrencyComponent,
-            controller: ctrl,
-            keyboardType: TextInputType.number));
-    register(
         FormConstants.typeCheckbox,
         (c, ctrl) => DynamicCheckbox(
               component: c as CheckboxComponent,

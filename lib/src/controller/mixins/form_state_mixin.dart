@@ -39,6 +39,32 @@ mixin FormStateMixin on ChangeNotifier {
     return draft;
   }
 
+  /// Returns the final form data optimized for API submission.
+  /// File components are transformed into {answerText, answerFile} structure.
+  Map<String, dynamic> get resultMap {
+    final result = <String, dynamic>{};
+    _values.forEach((key, value) {
+      if (value is FileData) {
+        result[key] = {
+          'answerText': value.localPath ?? '',
+          'answerFile': value.isUploaded ? [value.uploadResponse] : [],
+        };
+      } else if (value is List && value.every((e) => e is FileData)) {
+        final fileList = value.cast<FileData>();
+        result[key] = {
+          'answerText': fileList.map((e) => e.localPath).join(', '),
+          'answerFile': fileList
+              .where((e) => e.isUploaded)
+              .map((e) => e.uploadResponse)
+              .toList(),
+        };
+      } else {
+        result[key] = value;
+      }
+    });
+    return result;
+  }
+
   void initializeValues() {
     _values.clear();
     _displayTexts.clear();
@@ -69,8 +95,7 @@ mixin FormStateMixin on ChangeNotifier {
     var processedValue = value;
 
     if (component != null && value is String) {
-      if (component.type == FormConstants.typeNumber ||
-          component.type == FormConstants.typeCurrency) {
+      if (component.type == FormConstants.typeNumber) {
         processedValue = num.tryParse(value) ?? value;
       } else if (component.textTransform == FormConstants.transformUppercase) {
         processedValue = value.toUpperCase();

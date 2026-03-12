@@ -74,9 +74,8 @@ mixin DataSourceMixin on ChangeNotifier {
 
     _snapshotDependentValues(controller);
 
-    if (_dependentKeys.isNotEmpty) {
-      controller.addListener(_onFormChanged);
-    }
+    // Always listen to controller to sync state from FormDatasourceMixin
+    controller.addListener(_onFormChanged);
 
     if (_hasAllRequiredDependencies(controller)) {
       _fetchOptions(controller);
@@ -117,9 +116,8 @@ mixin DataSourceMixin on ChangeNotifier {
 
     _snapshotDependentValues(controller);
 
-    if (_dependentKeys.isNotEmpty) {
-      controller.addListener(_onFormChanged);
-    }
+    // Always listen to controller to sync state from FormDatasourceMixin
+    controller.addListener(_onFormChanged);
 
     if (_hasAllRequiredDependencies(controller)) {
       _fetchDefaultValue(controller);
@@ -158,7 +156,15 @@ mixin DataSourceMixin on ChangeNotifier {
       }
     }
 
-    if (!hasChanged) return;
+    if (!hasChanged) {
+      // Still need to trigger sync if controller state changed (loading -> loaded)
+      if (_isDefaultValueMode) {
+        _fetchDefaultValue(_dsController!);
+      } else {
+        _fetchOptions(_dsController!);
+      }
+      return;
+    }
 
     _snapshotDependentValues(_dsController!);
 
@@ -190,6 +196,33 @@ mixin DataSourceMixin on ChangeNotifier {
 
   Future<void> _fetchOptions(FormController controller) async {
     if (_isDataSourceDisposed || (_dsApi == null && _dsDatabase == null)) {
+      return;
+    }
+
+    // Always try to sync from controller first
+    final key = _dsComponentKey ?? '';
+    final controllerOptions = controller.getDynamicOptions(key);
+    final controllerLoading = controller.isDataSourceLoading(key);
+    final controllerError = controller.getDataSourceError(key);
+
+    if (controllerOptions.isNotEmpty) {
+      dynamicOptions = controllerOptions;
+      dsState = DataSourceState.loaded;
+      dsError = null;
+      notifyListeners();
+      return;
+    }
+
+    if (controllerLoading) {
+      dsState = DataSourceState.loading;
+      notifyListeners();
+      return;
+    }
+
+    if (controllerError != null) {
+      dsState = DataSourceState.error;
+      dsError = controllerError;
+      notifyListeners();
       return;
     }
 
@@ -228,6 +261,13 @@ mixin DataSourceMixin on ChangeNotifier {
     if (_isDataSourceDisposed ||
         (_dsApi == null && _dsDatabase == null) ||
         _dsComponentKey == null) {
+      return;
+    }
+
+    // If already has a value in the form, don't fetch default value
+    final currentVal = controller.getValue(_dsComponentKey!);
+    if (currentVal != null && currentVal.toString().isNotEmpty) {
+      dsState = DataSourceState.loaded;
       return;
     }
 

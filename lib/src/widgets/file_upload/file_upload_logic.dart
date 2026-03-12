@@ -127,12 +127,17 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
                 ? File(finalLocalPath).lengthSync()
                 : null;
 
-            final fileData = FileData.fromUpload(
-              localPath: finalLocalPath,
-              size: size,
-              uploadedUrl: component.uploadUrl,
-              uploadResponse: resultValue,
-            );
+            final fileData = uploadResult.wasUploaded
+                ? FileData.fromUpload(
+                    localPath: finalLocalPath,
+                    size: size,
+                    uploadedUrl: component.uploadUrl,
+                    uploadResponse: resultValue,
+                  )
+                : FileData.fromLocalPath(
+                    finalLocalPath,
+                    size: size,
+                  ).copyWith(uploadedUrl: component.uploadUrl);
             newEntries.add(fileData);
           }
 
@@ -144,7 +149,9 @@ class FileUploadLogic extends ChangeNotifier with UploadMixin {
           } else {
             formController.updateValue(component.key, newEntries.first);
           }
-          updateUploadStatus(UploadStatus.success);
+          updateUploadStatus(uploadResult.wasUploaded
+              ? UploadStatus.success
+              : UploadStatus.idle);
         } else {
           // Failure: keep local file as-is or keep processed fallback paths
           final fallbackPaths = uploadResult.localPaths ?? selectedLocalPaths;

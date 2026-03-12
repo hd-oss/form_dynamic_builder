@@ -47,7 +47,7 @@ mixin FormValidationMixin on ChangeNotifier {
     _errors.clear();
     bool isValid = true;
     String? firstErrorKey;
-    final allComponents = _getAllComponents();
+    final allComponents = getAllComponents();
 
     for (var component in allComponents) {
       if (component.type == FormConstants.typeButton) continue;
@@ -102,16 +102,7 @@ mixin FormValidationMixin on ChangeNotifier {
     return isValid;
   }
 
-  // Helper to allow iteration of all components
-  List<FormComponent> _getAllComponents() {
-    // Logic duplicated from StateMixin or Config helper.
-    // Ideally FormConfig has this helper.
-    final comps = [...config.components];
-    for (var s in config.steps) {
-      comps.addAll(s.components);
-    }
-    return comps;
-  }
+  List<FormComponent> getAllComponents();
 
   bool _validateComponent(
       FormComponent component, dynamic value, String stringValue) {
@@ -127,12 +118,25 @@ mixin FormValidationMixin on ChangeNotifier {
       if (value.isEmpty) {
         isValueEmpty = true;
       } else if (value.every((e) => e is FileData)) {
-        // For multiple files, all must be successfully uploaded
-        isValueEmpty = value.any((e) => !(e as FileData).isUploaded);
+        // For multiple files, logic depends on timing
+        final timing = _getUploadTiming(component);
+        if (timing == 'onSubmit') {
+          // local files are valid for onSubmit context
+          isValueEmpty = value.any((e) => (e as FileData).status == 'error');
+        } else {
+          // immediate requires success status
+          isValueEmpty = value.any((e) => !(e as FileData).isUploaded);
+        }
       }
     } else if (value is FileData) {
-      // For single file, it must be successfully uploaded
-      isValueEmpty = !value.isUploaded;
+      final timing = _getUploadTiming(component);
+      if (timing == 'onSubmit') {
+        // local files are valid for onSubmit context
+        isValueEmpty = value.status == 'error';
+      } else {
+        // immediate requires success status
+        isValueEmpty = !value.isUploaded;
+      }
     }
 
     ValidationRule? requiredRule;
@@ -209,5 +213,12 @@ mixin FormValidationMixin on ChangeNotifier {
     }
 
     return isValid;
+  }
+
+  String _getUploadTiming(FormComponent component) {
+    if (component is FileUploadComponent) return component.uploadTiming;
+    if (component is CameraComponent) return component.uploadTiming;
+    if (component is SignatureComponent) return component.uploadTiming;
+    return 'immediate';
   }
 }

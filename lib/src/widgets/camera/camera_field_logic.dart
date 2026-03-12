@@ -102,25 +102,35 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
       );
 
       if (uploadResult.isSuccess) {
-        final resultValue = uploadResult.values.first;
+        final resultValue =
+            uploadResult.values.isNotEmpty ? uploadResult.values.first : null;
         final size = File(persistentPath).existsSync()
             ? File(persistentPath).lengthSync()
             : null;
-        final fileData = FileData.fromUpload(
-          localPath: persistentPath,
-          size: size,
-          uploadedUrl: component.uploadUrl,
-          uploadResponse: resultValue,
-        );
+
+        final fileData = uploadResult.wasUploaded
+            ? FileData.fromUpload(
+                localPath: persistentPath,
+                size: size,
+                uploadedUrl: component.uploadUrl,
+                uploadResponse: resultValue,
+              )
+            : FileData.fromLocalPath(persistentPath, size: size)
+                .copyWith(uploadedUrl: component.uploadUrl);
+
         formController.updateValue(component.key, fileData);
-        updateUploadStatus(UploadStatus.success);
+        updateUploadStatus(uploadResult.wasUploaded
+            ? UploadStatus.success
+            : UploadStatus.idle);
       } else {
         // Fallback: keep local file wrapped in FileData
         final size = File(persistentPath).existsSync()
             ? File(persistentPath).lengthSync()
             : null;
         formController.updateValue(
-            component.key, FileData.fromLocalPath(persistentPath, size: size));
+            component.key,
+            FileData.fromLocalPath(persistentPath, size: size)
+                .copyWith(uploadedUrl: component.uploadUrl));
         updateUploadStatus(UploadStatus.error,
             error: uploadResult.errorMessage);
       }
@@ -258,14 +268,14 @@ class CameraLogic extends ChangeNotifier with UploadMixin {
     }
   }
 
-  Widget buildImageFromValue(FileData? value) {
+  Widget buildImageFromValue(FileData? value, bool isPreview) {
     if (value == null || value.localPath == null || value.localPath!.isEmpty) {
       return const Center(child: Icon(Icons.broken_image));
     }
 
     return Image.file(
       File(value.localPath!),
-      fit: BoxFit.cover,
+      fit: isPreview ? BoxFit.fill : BoxFit.cover,
       errorBuilder: (_, __, ___) =>
           const Center(child: Icon(Icons.broken_image)),
     );

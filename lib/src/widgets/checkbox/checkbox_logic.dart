@@ -25,9 +25,4 @@ class CheckboxLogic extends ChangeNotifier {
       formController.updateValue(component.key, newValue);
     }
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

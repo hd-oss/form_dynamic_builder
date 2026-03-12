@@ -95,15 +95,16 @@ class _PasteJsonDialogState extends State<PasteJsonDialog> {
       String hint, String? error) {
     return Container(
       margin: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAliasWithSaveLayer,
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
-      ),
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          )),
       child: ClipRRect(
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -115,7 +116,7 @@ class _PasteJsonDialogState extends State<PasteJsonDialog> {
                 ),
                 child: TextField(
                   controller: controller,
-                  maxLines: 15,
+                  maxLines: 100,
                   autocorrect: false,
                   enableSuggestions: false,
                   style: const TextStyle(

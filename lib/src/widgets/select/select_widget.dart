@@ -86,14 +86,17 @@ class _DynamicSelectState extends State<DynamicSelect> {
   }
 
   Widget _buildMaterialSelect(BuildContext context) {
+    final focusNode = widget.controller.getFocusNode(widget.component.key);
+
     return DropdownOverlay<SelectOption>(
-      isShowing: _isDropdownShowing,
-      items: logic.allOptions,
+      isShowing: _isDropdownShowing && logic.filteredOptions.isNotEmpty,
+      items: logic.filteredOptions,
       onItemSelected: (option) {
         setState(() {
           _isDropdownShowing = false;
         });
         logic.updateValue(option.value);
+        focusNode.unfocus();
       },
       onDismissed: () {
         setState(() {
@@ -107,37 +110,46 @@ class _DynamicSelectState extends State<DynamicSelect> {
           minTileHeight: 0,
         );
       },
-      child: GestureDetector(
-        onTap: widget.component.disabled
-            ? null
-            : () {
-                final node =
-                    widget.controller.getFocusNode(widget.component.key);
-                if (!node.hasFocus) node.requestFocus();
-                setState(() {
-                  _isDropdownShowing = !_isDropdownShowing;
-                });
-              },
-        child: AbsorbPointer(
-          child: TextFormField(
-            focusNode: widget.controller.getFocusNode(widget.component.key),
-            readOnly: true,
-            controller: TextEditingController(
-              text: logic.selectedOption.label.isEmpty
-                  ? (widget.component.placeholder ?? '')
-                  : logic.selectedOption.label,
+      child: TextFormField(
+        focusNode: focusNode,
+        controller: logic.textController,
+        decoration: InputDecoration(
+          hintText: widget.component.placeholder ?? 'Search...',
+          border: const OutlineInputBorder(),
+          errorText: widget.controller.errors[widget.component.key],
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isDropdownShowing ? Icons.arrow_drop_up : Icons.arrow_drop_down,
             ),
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              errorText: widget.controller.errors[widget.component.key],
-              suffixIcon: Icon(
-                _isDropdownShowing
-                    ? Icons.arrow_drop_up
-                    : Icons.arrow_drop_down,
-              ),
-            ),
+            onPressed: widget.component.disabled
+                ? null
+                : () {
+                    setState(() {
+                      _isDropdownShowing = !_isDropdownShowing;
+                      if (_isDropdownShowing) {
+                        logic.clearSuggestions();
+                        focusNode.requestFocus();
+                      }
+                    });
+                  },
           ),
         ),
+        enabled: !widget.component.disabled,
+        onChanged: (value) {
+          if (!_isDropdownShowing) {
+            setState(() {
+              _isDropdownShowing = true;
+            });
+          }
+          logic.fetchSuggestions(value);
+        },
+        onTap: () {
+          if (!_isDropdownShowing) {
+            setState(() {
+              _isDropdownShowing = true;
+            });
+          }
+        },
       ),
     );
   }

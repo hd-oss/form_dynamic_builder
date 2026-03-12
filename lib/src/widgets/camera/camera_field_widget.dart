@@ -103,7 +103,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
         child: SizedBox(
           height: 200,
           width: double.infinity,
-          child: logic.buildImageFromValue(value),
+          child: logic.buildImageFromValue(value, false),
         ),
       ),
     );
@@ -117,7 +117,7 @@ class _DynamicCameraState extends State<DynamicCamera> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: logic.buildImageFromValue(value),
+              child: logic.buildImageFromValue(value, true),
             ),
             Positioned(
               top: 16,

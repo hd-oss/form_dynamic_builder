@@ -66,7 +66,7 @@ class UploadService {
           if (result != null) {
             // Normalize result: String → [String], List → as-is, Map → [Map]
             final List<dynamic> values = result is List ? result : [result];
-            return UploadResult.success(values);
+            return UploadResult.success(values, wasUploaded: true);
           } else {
             return UploadResult.error(
               'Upload failed. Saved locally.',
@@ -77,7 +77,7 @@ class UploadService {
       }
 
       // Manual upload or no callback provided: return processed local paths
-      return UploadResult.success(processedPaths);
+      return UploadResult.success(processedPaths, wasUploaded: false);
     } catch (e) {
       if (kDebugMode) print('UploadService Error: $e');
       return UploadResult.error('Processing failed: $e');
@@ -92,12 +92,7 @@ class UploadService {
 
 class UploadResult {
   final bool isSuccess;
-
-  /// The resolved values from the upload response.
-  /// Each entry can be:
-  /// - A `String` (URL or raw value)
-  /// - A `Map<String, dynamic>` (server-returned object)
-  /// - Any other `dynamic` type from the server response
+  final bool wasUploaded;
   final List<dynamic> values;
   final String? errorMessage;
   final List<String>? localPaths;
@@ -105,13 +100,17 @@ class UploadResult {
   UploadResult({
     required this.isSuccess,
     required this.values,
+    this.wasUploaded = false,
     this.errorMessage,
     this.localPaths,
   });
 
-  factory UploadResult.success(List<dynamic> values) => UploadResult(
+  factory UploadResult.success(List<dynamic> values,
+          {bool wasUploaded = false}) =>
+      UploadResult(
         isSuccess: true,
         values: values,
+        wasUploaded: wasUploaded,
       );
 
   factory UploadResult.error(String message, {List<String>? localPaths}) =>
