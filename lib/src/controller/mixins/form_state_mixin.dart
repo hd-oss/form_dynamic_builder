@@ -72,9 +72,7 @@ mixin FormStateMixin on ChangeNotifier {
 
     for (var component in allComponents) {
       if (component.type == FormConstants.typeButton) continue;
-      if (component.defaultValue != null) {
-        _values[component.key] = component.defaultValue;
-      }
+      _values[component.key] = component.defaultValue;
     }
   }
 

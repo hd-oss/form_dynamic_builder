@@ -49,8 +49,6 @@ mixin FormVisibilityMixin {
 
     final result = <String, FormResultModel>{};
     for (final component in visibleComponents) {
-      if (!values.containsKey(component.key)) continue;
-
       final rawValue = values[component.key];
       final answerValue = _unwrapValue(rawValue);
       final answerText =
