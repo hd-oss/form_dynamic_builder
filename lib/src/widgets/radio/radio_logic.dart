@@ -12,6 +12,7 @@ class RadioLogic extends ChangeNotifier with DataSourceMixin {
     initDataSource(
       dataSource: component.dataSource,
       controller: formController,
+      componentKey: component.key,
     );
   }
 

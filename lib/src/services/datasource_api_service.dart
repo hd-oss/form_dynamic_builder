@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../controller/form_controller.dart';
 import '../models/components/select_option.dart';
 import '../models/data_source.dart';
+import '../utils/error_utils.dart';
 import 'datasource_service.dart'; // For shared interpolation/extraction methods.
 
 class DatasourceApiService {
@@ -27,18 +29,22 @@ class DatasourceApiService {
     // Make request via IoC Callback
     dynamic data;
     try {
-      final responseData = await controller.config.onApiQuery!(
+      final rawResponse = await controller.config.onApiQuery!(
         url,
         api.method,
         headers,
         api.body,
       );
 
-      data = responseData;
+      data = ErrorUtils.handleResponse(rawResponse);
       if (data is String) {
         data = json.decode(data);
       }
     } catch (e) {
+      if (kDebugMode) {
+        print(
+            'DatasourceApiService Error (fetchOptions): ${ErrorUtils.toFriendlyMessage(e)}');
+      }
       return [];
     }
 
@@ -79,6 +85,10 @@ class DatasourceApiService {
         );
       }).toList();
     } catch (e) {
+      if (kDebugMode) {
+        print(
+            'DatasourceApiService Error (fetchOptions parse): ${ErrorUtils.toFriendlyMessage(e)}');
+      }
       return [];
     }
   }
@@ -102,18 +112,22 @@ class DatasourceApiService {
 
     dynamic data;
     try {
-      final responseData = await controller.config.onApiQuery!(
+      final rawResponse = await controller.config.onApiQuery!(
         url,
         api.method,
         headers,
         api.body,
       );
 
-      data = responseData;
+      data = ErrorUtils.handleResponse(rawResponse);
       if (data is String) {
         data = json.decode(data);
       }
     } catch (e) {
+      if (kDebugMode) {
+        print(
+            'DatasourceApiService Error (fetchDefaultValue): ${ErrorUtils.toFriendlyMessage(e)}');
+      }
       return null;
     }
 
@@ -131,7 +145,11 @@ class DatasourceApiService {
 
       // No path — return the whole item's string representation.
       return data?.toString();
-    } catch (_) {
+    } catch (e) {
+      if (kDebugMode) {
+        print(
+            'DatasourceApiService Error (fetchDefaultValue parse): ${ErrorUtils.toFriendlyMessage(e)}');
+      }
       return null;
     }
   }

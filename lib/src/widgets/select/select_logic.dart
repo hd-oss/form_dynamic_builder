@@ -18,6 +18,7 @@ class SelectLogic extends ChangeNotifier with DataSourceMixin {
     initDataSource(
       dataSource: component.dataSource,
       controller: formController,
+      componentKey: component.key,
     );
 
     formController.addListener(_onFormControllerChanged);

@@ -1,0 +1,832 @@
+{
+  "id": "comp_1773211473272_sis4jzrjb",
+  "type": "form",
+  "steps": [],
+  "title": "FORM TEMPLATE COLLECTION",
+  "ds_form": {
+    "task": {
+      "lcs": {
+        "taskType": "VST",
+        "companyId": 447
+      },
+      "los": null
+    }
+  },
+  "settings": {
+    "showReset": false,
+    "resetLabel": "Reset",
+    "submitLabel": "Submit",
+    "successMessage": "Form submitted successfully!",
+    "confirmBeforeSubmit": false
+  },
+  "createdAt": "2026-03-11T06:44:33.272Z",
+  "updatedAt": "2026-03-13T09:00:16.948Z",
+  "components": [
+    {
+      "id": "comp_1773211684439_nrwwhh7m9",
+      "key": "flag",
+      "type": "select",
+      "label": "Flag",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/param-hasil-penugasan?page=0&size=9999&filter=GROUP_CONDITION_AND%3D%255BplkpBucketType%253D{{ds_form.task.lcs.taskType}}%253AOR%252CplkpBucketType%253Disnull%253AOR%255D,plkpEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BplkpEffTo%253E%253D{{var.static.current_date}}%253AOR%252CplkpEffTo%253Disnull%253AOR%255D,plkpCompanyId%3D{{ds_form.task.lcs.companyId}}:AND",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "plkpDesc",
+          "valuePath": "plkpFlag"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "customClass": "",
+      "description": "",
+      "placeholder": "--Flag--",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773218818285_i7zuwmbtf",
+      "key": "ttdPromiseDate",
+      "type": "datetime",
+      "label": "Appointment Date",
+      "format": "dd MMMM yyyy",
+      "hidden": false,
+      "disabled": false,
+      "required": true,
+      "setAfter": {
+        "type": "static",
+        "unit": "days",
+        "api": {
+          "url": "",
+          "method": "GET",
+          "valuePath": "data[0].plkpMaxPromiseDate"
+        },
+        "value": 0
+      },
+      "timeOnly": false,
+      "setBefore": {
+        "type": "api",
+        "unit": "days",
+        "value": 0,
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/base-service/api/v1/param-hasil-penugasan?filter=plkpCompanyId%3D447&filter=plkpFlag%3DPTP&page=0&size=9999",
+          "method": "GET",
+          "valuePath": "data[0].plkpMaxPromise"
+        }
+      },
+      "enableTime": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "whenSource": "field",
+            "operator": "eq",
+            "value": "PTP",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "",
+      "timeHourStep": 1,
+      "textTransform": "none",
+      "timeUse24Hour": true,
+      "timeMinuteStep": 5,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773221554224_zpsh7a6jn",
+      "key": "datetime",
+      "type": "datetime",
+      "label": "Pretermination Date",
+      "hidden": false,
+      "disabled": false,
+      "required": true,
+      "timeOnly": false,
+      "setBefore": {
+        "type": "static",
+        "unit": "days",
+        "value": 0
+      },
+      "enableTime": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PRE",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "",
+      "timeHourStep": 1,
+      "textTransform": "none",
+      "timeUse24Hour": true,
+      "timeMinuteStep": 5,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773221759967_t34j7ageb",
+      "key": "pickupDate",
+      "type": "datetime",
+      "label": "Pickup Date",
+      "hidden": false,
+      "disabled": false,
+      "required": true,
+      "timeOnly": false,
+      "setBefore": {
+        "type": "static",
+        "unit": "days",
+        "value": 0
+      },
+      "enableTime": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PCU",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "",
+      "timeHourStep": 1,
+      "textTransform": "none",
+      "timeUse24Hour": true,
+      "timeMinuteStep": 5,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773287761564_jyu8n6qic",
+      "key": "paymentMethod",
+      "type": "select",
+      "label": "Payment Method",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": false,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/base-service/api/v1/mst_lookup_list/lookupname?companyId={{ds_form.task.lcs.companyId}}&lookupname=PAY_METHOD&isActive=Y&page=0&size=9999",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "listDesc",
+          "valuePath": "listId"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PTC",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "-Payment Method-",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773291425538_fclbbriv7",
+      "key": "amount",
+      "type": "number",
+      "label": "Amount",
+      "hidden": false,
+      "currency": "IDR",
+      "disabled": false,
+      "required": false,
+      "validation": [],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PTC",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": " Amount",
+      "decimalPlaces": 0,
+      "textTransform": "none",
+      "enableCurrency": true,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773291769293_liodo6n7q",
+      "key": "feeMdr",
+      "type": "number",
+      "label": "Fee MDR",
+      "hidden": false,
+      "disabled": false,
+      "required": false,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/base-serviceapi/v1/mst_lookup_list/lookupname?companyId={{ds_form.task.lcs.companyId}}&lookupname=QRIS_PAYMENT&isActive=Y&filter=listCode%3DFEE&page=0&size=9999",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data[0]",
+          "headers": [],
+          "labelPath": "",
+          "valuePath": "listDesc"
+        },
+        "type": "api"
+      },
+      "validation": [],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PTC",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "paymentMethod",
+            "value": "1421",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "Fee MDR",
+      "defaultValue": "0.7",
+      "textTransform": "none",
+      "enableCurrency": false,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773291906923_k4emehpg2",
+      "key": "totalQRISAmount",
+      "type": "number",
+      "label": "Total QRIS Amount",
+      "hidden": false,
+      "currency": "IDR",
+      "disabled": false,
+      "required": false,
+      "validation": [],
+      "calculation": "({{feeMdr}} / 100) * {{amount}} + {{amount}}",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "PTC",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "paymentMethod",
+            "value": "1421",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "Total QRIS Amount",
+      "decimalPlaces": 0,
+      "textTransform": "none",
+      "enableCurrency": true,
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773212216872_12k0dz2co",
+      "key": "classification",
+      "type": "select",
+      "label": "Classifcation",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/classifications?page=0&size=9999&filter=GROUP_CONDITION_AND%3D%255BclassType%253D{{ds_form.task.lcs.taskType}}%253AOR%252CclassType%253Disnull%253AOR%255D,classEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BclassEffTo%253E%253D{{var.static.current_date}}%253AOR%252CclassEffTo%253Disnull%253AOR%255D,classCompanyId%3D{{ds_form.task.lcs.companyId}}",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "classDesc",
+          "valuePath": "classCode"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "--Classification--",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773212634621_x44kh0itt",
+      "key": "whoMeet",
+      "type": "select",
+      "label": "Who Met / Contacted",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/relation?page=0&size=9999&filter=relEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BrelEffTo%253E%253D{{var.static.current_date}}%253AOR%252CrelEffTo%253Disnull%253AOR%255D,relCompanyId%3D{{ds_form.task.lcs.companyId}}",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "relDesc",
+          "valuePath": "relationKey.relCode"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "-Who Met / Contacted-",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773213574134_wq1h5dj08",
+      "key": "unitHolder",
+      "type": "select",
+      "label": "Unit Holder",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/pemegang-jaminan?page=0&size=9999&filter=locEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BlocEffTo%253E%253D{{var.static.current_date}}%253AOR%252ClocEffTo%253Disnull%253AOR%255D,locCompanyId%3D{{ds_form.task.lcs.companyId}}",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "locDesc",
+          "valuePath": "locCode"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "--Unit Holder--",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773213784092_2otrswxqw",
+      "key": "reason",
+      "type": "select",
+      "label": "Reason",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/reason_for_delay?page=0&size=9999&delqType={{ds_form.task.lcs.taskType}}&filter=GROUP_CONDITION_AND%3D%255BdelqType%253D{{ds_form.task.lcs.taskType}}%253AOR%252CdelqType%253Disnull%253AOR%255D,delqEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BdelqEffTo%253E%253D{{var.static.current_date}}%253AOR%252CdelqEffTo%253Disnull%253AOR%255D,delqCompanyId%3D{{ds_form.task.lcs.companyId}}",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "delqDesc",
+          "valuePath": "reasonForDelayKey.delqCode"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "-Reason-",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773214575217_2vfquojxq",
+      "key": "actionPlan",
+      "type": "select",
+      "label": "Action Plan",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/action-plan?page=0&size=25&filter=effFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BeffTo%253E%253D{{var.static.current_date}}%253AOR%252CeffTo%253Disnull%253AOR%255D,companyId%3D{{ds_form.task.lcs.companyId}}",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "desc",
+          "valuePath": "code"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "-Action Plan-",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773214733526_ol5cou8mg",
+      "key": "potentionCode",
+      "type": "select",
+      "label": "Potention",
+      "hidden": false,
+      "options": [],
+      "disabled": false,
+      "multiple": false,
+      "required": true,
+      "dataSource": {
+        "api": {
+          "url": "https://dev.microfincore.pkp.co.id/lcs-service/api/v1/matrix?filter=ptlCompanyId%3D{{ds_form.task.lcs.companyId}}:AND,ptlType%3D{{ds_form.task.lcs.taskType}}:AND,classCode%3D{{classification}}:AND,delqCode%3D{{reason}}:AND,ptlEffFrom%3C%3D{{var.static.current_date}}:AND,GROUP_CONDITION_AND%3D%255BptlEffTo%253E%253D{{var.static.current_date}}%252CptlEffTo%253Disnull%253AOR%255D",
+          "auth": {
+            "type": "none"
+          },
+          "body": "",
+          "method": "GET",
+          "dataKey": "data",
+          "headers": [],
+          "labelPath": "ptlDesc",
+          "valuePath": "matrixKey.ptlCode"
+        },
+        "type": "api"
+      },
+      "searchable": false,
+      "validation": [
+        {
+          "type": "required",
+          "message": "This field is required"
+        }
+      ],
+      "calculation": "",
+      "conditional": {
+        "show": true,
+        "conditions": [
+          {
+            "when": "classification",
+            "operator": "notEmpty",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "reason",
+            "operator": "notEmpty",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "-Potention-",
+      "defaultValue": "",
+      "textTransform": "none",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773220097184_hf7mxdfui",
+      "key": "comment",
+      "rows": 4,
+      "type": "textarea",
+      "label": "Description",
+      "hidden": false,
+      "disabled": false,
+      "required": false,
+      "validation": [],
+      "calculation": "",
+      "customClass": "",
+      "description": "",
+      "placeholder": "Description",
+      "textTransform": "uppercase",
+      "destinationTable": "",
+      "destinationColumn": ""
+    },
+    {
+      "id": "comp_1773220253526_6l17sqegd",
+      "key": "camera",
+      "type": "camera",
+      "label": "Take Photo",
+      "hidden": false,
+      "disabled": false,
+      "required": false,
+      "uploadUrl": "",
+      "uploadType": "other",
+      "validation": [],
+      "calculation": "",
+      "conditional": {
+        "show": false,
+        "conditions": [
+          {
+            "when": "flag",
+            "value": "UNV",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "and"
+          },
+          {
+            "when": "flag",
+            "value": "PAID",
+            "operator": "eq",
+            "whenSource": "field",
+            "valueSource": "manual",
+            "logicWithPrevious": "or"
+          }
+        ]
+      },
+      "customClass": "",
+      "description": "",
+      "placeholder": "",
+      "cameraFacing": "both",
+      "compressFile": false,
+      "uploadTiming": "onSubmit",
+      "showTimestamp": true,
+      "textTransform": "none",
+      "showDeviceInfo": true,
+      "showCoordinates": true,
+      "timestampFormat": "dd-MM-yyyy HH:mm:s",
+      "destinationTable": "",
+      "destinationColumn": ""
+    }
+  ],
+  "description": ""
+}

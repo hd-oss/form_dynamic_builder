@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../controller/form_controller.dart';
 import '../models/upload_config.dart';
+import '../utils/error_utils.dart';
 import '../utils/image_compressor.dart';
 
 /// A centralized service to handle file processing (validation, compression)
@@ -57,13 +58,17 @@ class UploadService {
       if (uploadTiming == 'immediate' && uploadUrl.isNotEmpty) {
         if (formController.config.onFileUpload != null) {
           // Pass local paths, upload URL, and optional uploadConfig (if type is 'other')
-          final result = await formController.config.onFileUpload!(
+          final rawResult = await formController.config.onFileUpload!(
             processedPaths,
             uploadUrl,
             uploadType == 'other' ? uploadConfig : null,
           );
 
-          if (result != null) {
+          // Normalize response (handle status codes, extract .data)
+          final result = ErrorUtils.handleResponse(rawResult);
+
+          if (result != null &&
+              (result is List || result is Map || result is String)) {
             // Normalize result: String → [String], List → as-is, Map → [Map]
             final List<dynamic> values = result is List ? result : [result];
             return UploadResult.success(values, wasUploaded: true);
@@ -80,7 +85,9 @@ class UploadService {
       return UploadResult.success(processedPaths, wasUploaded: false);
     } catch (e) {
       if (kDebugMode) print('UploadService Error: $e');
-      return UploadResult.error('Processing failed: $e');
+      final message = ErrorUtils.toFriendlyMessage(e);
+      return UploadResult.error('Upload failed: $message',
+          localPaths: localPaths);
     }
   }
 

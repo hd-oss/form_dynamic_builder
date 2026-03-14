@@ -32,12 +32,7 @@ class DatabaseService {
       String connectionString, String dbName, String query) async {
     debugPrint('DB Query (Sqflite): $query');
     if (_database != null) {
-      try {
-        return await _database!.rawQuery(query);
-      } catch (e) {
-        debugPrint('DB Query Error: $e');
-        return [];
-      }
+      return await _database!.rawQuery(query);
     }
     return [];
   }

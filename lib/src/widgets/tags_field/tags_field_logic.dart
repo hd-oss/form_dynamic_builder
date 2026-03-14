@@ -22,6 +22,7 @@ class TagsFieldLogic extends ChangeNotifier with DataSourceMixin {
     initDataSource(
       dataSource: component.dataSource,
       controller: formController,
+      componentKey: component.key,
     );
     initDefaultValue(
       dataSource: component.dataSource,

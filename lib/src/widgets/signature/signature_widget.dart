@@ -110,18 +110,6 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (logic.uploadStatus == UploadStatus.uploading)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12.0),
-                        child: Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator.adaptive(
-                                strokeWidth: 4),
-                          ),
-                        ),
-                      ),
                     if (logic.uploadStatus == UploadStatus.error)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
@@ -142,37 +130,47 @@ class _DynamicSignatureState extends State<DynamicSignature> {
                           ],
                         ),
                       ),
-                    Stack(
-                      children: [
-                        logic.isExternalImage(value is FileData ? value : null)
-                            ? _buildExternalImage(value)
-                            : _buildSignatureCanvas(),
-                        if (value is FileData && value.isUploaded)
-                          Positioned(
-                            top: 8,
-                            left: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                shape: BoxShape.circle,
+                    if (logic.uploadStatus == UploadStatus.uploading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12.0),
+                        child: Center(
+                          child: CircularProgressIndicator.adaptive(
+                              strokeWidth: 4),
+                        ),
+                      )
+                    else
+                      Stack(
+                        children: [
+                          logic.isExternalImage(
+                                  value is FileData ? value : null)
+                              ? _buildExternalImage(value)
+                              : _buildSignatureCanvas(),
+                          if (value is FileData && value.isUploaded)
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.cloud_done,
+                                    color: Colors.green, size: 24),
                               ),
-                              child: const Icon(Icons.cloud_done,
-                                  color: Colors.green, size: 24),
+                            ),
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.red),
+                              onPressed: widget.component.disabled
+                                  ? null
+                                  : logic.clearSignature,
+                              tooltip: 'Clear Signature',
                             ),
                           ),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.red),
-                            onPressed: widget.component.disabled
-                                ? null
-                                : logic.clearSignature,
-                            tooltip: 'Clear Signature',
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                   ],
                 ),
               ),

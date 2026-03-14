@@ -55,6 +55,7 @@ mixin DataSourceMixin on ChangeNotifier {
   void initDataSource({
     required DataSource? dataSource,
     required FormController controller,
+    required String componentKey,
   }) {
     if (dataSource == null || (!dataSource.isApi && !dataSource.isDatabase)) {
       return;
@@ -62,6 +63,7 @@ mixin DataSourceMixin on ChangeNotifier {
 
     _isDefaultValueMode = false;
     _dsController = controller;
+    _dsComponentKey = componentKey;
 
     if (dataSource.isApi) {
       _dsApi = dataSource.api!;
@@ -157,7 +159,13 @@ mixin DataSourceMixin on ChangeNotifier {
     }
 
     if (!hasChanged) {
-      // Still need to trigger sync if controller state changed (loading -> loaded)
+      // If nothing changed, we might still need to sync state if we're not loaded.
+      // But we should ONLY do this if we're in a state that NEEDS syncing.
+      if (dsState == DataSourceState.loaded &&
+          (_isDefaultValueMode || dynamicOptions.isNotEmpty)) {
+        return;
+      }
+
       if (_isDefaultValueMode) {
         _fetchDefaultValue(_dsController!);
       } else {
@@ -176,6 +184,7 @@ mixin DataSourceMixin on ChangeNotifier {
         }
       } else {
         dynamicOptions = [];
+        dsState = DataSourceState.initial;
         notifyListeners();
       }
       return;

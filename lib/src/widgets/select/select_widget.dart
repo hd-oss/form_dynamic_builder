@@ -112,6 +112,7 @@ class _DynamicSelectState extends State<DynamicSelect> {
       },
       child: TextFormField(
         focusNode: focusNode,
+        readOnly: true,
         controller: logic.textController,
         decoration: InputDecoration(
           hintText: widget.component.placeholder ?? 'Search...',
@@ -135,20 +136,27 @@ class _DynamicSelectState extends State<DynamicSelect> {
           ),
         ),
         enabled: !widget.component.disabled,
-        onChanged: (value) {
-          if (!_isDropdownShowing) {
-            setState(() {
-              _isDropdownShowing = true;
-            });
-          }
-          logic.fetchSuggestions(value);
-        },
+        // onChanged: (value) {
+        //   if (!_isDropdownShowing) {
+        //     setState(() {
+        //       _isDropdownShowing = true;
+        //     });
+        //   }
+        //   logic.fetchSuggestions(value);
+        // },
         onTap: () {
-          if (!_isDropdownShowing) {
-            setState(() {
-              _isDropdownShowing = true;
-            });
-          }
+          // if (!_isDropdownShowing) {
+          //   setState(() {
+          //     _isDropdownShowing = true;
+          //   });
+          // }
+          setState(() {
+            _isDropdownShowing = !_isDropdownShowing;
+            if (_isDropdownShowing) {
+              logic.clearSuggestions();
+              focusNode.requestFocus();
+            }
+          });
         },
       ),
     );

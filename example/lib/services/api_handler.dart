@@ -13,20 +13,14 @@ class ApiHandler {
   ) async {
     debugPrint('API Query (Dio): $method $url');
     final dio = Dio();
-    try {
-      final response = await dio.request(
-        url,
-        data: body.isNotEmpty ? body : null,
-        options: Options(
-          method: method,
-          headers: headers,
-        ),
-      );
-      return response.data; // Dio parses JSON automatically for maps/lists
-    } catch (e) {
-      debugPrint('Dio Error: $e');
-      return null;
-    }
+    return await dio.request(
+      url,
+      data: body.isNotEmpty ? body : null,
+      options: Options(
+        method: method,
+        headers: headers,
+      ),
+    );
   }
 
   /// Host-app file upload callback. Returns:
@@ -42,64 +36,50 @@ class ApiHandler {
     debugPrint('File Upload (Dio): ${localPaths.length} files to $uploadUrl');
 
     final dio = Dio();
-    try {
-      final List<dynamic> results = [];
+    final List<dynamic> results = [];
 
-      // Parse OtherUploadConfig if provided
-      Map<String, String> extraHeaders = {};
-      Map<String, dynamic> extraBody = {};
-      String method = 'POST';
-      String fileFieldName = 'file';
+    // Parse OtherUploadConfig if provided
+    Map<String, String> extraHeaders = {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+    };
+    Map<String, dynamic> extraBody = {};
 
-      if (uploadConfig != null) {
-        method = uploadConfig.method;
-        fileFieldName = uploadConfig.fileFieldName;
-
-        for (final header in uploadConfig.headers) {
-          extraHeaders[header.key] = header.value;
-        }
-        for (final field in uploadConfig.extraBodyFields) {
-          extraBody[field.key] = field.value;
-        }
+    if (uploadConfig != null) {
+      for (final header in uploadConfig.headers) {
+        extraHeaders[header.key] = header.value;
       }
-
-      for (final localPath in localPaths) {
-        // MOCK: Simulate failure for specific paths
-        if (localPath.contains('fail')) {
-          debugPrint('Simulating upload failure for: $localPath');
-          continue;
-        }
-
-        final fileName = localPath.split(Platform.pathSeparator).last;
-        final formData = FormData.fromMap({
-          ...extraBody,
-          fileFieldName:
-              await MultipartFile.fromFile(localPath, filename: fileName),
-        });
-
-        final response = await dio.request(
-          uploadUrl,
-          data: formData,
-          options: Options(
-            method: method,
-            headers: extraHeaders.isNotEmpty ? extraHeaders : null,
-          ),
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          // Server returns full object — store as-is
-          results.add(response.data);
-        }
+      for (final field in uploadConfig.extraBodyFields) {
+        extraBody[field.key] = field.value;
       }
-
-      if (results.isEmpty && localPaths.isNotEmpty) return null;
-
-      // Return single item directly (not wrapped), or list for multiple
-      return results.length == 1 ? results.first : results;
-    } catch (e) {
-      debugPrint('Dio Upload Error: $e');
-      return e.toString();
     }
+
+    for (final localPath in localPaths) {
+      final fileName = localPath.split(Platform.pathSeparator).last;
+      final formData = FormData.fromMap({
+        ...extraBody,
+        '${uploadConfig?.fileFieldName}': await MultipartFile.fromFile(
+          localPath,
+          filename: fileName,
+        ),
+      });
+
+      final response = await dio.request(
+        uploadUrl,
+        data: formData,
+        options: Options(
+          method: uploadConfig?.method,
+          headers: extraHeaders.isNotEmpty ? extraHeaders : null,
+        ),
+      );
+
+      results.add(response);
+    }
+
+    if (results.isEmpty && localPaths.isNotEmpty) return null;
+
+    // Return single item directly (not wrapped), or list for multiple
+    return results.length == 1 ? results.first : results;
   }
 
   // ---------------------------------------------------------------------------

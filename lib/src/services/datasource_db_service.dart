@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import '../controller/form_controller.dart';
 import '../models/components/select_option.dart';
 import '../models/data_source.dart';
+import '../utils/error_utils.dart';
 import 'datasource_service.dart';
 
 class DatasourceDbService {
@@ -52,6 +54,9 @@ class DatasourceDbService {
         );
       }).toList();
     } catch (e) {
+      if (kDebugMode) {
+        print('DatasourceDbService Error (fetchDatabaseOptions): ${ErrorUtils.toFriendlyMessage(e)}');
+      }
       return [];
     }
   }
@@ -83,7 +88,8 @@ class DatasourceDbService {
       }
 
       return firstRow.toString();
-    } catch (_) {
+    } catch (e) {
+      if (kDebugMode) print('DatasourceDbService Error (fetchDatabaseDefaultValue): $e');
       return null;
     }
   }

@@ -68,18 +68,6 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
     return [];
   }
 
-  Future<void> _handlePickFiles(List<dynamic> current) async {
-    final error = await _logic.pickFiles(current);
-    if (error != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   Widget _buildFileList(List<FileData> files, List<String> uploading) {
     if (files.isEmpty && uploading.isEmpty) return const SizedBox();
 
@@ -153,7 +141,7 @@ class _DynamicFileUploadState extends State<DynamicFileUpload> {
       child: AdaptiveButton(
           onPressed: widget.component.disabled
               ? null
-              : () => _handlePickFiles(selectedFiles),
+              : () async => await _logic.pickFiles(selectedFiles),
           icon: const Icon(Icons.upload_file),
           child: Text(
             widget.component.multiple ? 'Add File' : 'Upload File',
